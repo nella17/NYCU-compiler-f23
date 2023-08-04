@@ -1,3 +1,5 @@
+%option never-interactive
+
 %{
 #include <stdint.h>
 #include <stdio.h>
