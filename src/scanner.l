@@ -16,19 +16,59 @@ static uint32_t opt_tok = 1;
 static char *current_line_ptr = current_line;
 
 static void appendToCurrentLine(const char *yytext_ptr);
+static void nextLine();
 
 %}
 
+delimiter   [,;:()[\]]
+operator    [+\-*/]|mod|:=|<|<=|<>|>=|>|=|and|or|not
+keyword     var|def|array|of|boolean|integer|real|string|true|false|while|do|if|then|else|for|to|begin|end|print|read|return
+identifier  [a-zA-Z][a-zA-Z0-9]*
+nzdec_integer   [1-9][0-9]*
+dec_integer     0|{nzdec_integer}
+oct_integer     0(0|([1-7][0-7]*))
+fraction        \.(0|([0-9]*[1-9]))
+float           {dec_integer}{fraction}
+scientific      (({nzdec_integer}{fraction}?)|0{fraction})[eE]-?{dec_integer}
+
+%x STRING COMMENT
+
 %%
-"(" { LIST_TOKEN("("); }
-\n {
-    if (opt_src) {
-        printf("%d: %s\n", line_num, current_line);
-    }
-    ++line_num;
-    current_line[0] = '\0';
-    current_line_ptr = current_line;
+{delimiter}     LIST_TOKEN(yytext);
+{operator}      LIST_TOKEN(yytext);
+{keyword}       {
+    char* s = malloc(yyleng+2);
+    sprintf(s, "KW%s", yytext);
+    LIST_TOKEN(s);
+    free(s);
 }
+{identifier}    LIST_LITERAL("id", yytext);
+{dec_integer}   LIST_LITERAL("integer", yytext);
+{oct_integer}   LIST_LITERAL("oct_integer", yytext);
+{float}         LIST_LITERAL("float", yytext);
+{scientific}    LIST_LITERAL("scientific", yytext);
+
+\"              LIST_SOURCE, BEGIN(STRING);
+<STRING>[^"]*   yymore();
+<STRING>\"\"    yymore();
+<STRING>\"      {
+    char* s = strdup(yytext);
+    s[yyleng-1] = '\0';
+    LIST_LITERAL("string", s);
+    free(s);
+    BEGIN(INITIAL);
+}
+<STRING><<EOF>> BEGIN(INITIAL);
+
+"//"[^\n]*              LIST_SOURCE;
+"/*" 		            LIST_SOURCE, BEGIN(COMMENT);
+<COMMENT>[^*\n]*        LIST_SOURCE;
+<COMMENT>"*"+[^*/\n]*   LIST_SOURCE;
+<COMMENT>\n             nextLine();
+<COMMENT>"*"+"/"        LIST_SOURCE, BEGIN(INITIAL);
+
+[ \t] LIST_SOURCE;
+<*>\n nextLine();
 
     /* Catch the character which is not accepted by rules above */
 . {
@@ -45,6 +85,15 @@ static void appendToCurrentLine(const char *yytext_ptr) {
         ++yytext_ptr;
     }
     *current_line_ptr = '\0';
+}
+
+static void nextLine() {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, current_line);
+    }
+    ++line_num;
+    current_line[0] = '\0';
+    current_line_ptr = current_line;
 }
 
 int main(int argc, const char **argv) {
