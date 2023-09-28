@@ -28,7 +28,7 @@ keyword     var|def|array|of|boolean|integer|real|string|true|false|while|do|if|
 identifier  [a-zA-Z][a-zA-Z0-9]*
 nzdec_integer   [1-9][0-9]*
 dec_integer     0|{nzdec_integer}
-oct_integer     0(0|([1-7][0-7]*))
+oct_integer     0[0-7]+
 fraction        \.(0|([0-9]*[1-9]))
 float           {dec_integer}{fraction}
 scientific      (({nzdec_integer}{fraction}?)|0{fraction})[eE][+-]?{dec_integer}
