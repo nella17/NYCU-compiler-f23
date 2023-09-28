@@ -10,10 +10,12 @@
 
 uint32_t line_num = 1;
 static char current_line[MAX_LINE_LENG];
+static char string_buf[MAX_LINE_LENG];
 
 static uint32_t opt_src = 1;
 static uint32_t opt_tok = 1;
 static char *current_line_ptr = current_line;
+static char *string_buf_ptr = string_buf;
 
 static void appendToCurrentLine(const char *yytext_ptr);
 static void nextLine();
@@ -48,14 +50,23 @@ scientific      (({nzdec_integer}{fraction}?)|0{fraction})[eE][+-]?{dec_integer}
 {float}         LIST_LITERAL("float", yytext);
 {scientific}    LIST_LITERAL("scientific", yytext);
 
-\"              LIST_SOURCE, BEGIN(STRING);
-<STRING>[^"]*   yymore();
-<STRING>\"\"    yymore();
+\"              {
+    LIST_SOURCE;
+    string_buf_ptr = string_buf;
+    BEGIN(STRING);
+}
+<STRING>[^"]*   {
+    LIST_SOURCE;
+    memcpy(string_buf_ptr, yytext, yyleng);
+    string_buf_ptr += yyleng;
+}
+<STRING>\"\"    {
+    LIST_SOURCE;
+    *string_buf_ptr++ = '"';
+}
 <STRING>\"      {
-    char* s = strdup(yytext);
-    s[yyleng-1] = '\0';
-    LIST_LITERAL("string", s);
-    free(s);
+    *string_buf_ptr++ = '\0';
+    LIST_LITERAL("string", string_buf);
     BEGIN(INITIAL);
 }
 <STRING><<EOF>> BEGIN(INITIAL);
