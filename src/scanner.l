@@ -60,6 +60,10 @@ scientific      (({nzdec_integer}{fraction}?)|0{fraction})[eE][+-]?{dec_integer}
 }
 <STRING><<EOF>> BEGIN(INITIAL);
 
+"//&S+"[^\n]*           { opt_src = 1; REJECT; }
+"//&S-"[^\n]*           { opt_src = 0; REJECT; }
+"//&T+"[^\n]*           { opt_tok = 1; REJECT; }
+"//&T-"[^\n]*           { opt_tok = 0; REJECT; }
 "//"[^\n]*              LIST_SOURCE;
 "/*" 		            LIST_SOURCE, BEGIN(COMMENT);
 <COMMENT>[^*\n]*        LIST_SOURCE;
