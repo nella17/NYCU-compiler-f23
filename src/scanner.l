@@ -29,9 +29,10 @@ identifier  [a-zA-Z][a-zA-Z0-9]*
 nzdec_integer   [1-9][0-9]*
 dec_integer     0|{nzdec_integer}
 oct_integer     0[0-7]+
-fraction        \.(0|([0-9]*[1-9]))
+nz_fraction     \.([0-9]*[1-9])
+fraction        (\.0)|{nz_fraction}
 float           {dec_integer}{fraction}
-scientific      (({nzdec_integer}{fraction}?)|0{fraction})[eE][+-]?{dec_integer}
+scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integer}
 
 %x STRING COMMENT
 
