@@ -18,7 +18,6 @@ static char *current_line_ptr = current_line;
 static char *string_buf_ptr = string_buf;
 
 static void appendToCurrentLine(const char *yytext_ptr);
-static void nextLine();
 
 %}
 
@@ -70,8 +69,6 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
     LIST_LITERAL("string", string_buf);
     BEGIN(INITIAL);
 }
-<STRING>\n  |
-<STRING><<EOF>> badChar();
 
 "//"[^\n]*              {
     if (yyleng >= 5 && yytext[2] == '&') {
@@ -98,7 +95,14 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
 <COMMENT>"*"+"/"        LIST_SOURCE, BEGIN(INITIAL);
 
 [ \t] LIST_SOURCE;
-<*>\n nextLine();
+<*>\n {
+    if (opt_src) {
+        printf("%d: %s\n", line_num, current_line);
+    }
+    ++line_num;
+    current_line[0] = '\0';
+    current_line_ptr = current_line;
+}
 
     /* Catch the character which is not accepted by rules above */
 <*>. {
@@ -115,15 +119,6 @@ static void appendToCurrentLine(const char *yytext_ptr) {
         ++yytext_ptr;
     }
     *current_line_ptr = '\0';
-}
-
-static void nextLine() {
-    if (opt_src) {
-        printf("%d: %s\n", line_num, current_line);
-    }
-    ++line_num;
-    current_line[0] = '\0';
-    current_line_ptr = current_line;
 }
 
 int main(int argc, const char **argv) {
