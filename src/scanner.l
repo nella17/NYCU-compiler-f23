@@ -72,15 +72,28 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
 }
 <STRING><<EOF>> BEGIN(INITIAL);
 
-"//&S+"[^\n]*           { opt_src = 1; REJECT; }
-"//&S-"[^\n]*           { opt_src = 0; REJECT; }
-"//&T+"[^\n]*           { opt_tok = 1; REJECT; }
-"//&T-"[^\n]*           { opt_tok = 0; REJECT; }
-"//"[^\n]*              LIST_SOURCE;
+"//"[^\n]*              {
+    if (yyleng >= 5 && yytext[2] == '&') {
+        switch (yytext[3]) {
+            case 'S':
+                switch (yytext[4]) {
+                    case '+': opt_src = 1; break;
+                    case '-': opt_src = 0; break;
+                }
+                break;
+            case 'T':
+                switch (yytext[4]) {
+                    case '+': opt_tok = 1; break;
+                    case '-': opt_tok = 0; break;
+                }
+                break;
+        }
+    }
+    LIST_SOURCE;
+}
 "/*" 		            LIST_SOURCE, BEGIN(COMMENT);
 <COMMENT>[^*\n]*        LIST_SOURCE;
 <COMMENT>"*"+[^*/\n]*   LIST_SOURCE;
-<COMMENT>\n             nextLine();
 <COMMENT>"*"+"/"        LIST_SOURCE, BEGIN(INITIAL);
 
 [ \t] LIST_SOURCE;
