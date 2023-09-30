@@ -56,7 +56,7 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
     string_buf_ptr = string_buf;
     BEGIN(STRING);
 }
-<STRING>[^"]*   {
+<STRING>[^"\n]*   {
     LIST_SOURCE;
     memcpy(string_buf_ptr, yytext, yyleng);
     string_buf_ptr += yyleng;
@@ -70,7 +70,8 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
     LIST_LITERAL("string", string_buf);
     BEGIN(INITIAL);
 }
-<STRING><<EOF>> BEGIN(INITIAL);
+<STRING>\n  |
+<STRING><<EOF>> badChar();
 
 "//"[^\n]*              {
     if (yyleng >= 5 && yytext[2] == '&') {
@@ -100,7 +101,7 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
 <*>\n nextLine();
 
     /* Catch the character which is not accepted by rules above */
-. {
+<*>. {
     printf("Error at line %d: bad character \"%s\"\n", line_num, yytext);
     exit(-1);
 }
