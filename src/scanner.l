@@ -39,10 +39,8 @@ scientific      (({nzdec_integer}{fraction}?)|0{nz_fraction})[eE][+-]?{dec_integ
 {delimiter}     LIST_TOKEN(yytext);
 {operator}      LIST_TOKEN(yytext);
 {keyword}       {
-    char* s = malloc(yyleng+2);
-    sprintf(s, "KW%s", yytext);
-    LIST_TOKEN(s);
-    free(s);
+    sprintf(string_buf, "KW%s", yytext);
+    LIST_TOKEN(string_buf);
 }
 {identifier}    LIST_LITERAL("id", yytext);
 {dec_integer}   LIST_LITERAL("integer", yytext);
