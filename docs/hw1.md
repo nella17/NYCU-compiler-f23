@@ -105,7 +105,9 @@ An identifier is a sequence of letters and digits beginning with a letter. Ident
 
 #### Integer Constants
 
-A sequence of one or more digits. An integer that begins with the digit 0 **and** consists of a sequence of octal digits is treated as an **octal** integer; otherwise, the sequence of digit(s) is treated as a **decimal** integer.
+A sequence of one or more digits. An integer that begins with the digit 0 **and** is followed by a sequence of one or more octal digits (0 ~ 7) is treated as an **octal** integer; otherwise, the sequence of digit(s) is treated as a **decimal** integer.
+
+For example, `0` is a decimal integer because it is followed by zero octal digits. On the other hand, `019` is considered as two separate integers: an octal integer `01` and a decimal integer `9`.
 
 #### Floating-Point Constants
 
