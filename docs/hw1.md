@@ -115,7 +115,7 @@ A floating-point constant is formed by an integral part, a dot (`.`), and a frac
 
 The integral part is a decimal integer (see [Integer Constants](#integer-constants)) while the fractional part is a sequence of one or more digits without any redundant `0`. Here are some examples:
 
-- `009.1` is a valid input according to the lexical definition. It is recognized as two separate tokens:
+- `009.1` is a valid input according to the lexical definition, but it is recognized as two separate tokens:
 	- An octal integer: `00`
 	- A floating-point: `9.1`
 - `0.0` is a valid floating-point since there are no redundant `0`s in both side of the dot (`.`) symbol.
