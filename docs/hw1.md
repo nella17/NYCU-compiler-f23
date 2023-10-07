@@ -122,9 +122,9 @@ The integral part is a decimal integer (see [Integer Constants](#integer-constan
 
 #### Scientific Notations
 
-Scientific notation is a way of writing numbers that accommodate very large or small values to be conveniently written in the decimal form. Numbers are written as **`aEb`** or **`aeb`** (**`a`** times ten to the power of **`b`**), where the coefficient **`a`** is a nonzero real number (a nonzero integer or a nonzero floating-point decimal number), and the exponent **`b`** is a **decimal integer** (see [Integer Constants](#integer-constants)) prefixed with an optional sign.
+Scientific notation is a way of writing numbers that accommodate very large or small values to be conveniently written in the decimal form. Numbers are written as **`aEb`** or **`aeb`** (**`a`** times ten to the power of **`b`**), where the coefficient **`a`** is a nonzero decimal number (either a nonzero decimal integer or a nonzero floating-point number), and the exponent **`b`** is a **decimal integer** (see [Integer Constants](#integer-constants)) prefixed with an optional sign.
 
-For example: `1.23E4`, `1.23E+4`, `1.23E-4`, `123E4`, etc.
+For instance, `1.23E4`, `1.23E+4`, `12.3E-4`, and `123E4` are valid scientific notations, whereas `0.0e1` and `0123e1` are not valid, as they violate the requirement of having a as zero and being in octal notation, respectively. It's important to note that `0.0e1` and `0123e1` are still valid inputs, as `e1` being recognized as an identifier.
 
 #### String Constants
 
@@ -290,7 +290,7 @@ Your scanner should output:
 If the input pattern cannot match any rules, print out the line number and the first character of that input pattern and then abort the program. The output format is as follows.
 
 > `Error at line <line number>: bad character "<character>"`
-For example, 
+For example,
 > `Error at line 3: bad character "$"`
 
 ## Project Structure
