@@ -88,10 +88,10 @@ class Grader:
             print("Call of '%s' failed: %s" % (" ".join(clist), e))
             return False
 
-        stdout = str(proc.stdout.read(), "utf-8")
-        stderr = str(proc.stderr.read(), "utf-8")
+        stdout = proc.stdout.read()
+        stderr = proc.stderr.read()
         retcode = proc.wait()
-        with open(output_file, "w") as out:
+        with open(output_file, "wb") as out:
             out.write(stdout)
             out.write(stderr)
 
