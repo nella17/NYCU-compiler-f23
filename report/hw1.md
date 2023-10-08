@@ -25,4 +25,7 @@ Understand the lexical definitions of `P` language.
 
 ## Feedback to T.A.s
 
-> Please help us improve our assignment, thanks.
+Good, but some definitions are hard to understand.  
+
+I believe we should employ SSH for repository cloning instead of relying on personal access tokens.
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh
