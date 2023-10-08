@@ -82,9 +82,8 @@ class Grader:
             output_file = "%s/%s" % (self.output_dir, self.advance_cases[case_id])
 
         clist = [self.scanner, test_case]
-        cmd = " ".join(clist)
         try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            proc = subprocess.Popen(clist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except Exception as e:
             print("Call of '%s' failed: %s" % (" ".join(clist), e))
             return False
@@ -108,12 +107,10 @@ class Grader:
 
 
         clist = ["diff", "-u", output_file, solution, f'--label="your output:({output_file})"', f'--label="answer:({solution})"']
-        cmd = " ".join(clist)
         try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT, shell=True)
+            proc = subprocess.Popen(clist, stdout=subprocess.PIPE)
         except Exception as e:
-            print("Call of '%s' failed: %s" % (cmd, e))
+            print("Call of '%s' failed: %s" % (" ".join(clist), e))
             return False
 
 
