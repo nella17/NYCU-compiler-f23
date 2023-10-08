@@ -2,7 +2,11 @@ SCANNER = scanner
 CC      = gcc
 CFLAGS  = -Wall -Wextra -pedantic -g3
 LEX     = flex
+ifeq ($(shell uname),Darwin)
+LIBS    = -ll
+else
 LIBS    = -lfl
+endif
 
 all: $(SCANNER)
 
