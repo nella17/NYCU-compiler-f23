@@ -89,7 +89,7 @@ class Grader:
 
         stdout = proc.stdout.read()
         stderr = proc.stderr.read()
-        retcode = proc.wait()
+        _ = proc.wait()
         with open(output_file, "wb") as out:
             out.write(stdout)
             out.write(stderr)
