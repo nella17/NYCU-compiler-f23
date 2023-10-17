@@ -307,6 +307,16 @@ The report should at least describe the abilities of your scanner.
 
 If you want to preview your report in GitHub style markdown before pushing to GitHub, [grip](https://github.com/joeyespo/grip) might be the tool you want.
 
+## Assessment Rubrics (Grading)
+
+Total of 105 points
+
++ Passing all test cases (100 pts)
++ Report (5 pts) \
+0: empty \
+3: normal \
+5: good \
+
 ## Build and Execute
 
 + Get HW1 docker image: `make docker-pull`
