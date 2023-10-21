@@ -48,6 +48,183 @@ As you can see, each assignment is based on the previous one. Make sure the prog
 
 ---
 
+A `P` program may resemble the following example, which demonstrates a simple implementation of Fibonacci number calculation:
+
+```pascal
+//&S-
+/*
+ * Prints the 10th number of the Fibonacci sequence.
+ */
+
+//&S+
+FibonacciNumber;
+
+var n: 10;
+
+// Returns the nth Fibonacci number.
+fib(n: integer): integer
+begin
+  var i, a, b, result: integer;
+
+  // Base cases.
+  if n < 2 then
+  begin
+    return n;
+  end
+  end if
+
+  i := 2;  // Starts from calculating the 2nd Fibonacci number.
+  a := 0;  // 0th
+  b := 1;  // 1st
+  while i <= n do
+  begin
+    result := a + b;
+    a := b;
+    b := result;
+  end
+  end do
+  return result;
+end
+end
+
+begin
+  print fib(n);
+end
+end
+```
+
+The seemingly unusual comments in the code are known as [psdueocomment](#pseudocomments), which serve as options that can influence the compiler's behavior.
+
+Once your scanner is complete, it will be able to produce the following output:
+
+```
+6: //&S+
+<id: FibonacciNumber>
+<;>
+7: FibonacciNumber;
+8:
+<KWvar>
+<id: n>
+<:>
+<integer: 10>
+<;>
+9: var n: 10;
+10:
+11: // Returns the nth Fibonacci number.
+<id: fib>
+<(>
+<id: n>
+<:>
+<KWinteger>
+<)>
+<:>
+<KWinteger>
+12: fib(n: integer): integer
+<KWbegin>
+13: begin
+<KWvar>
+<id: i>
+<,>
+<id: a>
+<,>
+<id: b>
+<,>
+<id: result>
+<:>
+<KWinteger>
+<;>
+14:   var i, a, b, result: integer;
+15:
+16:   // Base cases.
+<KWif>
+<id: n>
+<<>
+<integer: 2>
+<KWthen>
+17:   if n < 2 then
+<KWbegin>
+18:   begin
+<KWreturn>
+<id: n>
+<;>
+19:     return n;
+<KWend>
+20:   end
+<KWend>
+<KWif>
+21:   end if
+22:
+<id: i>
+<:=>
+<integer: 2>
+<;>
+23:   i := 2;  // Starts from calculating the 2nd Fibonacci number.
+<id: a>
+<:=>
+<integer: 0>
+<;>
+24:   a := 0;  // 0th
+<id: b>
+<:=>
+<integer: 1>
+<;>
+25:   b := 1;  // 1st
+<KWwhile>
+<id: i>
+<<=>
+<id: n>
+<KWdo>
+26:   while i <= n do
+<KWbegin>
+27:   begin
+<id: result>
+<:=>
+<id: a>
+<+>
+<id: b>
+<;>
+28:     result := a + b;
+<id: a>
+<:=>
+<id: b>
+<;>
+29:     a := b;
+<id: b>
+<:=>
+<id: result>
+<;>
+30:     b := result;
+<KWend>
+31:   end
+<KWend>
+<KWdo>
+32:   end do
+<KWreturn>
+<id: result>
+<;>
+33:   return result;
+<KWend>
+34: end
+<KWend>
+35: end
+36:
+<KWbegin>
+37: begin
+<KWprint>
+<id: fib>
+<(>
+<id: n>
+<)>
+<;>
+38:   print fib(n);
+<KWend>
+39: end
+<KWend>
+40: end
+```
+
+Now, let's explore how the scanner should be implemented. :monocle_face:
+
 ## Character Set
 
 **`P`** programs are formed from ASCII characters. Control characters are not used in the definitions of the `P` language except **`\n`** (line feed) and **`\t`** (horizontal tab).
