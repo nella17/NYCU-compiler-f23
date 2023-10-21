@@ -4,6 +4,8 @@ import os
 import subprocess
 from argparse import ArgumentParser
 
+import colorama
+
 
 class Grader:
 
@@ -136,7 +138,9 @@ class Grader:
             ok = self.test_sample_case("basic", b_id)
             max_val = self.basic_case_scores[b_id]
             get_val = max_val if ok else 0
+            self.set_text_color(ok)
             print("---\t%s\t%d/%d" % (c_name, get_val, max_val))
+            self.reset_text_color()
             total_score += get_val
             max_score += max_val
 
@@ -146,11 +150,15 @@ class Grader:
             ok = self.test_sample_case("advance", a_id)
             max_val = self.advance_case_scores[a_id]
             get_val = max_val if ok else 0
+            self.set_text_color(ok)
             print("---\t%s\t%d/%d" % (c_name, get_val, max_val))
+            self.reset_text_color()
             total_score += get_val
             max_score += max_val
 
+        self.set_text_color(total_score == max_score)
         print("---\tTOTAL\t\t%d/%d" % (total_score, max_score))
+        self.reset_text_color()
 
         with open("{}/{}".format(self.output_dir, "score.txt"), "w") as result:
             result.write("---\tTOTAL\t\t%d/%d" % (total_score, max_score))
@@ -158,6 +166,20 @@ class Grader:
         diff = open("{}/{}".format(self.output_dir, "diff.txt"), 'w')
         diff.write(self.diff_result)
         diff.close()
+
+
+    @staticmethod
+    def set_text_color(test_passed: bool) -> None:
+        """Sets the color based on whether the test has passed or not."""
+        if test_passed:
+            color = colorama.Fore.GREEN
+        else:
+            color = colorama.Fore.RED
+        print(color, end='')
+    @staticmethod
+    def reset_text_color() -> None:
+        print(colorama.Style.RESET_ALL, end='')
+
 
 def main():
     parser = ArgumentParser()
