@@ -95,7 +95,9 @@ end
 
 The seemingly unusual comments in the code are known as [psdueocomment](#pseudocomments), which serve as options that can influence the compiler's behavior.
 
-Once your scanner is complete, it will be able to produce the following output:
+<details>
+  <summary>Click to expand! <br>
+  Note that the detailed output format will be explained in the [What Should Your Scanner Do](#what-should-your-scanner-do) section, so you can skip the example output here.</summary>
 
 ```
 6: //&S+
@@ -222,6 +224,8 @@ Once your scanner is complete, it will be able to produce the following output:
 <KWend>
 40: end
 ```
+
+</details>
 
 Now, let's explore how the scanner should be implemented. :monocle_face:
 
