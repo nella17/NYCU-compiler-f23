@@ -188,6 +188,12 @@ The first argument of both macros is a string. This string names the token that 
 |identifier|ab123|`LIST_LITERAL("id","ab123");`|
 |integer constant|123|`LIST_LITERAL("integer", "123");`|
 
+### Comments and Strings
+
+In Flex, there are two types of _Start Conditions_: `%s` and `%x`. `%s` denotes inclusive start conditions, while `%x` signifies exclusive start conditions. Using one of these start conditions can simplify your implementation. For more detailed information, please consult the documentation available in the _Private_ repository.
+
+Additionally, when recognizing strings, consider utilizing functions within the _Action_ (the `{}` block). You don't need to create a single, complex regular expression to handle everything – it may not even be feasible. Instead, use the available tools and functions to streamline your implementation.
+
 ## What Should Your Scanner Do
 
 Your scanner must print out source codes and tokens (or not) according to the **`S`**(source program listing), **`T`**(token listing) options.
