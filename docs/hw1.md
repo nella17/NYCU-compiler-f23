@@ -37,6 +37,7 @@ As you can see, each assignment is based on the previous one. Make sure the prog
       - [Pseudocomments](#pseudocomments)
   - [Implementation Hints](#implementation-hints)
     - [Token listing](#token-listing)
+    - [Comments and Strings](#comments-and-strings)
   - [What Should Your Scanner Do](#what-should-your-scanner-do)
     - [Error Handling](#error-handling)
   - [Project Structure](#project-structure)
