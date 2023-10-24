@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
 # This dockerfile is intended to be used by students
-from datetime import datetime
-from pathlib import Path
 import argparse
 import os
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 
 try:
     assert sys.version_info >= (3, 6)

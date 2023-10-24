@@ -1,8 +1,7 @@
 FROM ubuntu:18.04
 
-# TODO: add pip into dependency
+# TODO: Combine all RUN commands
 
-# Combine all three RUNs into 1 in deloyment
 RUN apt-get update
 RUN apt-get --no-install-recommends install -y \
     gosu \

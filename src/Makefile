@@ -1,18 +1,41 @@
-SCANNER = scanner
 CC      = gcc
-CFLAGS  = -Wall -Wextra -pedantic -g3
 LEX     = flex
+YACC    = bison
+CFLAGS  = -Wall -std=c11
+ifeq ($(shell uname),Darwin)
+LIBS    = -ll
+else
 LIBS    = -lfl
+endif
+LIBS    += -ly
 
-all: $(SCANNER)
+SCANNER = scanner
+PARSER  = parser
+EXEC    = $(PARSER)
+OBJS    = $(PARSER) \
+	      $(SCANNER)
 
-$(SCANNER): $(SCANNER).c
-	$(CC) $(CCFLAGS) $< -o $(SCANNER) $(LIBS)
+# Substitution reference
+DEPS := $(OBJS:=.d)
+OBJS := $(OBJS:=.o)
 
+all: $(EXEC)
+
+# Static pattern rule
 $(SCANNER).c: %.c: %.l
 	$(LEX) -o $@ $<
 
-.PHONY: clean
+$(PARSER).c: %.c: %.y
+	$(YACC) -d -o $@ -v $<
+
+%.o: %.c
+	$(CC) -o $@ $(CFLAGS) -c -MMD $<
+
+$(EXEC): $(OBJS)
+	$(CC) -o $@ $^ $(LIBS)
 
 clean:
-	$(RM) $(SCANNER) $(SCANNER:=.c)
+	$(RM) $(DEPS) $(SCANNER:=.c) $(PARSER:=.c) $(PARSER:=.h) \
+	$(PARSER:=.output) $(OBJS) $(EXEC)
+
+-include $(DEPS)

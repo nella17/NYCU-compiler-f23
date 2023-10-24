@@ -1,8 +1,8 @@
 all: project
 
-.PHONY: restore project test clean autograde
+.PHONY: restore project test clean
 
-IMAGE_NAME = compiler-s20-hw1
+IMAGE_NAME = compiler-s20-hw2
 DOCKERHUB_HOST_ACCOUNT=ianre657
 IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
@@ -13,12 +13,12 @@ project:
 project-clean:
 	${MAKE} clean -C src/
 
-test:
+test: project
 	make -C test/
 test-clean:
 	${MAKE} clean -C test/
 
-clean: project-clean test-clean
+clean:	project-clean test-clean
 
 docker-pull:
 	docker pull ${IMAGE_FULLNAME}
