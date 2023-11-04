@@ -13,7 +13,11 @@ static void yyerror(const char *msg);
 extern int yylex_destroy(void);
 %}
 
+%token COMMA SEMICOLON COLON LEFT_PARENTHESIS RIGHT_PARENTHESIS LEFT_SQUARE_BRACKETS RIGHT_SQUARE_BRACKETS
+%token OP_ADD OP_SUB OP_MUL OP_DIV OP_MOD OP_ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ OP_AND OP_OR OP_NOT
+%token KWvar KWarray KWof KWboolean KWinteger KWreal KWstring KWtrue KWfalse KWdef KWreturn KWbegin KWend KWwhile KWdo KWif KWthen KWelse KWfor KWto KWprint KWread
 %token ID
+%token INTEGER OCT_INTEGER FLOAT SCIENTIFIC STRING
 
 %%
 
