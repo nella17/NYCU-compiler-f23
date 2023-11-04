@@ -46,24 +46,24 @@ argument: identifier_list COLON type
 vars_consts: /* empty */ | var_const vars_consts
 var_const: variable | constant
 
-variable: KWvar identifier_list COLON scalar_type SEMICOLON;
-variable: KWvar identifier_list COLON KWarray INTEGER KWof type SEMICOLON;
+variable: KWvar identifier_list COLON type SEMICOLON;
 
 variable_reference: identifier array_brackets
-array_brackets: /* empty */ | LEFT_SQUARE_BRACKETS INTEGER RIGHT_SQUARE_BRACKETS array_brackets
+array_brackets: /* empty */ | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS array_brackets
 
 constant: KWvar identifier_list COLON literal_constant SEMICOLON;
 literal_constant: integer_constant | FLOAT | SCIENTIFIC | STRING | KWtrue | KWfalse;
 integer_constant: INTEGER | OCT_INTEGER;
 
-statements: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
+statements: /* empty */ | statement statements
+statement: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
 
 compound_statement: KWbegin vars_consts statements KWend;
 
 simple_statement: assignment | print_statement | read_statement;
 assignment: variable_reference OP_ASSIGN expr SEMICOLON;
 print_statement: KWprint expr SEMICOLON;
-read_statement: KWread variable_reference;
+read_statement: KWread variable_reference SEMICOLON;
 
 conditional_statement: KWif expr KWthen compound_statement KWelse compound_statement KWend KWif;
 conditional_statement: KWif expr KWthen compound_statement KWend KWif;
@@ -79,9 +79,10 @@ function_call_body: identifier LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
 
 expressions: /* empty */ | expressions1;
 expressions1: expr | expr COMMA expressions1;
-expr: literal_constant | variable_reference | function_call_body | arith_expr;
+expr: literal_constant | variable_reference | function_call_body | arith_expr
+    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
 
-arith_expr: OP_NEQ expr %prec OP_MUL;
+arith_expr: OP_SUB expr %prec OP_MUL;
 arith_expr: expr OP_MUL expr;
 arith_expr: expr OP_DIV expr;
 arith_expr: expr OP_MOD expr;
@@ -100,7 +101,8 @@ arith_expr: OP_NOT expr;
 identifier: ID;
 identifier_list: identifier | identifier COMMA identifier_list;
 
-type: KWarray | scalar_type;
+type: array_type | scalar_type;
+array_type: KWarray integer_constant KWof type;
 scalar_type: KWboolean | KWinteger | KWreal | KWstring;
 
 %%
