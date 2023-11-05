@@ -25,3 +25,6 @@ Debug the grammars and find how to implement array type and array reference when
 
 The spec lacked explicit clarification regarding data types, specifically concerning array types.  
 Additionally, there was no indication in the spec that array reference could be expression.
+
+Missing `libbison-dev` package in Dockerfile.  
+Missing function only test case.
