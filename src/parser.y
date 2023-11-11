@@ -16,8 +16,7 @@ extern int yylex_destroy(void);
 %token COMMA SEMICOLON COLON LEFT_PARENTHESIS RIGHT_PARENTHESIS LEFT_SQUARE_BRACKETS RIGHT_SQUARE_BRACKETS
 %token OP_ADD OP_SUB OP_MUL OP_DIV OP_MOD OP_ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ OP_AND OP_OR OP_NOT
 %token KWvar KWarray KWof KWboolean KWinteger KWreal KWstring KWtrue KWfalse KWdef KWreturn KWbegin KWend KWwhile KWdo KWif KWthen KWelse KWfor KWto KWprint KWread
-%token ID
-%token INTEGER OCT_INTEGER FLOAT SCIENTIFIC STRING
+%token ID INTEGER OCT_INTEGER FLOAT SCIENTIFIC STRING
 
 %left OP_AND OP_OR OP_NOT
 %left OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ
@@ -25,6 +24,7 @@ extern int yylex_destroy(void);
 %left OP_ADD
 %left OP_DIV OP_MOD
 %left OP_MUL
+%nonassoc UMINUS
 
 %%
 
@@ -48,8 +48,8 @@ var_const: variable | constant
 
 variable: KWvar identifier_list COLON type SEMICOLON;
 
-variable_reference: identifier array_brackets
-array_brackets: /* empty */ | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS array_brackets
+variable_reference: identifier expr_brackets
+expr_brackets: /* empty */ | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
 
 constant: KWvar identifier_list COLON literal_constant SEMICOLON;
 literal_constant: integer_constant | FLOAT | SCIENTIFIC | STRING | KWtrue | KWfalse;
@@ -82,7 +82,7 @@ expressions1: expr | expr COMMA expressions1;
 expr: literal_constant | variable_reference | function_call_body | arith_expr
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
 
-arith_expr: OP_SUB expr %prec OP_MUL;
+arith_expr: OP_SUB expr %prec UMINUS;
 arith_expr: expr OP_MUL expr;
 arith_expr: expr OP_DIV expr;
 arith_expr: expr OP_MOD expr;
