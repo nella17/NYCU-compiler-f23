@@ -1,0 +1,16 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Auto grade
+        run: python3 docker/activate_docker.py -i 
+ianre657/compiler-s20-hw2 -u student --homedir /home/student make test
