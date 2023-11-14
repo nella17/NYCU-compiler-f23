@@ -1,9 +1,9 @@
 all: project
 
-.PHONY: restore project test clean
+.PHONY: restore project test clean autograde
 
-IMAGE_NAME = compiler-s20-hw2
-DOCKERHUB_HOST_ACCOUNT=ianre657
+IMAGE_NAME = compiler-f23-hw3
+DOCKERHUB_HOST_ACCOUNT = laiyt
 IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
 

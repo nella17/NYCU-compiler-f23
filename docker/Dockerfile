@@ -1,21 +1,17 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
-# TODO: Combine all RUN commands
 
-RUN apt-get update
-RUN apt-get --no-install-recommends install -y \
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
     gosu \
-    python3 python3-pip python3-setuptools python3-wheel\
+    python3 python3-pip python3-setuptools python3-wheel \
     gcc \
     build-essential make \
     flex libfl-dev \
-    bison \
-    && rm -rf /var/lib/apt/lists/*
-# RUN rm -rf /var/lib/apt/lists/*
-
-
-# will be installed at /usr/local/lib/python3.6/dist-packages
-RUN pip3 install colorama
+    bison libbison-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    # will be installed at /usr/local/lib/python3.10/dist-packages
+    && pip3 install colorama
 
 # optional packages
 ARG CONTAINER_USERNAME=dummy

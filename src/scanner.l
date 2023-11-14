@@ -6,15 +6,26 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "parser.h"
+
+#define YY_USER_ACTION \
+    yylloc.first_line = line_num; \
+    yylloc.first_column = col_num; \
+    col_num += yyleng;
 
 #define LIST_SOURCE                 appendToCurrentLine(yytext)
 #define LIST_TOKEN(name)            do { LIST_SOURCE; if(opt_tok) printf("<%s>\n", name); } while(0)
 #define LIST_LITERAL(name, literal) do { LIST_SOURCE; if(opt_tok) printf("<%s: %s>\n", name, literal); } while(0)
 #define MAX_LINE_LENG               512
+#define MAX_ID_LENG                 32
+
+// prevent undefined reference error in newer version of flex
+extern "C" int yylex(void);
 
 uint32_t line_num = 1;
+uint32_t col_num = 1;
 char current_line[MAX_LINE_LENG];
 
 static uint32_t opt_src = 1;
@@ -164,6 +175,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
         printf("%d: %s\n", line_num, current_line);
     }
     ++line_num;
+    col_num = 1;
     current_line[0] = '\0';
     current_line_ptr = current_line;
 }

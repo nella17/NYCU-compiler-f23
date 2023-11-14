@@ -1,17 +1,63 @@
 %{
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "AST/BinaryOperator.hpp"
+#include "AST/CompoundStatement.hpp"
+#include "AST/ConstantValue.hpp"
+#include "AST/FunctionInvocation.hpp"
+#include "AST/UnaryOperator.hpp"
+#include "AST/VariableReference.hpp"
+#include "AST/assignment.hpp"
+#include "AST/ast.hpp"
+#include "AST/decl.hpp"
+#include "AST/expression.hpp"
+#include "AST/for.hpp"
+#include "AST/function.hpp"
+#include "AST/if.hpp"
+#include "AST/print.hpp"
+#include "AST/program.hpp"
+#include "AST/read.hpp"
+#include "AST/return.hpp"
+#include "AST/variable.hpp"
+#include "AST/while.hpp"
+
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#define YYLTYPE yyltype
+
+typedef struct YYLTYPE {
+    uint32_t first_line;
+    uint32_t first_column;
+    uint32_t last_line;
+    uint32_t last_column;
+} yyltype;
 
 extern int32_t line_num;    /* declared in scanner.l */
 extern char current_line[]; /* declared in scanner.l */
 extern FILE *yyin;          /* declared by lex */
 extern char *yytext;        /* declared by lex */
 
-extern int yylex(void);
+static AstNode *root;
+
+extern "C" int yylex(void);
 static void yyerror(const char *msg);
 extern int yylex_destroy(void);
 %}
+
+%code requires {
+    class AstNode;
+}
+
+    /* For yylval */
+%union {
+    /* basic semantic value */
+    char *identifier;
+
+    AstNode *node;
+};
+
+%type <identifier> ProgramName ID
 
 %token COMMA SEMICOLON COLON LEFT_PARENTHESIS RIGHT_PARENTHESIS LEFT_SQUARE_BRACKETS RIGHT_SQUARE_BRACKETS
 %token OP_ADD OP_SUB OP_MUL OP_DIV OP_MOD OP_ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ OP_AND OP_OR OP_NOT
@@ -27,6 +73,8 @@ extern int yylex_destroy(void);
 %nonassoc UMINUS
 
 %%
+
+ProgramName: ID { root = new ProgramNode(@1.first_line, @1.first_column, $1); }
 
 program_unit: program | function;
 
@@ -122,8 +170,8 @@ void yyerror(const char *msg) {
 }
 
 int main(int argc, const char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <filename> [--dump-ast]\n", argv[0]);
         exit(-1);
     }
 
@@ -135,12 +183,17 @@ int main(int argc, const char *argv[]) {
 
     yyparse();
 
-    fclose(yyin);
-    yylex_destroy();
+    if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
+        root->print();
+    }
 
     printf("\n"
            "|--------------------------------|\n"
            "|  There is no syntactic error!  |\n"
            "|--------------------------------|\n");
+
+    delete root;
+    fclose(yyin);
+    yylex_destroy();
     return 0;
 }
