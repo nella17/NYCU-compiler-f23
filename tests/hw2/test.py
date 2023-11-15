@@ -141,7 +141,7 @@ class Grader:
 
         return retcode == 0
 
-    def run(self):
+    def run(self) -> int:
         print("---\tCase\t\tPoints")
 
         total_score = 0
@@ -184,6 +184,10 @@ class Grader:
         diff.write(self.diff_result)
         diff.close()
 
+        if total_score != max_score:
+            return 1
+        return 0
+
     @staticmethod
     def set_text_color(test_passed: bool) -> None:
         """Sets the color based on whether the test has passed or not."""
@@ -198,7 +202,7 @@ class Grader:
         print(colorama.Style.RESET_ALL, end='')
 
 
-def main():
+def main() -> int:
     parser = ArgumentParser()
     parser.add_argument("--parser", help="parser to test", default="../src/parser"
 )
@@ -209,7 +213,7 @@ def main():
 
     g = Grader(parser = args.parser)
     g.get_case_id_list(args.basic_case_id, args.advance_case_id)
-    g.run()
+    return g.run()
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
