@@ -131,6 +131,11 @@ or
     var identifier_list: array integer_constant of type;
 
 where `integer_constant` should be a non-negative integer constant that represents the size of the array.
+Note that the type may be expanded recursively, representing a multidimensional array. Consider the following declaration of a 2-dimensional array:
+
+    var L2darray: array 4 of array 2 of integer;
+
+`array 4 of array 2 of integer` has the type of `array 2 of integer`, yet `array 2 of integer` recursively has the type of `integer`.
 
 #### Constant
 
