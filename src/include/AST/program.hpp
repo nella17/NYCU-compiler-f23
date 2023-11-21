@@ -1,5 +1,4 @@
-#ifndef AST_PROGRAM_NODE_H
-#define AST_PROGRAM_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "AST/CompoundStatement.hpp"
@@ -26,5 +25,3 @@ class ProgramNode final : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 };
-
-#endif

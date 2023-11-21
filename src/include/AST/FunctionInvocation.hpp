@@ -1,5 +1,4 @@
-#ifndef __AST_FUNCTION_INVOCATION_NODE_H
-#define __AST_FUNCTION_INVOCATION_NODE_H
+#pragma once
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -19,5 +18,3 @@ class FunctionInvocationNode : public ExpressionNode {
   private:
     // TODO: function name, expressions
 };
-
-#endif

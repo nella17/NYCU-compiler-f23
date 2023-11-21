@@ -1,5 +1,4 @@
-#ifndef __AST_FUNCTION_NODE_H
-#define __AST_FUNCTION_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -18,5 +17,3 @@ class FunctionNode : public AstNode {
   private:
     // TODO: name, declarations, return type, compound statement
 };
-
-#endif

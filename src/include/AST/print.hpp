@@ -1,5 +1,4 @@
-#ifndef __AST_PRINT_NODE_H
-#define __AST_PRINT_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class PrintNode : public AstNode {
   private:
     // TODO: expression
 };
-
-#endif

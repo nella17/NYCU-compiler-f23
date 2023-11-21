@@ -1,5 +1,4 @@
-#ifndef VISITOR_AST_NODE_VISITOR_H
-#define VISITOR_AST_NODE_VISITOR_H
+#pragma once
 
 // Forward declaration of AST nodes
 class ProgramNode;
@@ -42,5 +41,3 @@ class AstNodeVisitor {
     virtual void visit(ForNode &p_for) {}
     virtual void visit(ReturnNode &p_return) {}
 };
-
-#endif

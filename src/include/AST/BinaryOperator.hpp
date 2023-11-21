@@ -1,5 +1,4 @@
-#ifndef __AST_BINARY_OPERATOR_NODE_H
-#define __AST_BINARY_OPERATOR_NODE_H
+#pragma once
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class BinaryOperatorNode : public ExpressionNode {
   private:
     // TODO: operator, expressions
 };
-
-#endif

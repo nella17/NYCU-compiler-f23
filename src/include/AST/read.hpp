@@ -1,5 +1,4 @@
-#ifndef __AST_READ_NODE_H
-#define __AST_READ_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class ReadNode : public AstNode {
   private:
     // TODO: variable reference
 };
-
-#endif

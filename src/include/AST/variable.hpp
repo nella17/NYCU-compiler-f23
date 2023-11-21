@@ -1,5 +1,4 @@
-#ifndef __AST_VARIABLE_NODE_H
-#define __AST_VARIABLE_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class VariableNode : public AstNode {
   private:
     // TODO: variable name, type, constant value
 };
-
-#endif

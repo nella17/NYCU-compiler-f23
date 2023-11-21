@@ -1,5 +1,4 @@
-#ifndef __AST_CONSTANT_VALUE_NODE_H
-#define __AST_CONSTANT_VALUE_NODE_H
+#pragma once
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class ConstantValueNode : public ExpressionNode {
   private:
     // TODO: constant value
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef AST_AST_NODE_H
-#define AST_AST_NODE_H
+#pragma once
 
 #include <cstdint>
 
@@ -26,5 +25,3 @@ class AstNode {
     virtual void accept(AstNodeVisitor &p_visitor) = 0;
     virtual void visitChildNodes(AstNodeVisitor &p_visitor){};
 };
-
-#endif

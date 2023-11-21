@@ -1,5 +1,4 @@
-#ifndef __AST_IF_NODE_H
-#define __AST_IF_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class IfNode : public AstNode {
   private:
     // TODO: expression, compound statement, compound statement
 };
-
-#endif

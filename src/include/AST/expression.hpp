@@ -1,5 +1,4 @@
-#ifndef __AST_EXPRESSION_NODE_H
-#define __AST_EXPRESSION_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 
@@ -12,5 +11,3 @@ class ExpressionNode : public AstNode {
     // for carrying type of result of an expression
     // TODO: for next assignment
 };
-
-#endif

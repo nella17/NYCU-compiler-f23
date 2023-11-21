@@ -1,5 +1,4 @@
-#ifndef AST_AST_DUMPER_H
-#define AST_AST_DUMPER_H
+#pragma once
 
 #include "visitor/AstNodeVisitor.hpp"
 
@@ -36,5 +35,3 @@ class AstDumper final : public AstNodeVisitor {
     void incrementIndentation();
     void decrementIndentation();
 };
-
-#endif

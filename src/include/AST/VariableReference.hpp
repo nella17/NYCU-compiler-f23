@@ -1,5 +1,4 @@
-#ifndef __AST_VARIABLE_REFERENCE_NODE_H
-#define __AST_VARIABLE_REFERENCE_NODE_H
+#pragma once
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -21,5 +20,3 @@ class VariableReferenceNode : public ExpressionNode {
   private:
     // TODO: variable name, expressions
 };
-
-#endif

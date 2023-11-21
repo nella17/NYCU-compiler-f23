@@ -1,5 +1,4 @@
-#ifndef __AST_DECL_NODE_H
-#define __AST_DECL_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -23,5 +22,3 @@ class DeclNode : public AstNode {
   private:
     // TODO: variables
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __AST_FOR_NODE_H
-#define __AST_FOR_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -18,5 +17,3 @@ class ForNode : public AstNode {
   private:
     // TODO: declaration, assignment, expression, compound statement
 };
-
-#endif

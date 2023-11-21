@@ -1,5 +1,4 @@
-#ifndef __AST_WHILE_NODE_H
-#define __AST_WHILE_NODE_H
+#pragma once
 
 #include "AST/ast.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,5 +16,3 @@ class WhileNode : public AstNode {
   private:
     // TODO: expression, compound statement
 };
-
-#endif
