@@ -23,9 +23,12 @@ OBJS = $(PARSER:=.cpp) \
        $(SCANNER:=.cpp) \
        $(SRC)
 
+OBJDIR := ./obj
+$(shell [ -d $(OBJDIR) ] || mkdir -p $(OBJDIR))
+
 # Substitution reference
-DEPS := $(OBJS:%.cpp=%.d)
-OBJS := $(OBJS:%.cpp=%.o)
+OBJS := $(addprefix $(OBJDIR)/, $(patsubst %.cpp, %.o, $(OBJS)))
+DEPS := $(OBJS:%.o=%.d)
 
 all: $(EXEC)
 
@@ -36,8 +39,9 @@ $(SCANNER).cpp: %.cpp: %.l
 $(PARSER).cpp: %.cpp: %.y
 	$(YACC) -o $@ --defines=parser.h -v $<
 
-%.o: %.cpp
-	$(CC) -o $@ $(CFLAGS) $(INCLUDE) -c -MMD $<
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CC) -o $@ $(CFLAGS) $(INCLUDE) -c -MP -MMD $<
 
 $(EXEC): $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(INCLUDE)
