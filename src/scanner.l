@@ -58,21 +58,21 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
 "]" { LIST_TOKEN("]"); return RIGHT_SQUARE_BRACKETS; }
 
     /* Operator */
-"+"   { LIST_TOKEN("+");    return OP_ADD; }
-"-"   { LIST_TOKEN("-");    return OP_SUB; }
-"*"   { LIST_TOKEN("*");    return OP_MUL; }
-"/"   { LIST_TOKEN("/");    return OP_DIV; }
-"mod" { LIST_TOKEN("mod");  return OP_MOD; }
-":="  { LIST_TOKEN(":=");   return OP_ASSIGN; }
+"+"   { LIST_TOKEN("+");    return ADD; }
+"-"   { LIST_TOKEN("-");    return MINUS; }
+"*"   { LIST_TOKEN("*");    return MUL; }
+"/"   { LIST_TOKEN("/");    return DIV; }
+"mod" { LIST_TOKEN("mod");  return MOD; }
+":="  { LIST_TOKEN(":=");   return ASSIGN; }
 "<"   { LIST_TOKEN("<");    return OP_LT; }
 "<="  { LIST_TOKEN("<=");   return OP_LTEQ; }
 "<>"  { LIST_TOKEN("<>");   return OP_NEQ; }
 ">="  { LIST_TOKEN(">=");   return OP_GTEQ; }
 ">"   { LIST_TOKEN(">");    return OP_GT;}
 "="   { LIST_TOKEN("=");    return OP_EQ; }
-"and" { LIST_TOKEN("and");  return OP_AND; }
-"or"  { LIST_TOKEN("or");   return OP_OR; }
-"not" { LIST_TOKEN("not");  return OP_NOT; }
+"and" { LIST_TOKEN("and");  return AND; }
+"or"  { LIST_TOKEN("or");   return OR; }
+"not" { LIST_TOKEN("not");  return NOT; }
 
     /* Reserved Word */
 "var"     { LIST_TOKEN("KWvar"); return KWvar; }
@@ -109,14 +109,14 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
 [a-zA-Z][a-zA-Z0-9]* { LIST_LITERAL("id", yytext); return ID; }
 
     /* Integer (decimal/octal) */
-{integer} { LIST_LITERAL("integer", yytext); return INTEGER; }
-0[0-7]+   { LIST_LITERAL("oct_integer", yytext); return OCT_INTEGER; }
+{integer} { LIST_LITERAL("integer", yytext); return INT_LITERAL; }
+0[0-7]+   { LIST_LITERAL("oct_integer", yytext); return INT_LITERAL; }
 
     /* Floating-Point */
-{float} { LIST_LITERAL("float", yytext); return FLOAT; }
+{float} { LIST_LITERAL("float", yytext); return REAL_LITERAL; }
 
     /* Scientific Notation [Ee][+-]?[0-9]+ */
-({nonzero_integer}|{nonzero_float})[Ee][+-]?({integer}) { LIST_LITERAL("scientific", yytext); return SCIENTIFIC; }
+({nonzero_integer}|{nonzero_float})[Ee][+-]?({integer}) { LIST_LITERAL("scientific", yytext); return REAL_LITERAL; }
 
     /* String */
 \"([^"\n]|\"\")*\" {
@@ -141,7 +141,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
     }
     *str_ptr = '\0';
     LIST_LITERAL("string", string_literal);
-    return STRING;
+    return STRING_LITERAL;
 }
 
     /* Whitespace */

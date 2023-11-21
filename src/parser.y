@@ -57,59 +57,77 @@ extern int yylex_destroy(void);
     AstNode *node;
 };
 
-%type <identifier> ProgramName ID
-
+    /* Delimiter */
 %token COMMA SEMICOLON COLON LEFT_PARENTHESIS RIGHT_PARENTHESIS LEFT_SQUARE_BRACKETS RIGHT_SQUARE_BRACKETS
-%token OP_ADD OP_SUB OP_MUL OP_DIV OP_MOD OP_ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ OP_AND OP_OR OP_NOT
-%token KWvar KWarray KWof KWboolean KWinteger KWreal KWstring KWtrue KWfalse KWdef KWreturn KWbegin KWend KWwhile KWdo KWif KWthen KWelse KWfor KWto KWprint KWread
-%token ID INTEGER OCT_INTEGER FLOAT SCIENTIFIC STRING
 
-%left OP_AND OP_OR OP_NOT
+    /* Operator */
+%token ADD MINUS MUL DIV MOD ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ AND OR NOT
+
+%left AND OR
+%right NOT
 %left OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ
-%left OP_SUB
-%left OP_ADD
-%left OP_DIV OP_MOD
-%left OP_MUL
-%nonassoc UMINUS
+%left MINUS
+%left ADD
+%left DIV MOD
+%left MUL
+%right UMINUS
+
+    /* Keyword */
+%token KWvar KWarray KWof KWboolean KWinteger KWreal KWstring KWtrue KWfalse KWdef KWreturn KWbegin KWend KWwhile KWdo KWif KWthen KWelse KWfor KWto KWprint KWread
+
+    /* Identifier */
+%token <identifier> ID
+
+    /* Literal */
+%token INT_LITERAL REAL_LITERAL STRING_LITERAL
 
 %%
 
-ProgramName: ID { root = new ProgramNode(@1.first_line, @1.first_column, $1); }
-
 program_unit: program | function;
 
-program: identifier SEMICOLON vars_consts functions compound_statement KWend;
+program:
+   ID SEMICOLON
+   declarations functions compound_statement
+   KWend {
+       root = new ProgramNode(@1.first_line, @1.first_column, $1);
+       free($1);
+    }
+;
 
-functions: /* empty */ | function functions
+functions: epsilon | function functions
 function: function_declaration | function_definition;
-function_head: identifier LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type;
-function_type: /* empty */ | COLON scalar_type;
+function_head: ID LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type;
+function_type: epsilon | COLON scalar_type;
 function_declaration: function_head SEMICOLON;
 function_definition: function_head compound_statement KWend;
 
-arguments: /* empty */ | arguments1
+arguments: epsilon | arguments1
 arguments1: argument | argument SEMICOLON arguments1
 argument: identifier_list COLON type
 
-vars_consts: /* empty */ | var_const vars_consts
-var_const: variable | constant
+declarations: epsilon | declaration declarations
+declaration:
+    KWvar identifier_list COLON type SEMICOLON
+    |
+    KWvar identifier_list COLON literal_constant SEMICOLON
+;
 
-variable: KWvar identifier_list COLON type SEMICOLON;
+identifier_list: ID | ID COMMA identifier_list;
 
-variable_reference: identifier expr_brackets
-expr_brackets: /* empty */ | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
+variable_reference: ID expr_brackets
+expr_brackets: epsilon | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
 
-constant: KWvar identifier_list COLON literal_constant SEMICOLON;
-literal_constant: integer_constant | FLOAT | SCIENTIFIC | STRING | KWtrue | KWfalse;
-integer_constant: INTEGER | OCT_INTEGER;
+    /*
+       Statements
+                  */
 
-statements: /* empty */ | statement statements
+statements: epsilon | statement statements
 statement: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
 
-compound_statement: KWbegin vars_consts statements KWend;
+compound_statement: KWbegin declarations statements KWend;
 
 simple_statement: assignment | print_statement | read_statement;
-assignment: variable_reference OP_ASSIGN expr SEMICOLON;
+assignment: variable_reference ASSIGN expr SEMICOLON;
 print_statement: KWprint expr SEMICOLON;
 read_statement: KWread variable_reference SEMICOLON;
 
@@ -118,40 +136,65 @@ conditional_statement: KWif expr KWthen compound_statement KWend KWif;
 
 while_statement: KWwhile expr KWdo compound_statement KWend KWdo;
 
-for_statement: KWfor identifier OP_ASSIGN integer_constant KWto integer_constant KWdo compound_statement KWend KWdo;
+for_statement: KWfor ID ASSIGN INT_LITERAL KWto INT_LITERAL KWdo compound_statement KWend KWdo;
 
 return_statement: KWreturn expr SEMICOLON;
 
 function_call: function_call_body SEMICOLON;
-function_call_body: identifier LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
+function_call_body: ID LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
 
-expressions: /* empty */ | expressions1;
+expressions: epsilon | expressions1;
 expressions1: expr | expr COMMA expressions1;
 expr: literal_constant | variable_reference | function_call_body | arith_expr
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
 
-arith_expr: OP_SUB expr %prec UMINUS;
-arith_expr: expr OP_MUL expr;
-arith_expr: expr OP_DIV expr;
-arith_expr: expr OP_MOD expr;
-arith_expr: expr OP_ADD expr;
-arith_expr: expr OP_SUB expr;
-arith_expr: expr OP_LT expr;
-arith_expr: expr OP_LTEQ expr;
-arith_expr: expr OP_NEQ expr;
-arith_expr: expr OP_GTEQ expr;
-arith_expr: expr OP_GT expr;
-arith_expr: expr OP_EQ expr;
-arith_expr: expr OP_AND expr;
-arith_expr: expr OP_OR expr;
-arith_expr: OP_NOT expr;
+arith_expr:
+    MINUS expr %prec UMINUS
+    |
+    expr MUL expr
+    |
+    expr DIV expr
+    |
+    expr MOD expr
+    |
+    expr ADD expr
+    |
+    expr MINUS expr
+    |
+    expr OP_LT expr
+    |
+    expr OP_LTEQ expr
+    |
+    expr OP_NEQ expr
+    |
+    expr OP_GTEQ expr
+    |
+    expr OP_GT expr
+    |
+    expr OP_EQ expr
+    |
+    expr AND expr
+    |
+    expr OR expr
+    |
+    NOT expr
+;
 
-identifier: ID;
-identifier_list: identifier | identifier COMMA identifier_list;
+    /*
+       Data Types
+                                   */
 
 type: array_type | scalar_type;
-array_type: KWarray integer_constant KWof type;
+array_type: KWarray INT_LITERAL KWof type;
 scalar_type: KWboolean | KWinteger | KWreal | KWstring;
+
+literal_constant: neg_or_empty INT_LITERAL | neg_or_empty REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
+neg_or_empty: epsilon | MINUS %prec UMINUS;
+
+    /*
+       misc
+            */
+epsilon: ;
 
 %%
 
