@@ -6,9 +6,10 @@ bin = main.out
 .PHONY: clean
 
 all: $(bin)
+	./$(bin)
 
 $(bin): main.cpp ChildVisitor.o AdultVisitor.o
-	$(CXX) $(CFLAGS) $^ -o $@ && ./$@
+	$(CXX) $(CFLAGS) $^ -o $@
 
 ChildVisitor.o: ChildVisitor.cpp visitor.hpp ChildVisitor.hpp
 	$(CXX) $(CFLAGS) -c $< -o $@
