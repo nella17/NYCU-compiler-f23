@@ -2,6 +2,8 @@
 #define __AST_WHILE_NODE_H
 
 #include "AST/ast.hpp"
+#include "visitor/AstNodeVisitor.hpp"
+#include <memory>
 
 class WhileNode : public AstNode {
   public:
@@ -9,7 +11,8 @@ class WhileNode : public AstNode {
               /* TODO: expression, compound statement */);
     ~WhileNode() = default;
 
-    void print() override;
+    void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     // TODO: expression, compound statement

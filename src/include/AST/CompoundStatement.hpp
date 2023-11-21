@@ -2,6 +2,8 @@
 #define __AST_COMPOUND_STATEMENT_NODE_H
 
 #include "AST/ast.hpp"
+#include "visitor/AstNodeVisitor.hpp"
+#include <memory>
 
 class CompoundStatementNode : public AstNode {
   public:
@@ -9,7 +11,8 @@ class CompoundStatementNode : public AstNode {
                           /* TODO: declarations, statements */);
     ~CompoundStatementNode() = default;
 
-    void print() override;
+    void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     // TODO: declarations, statements

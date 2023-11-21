@@ -2,6 +2,8 @@
 #define __AST_VARIABLE_NODE_H
 
 #include "AST/ast.hpp"
+#include "visitor/AstNodeVisitor.hpp"
+#include <memory>
 
 class VariableNode : public AstNode {
   public:
@@ -9,7 +11,8 @@ class VariableNode : public AstNode {
                  /* TODO: variable name, type, constant value */);
     ~VariableNode() = default;
 
-    void print() override;
+    void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     // TODO: variable name, type, constant value

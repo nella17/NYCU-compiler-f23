@@ -1,4 +1,5 @@
 %{
+#include "AST/AstDumper.hpp"
 #include "AST/BinaryOperator.hpp"
 #include "AST/CompoundStatement.hpp"
 #include "AST/ConstantValue.hpp"
@@ -47,6 +48,8 @@ extern int yylex_destroy(void);
 
 %code requires {
     class AstNode;
+    class CompoundStatementNode;
+    class ProgramNode;
 }
 
     /* For yylval */
@@ -58,6 +61,8 @@ extern int yylex_destroy(void);
     char *string;
 
     AstNode *node;
+    ProgramNode *program;
+    CompoundStatementNode *compound_stmt;
 };
 
     /* Delimiter */
@@ -86,16 +91,28 @@ extern int yylex_destroy(void);
 %token <real> REAL_LITERAL
 %token <string> STRING_LITERAL
 
+    /* Non-terminal */
+%nterm <node> program_unit
+%nterm <program> program
+%nterm <compound_stmt> compound_statement
+
 %%
+
+root: program_unit {
+    root = $1;
+}
 
 program_unit: program | function;
 
 program:
-   ID SEMICOLON
-   declarations functions compound_statement
-   KWend {
-       root = new ProgramNode(@1.first_line, @1.first_column, $1);
-       free($1);
+    ID SEMICOLON
+    declarations functions compound_statement
+    KWend {
+        $$ = new ProgramNode(
+            @1.first_line, @1.first_column,
+            $1, $5
+        );
+        free($1);
     }
 ;
 
@@ -129,7 +146,14 @@ expr_brackets: epsilon | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_br
 statements: epsilon | statement statements
 statement: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
 
-compound_statement: KWbegin declarations statements KWend;
+compound_statement:
+    KWbegin
+    declarations
+    statements
+    KWend {
+        $$ = new CompoundStatementNode(@1.first_line, @1.first_column);
+    }
+;
 
 simple_statement: assignment | print_statement | read_statement;
 assignment: variable_reference ASSIGN expr SEMICOLON;
@@ -233,7 +257,8 @@ int main(int argc, const char *argv[]) {
     yyparse();
 
     if (argc >= 3 && strcmp(argv[2], "--dump-ast") == 0) {
-        root->print();
+        AstDumper ast_dumper;
+        root->accept(ast_dumper);
     }
 
     printf("\n"

@@ -23,7 +23,8 @@ class AstNode {
 
     const Location &getLocation() const;
 
-    virtual void print() = 0;
+    virtual void accept(AstNodeVisitor &p_visitor) = 0;
+    virtual void visitChildNodes(AstNodeVisitor &p_visitor){};
 };
 
 #endif

@@ -2,6 +2,8 @@
 #define __AST_FUNCTION_NODE_H
 
 #include "AST/ast.hpp"
+#include "visitor/AstNodeVisitor.hpp"
+#include <memory>
 
 class FunctionNode : public AstNode {
   public:
@@ -10,7 +12,8 @@ class FunctionNode : public AstNode {
                   *       compound statement (optional) */);
     ~FunctionNode() = default;
 
-    void print() override;
+    void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     // TODO: name, declarations, return type, compound statement

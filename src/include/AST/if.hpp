@@ -2,6 +2,8 @@
 #define __AST_IF_NODE_H
 
 #include "AST/ast.hpp"
+#include "visitor/AstNodeVisitor.hpp"
+#include <memory>
 
 class IfNode : public AstNode {
   public:
@@ -9,7 +11,8 @@ class IfNode : public AstNode {
            /* TODO: expression, compound statement, compound statement */);
     ~IfNode() = default;
 
-    void print() override;
+    void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
+    void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
     // TODO: expression, compound statement, compound statement
