@@ -53,6 +53,9 @@ extern int yylex_destroy(void);
 %union {
     /* basic semantic value */
     char *identifier;
+    int integer;
+    float real;
+    char *string;
 
     AstNode *node;
 };
@@ -79,7 +82,9 @@ extern int yylex_destroy(void);
 %token <identifier> ID
 
     /* Literal */
-%token INT_LITERAL REAL_LITERAL STRING_LITERAL
+%token <integer> INT_LITERAL
+%token <real> REAL_LITERAL
+%token <string> STRING_LITERAL
 
 %%
 

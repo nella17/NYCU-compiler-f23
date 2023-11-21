@@ -106,17 +106,37 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
 "read"    { LIST_TOKEN("KWread"); return KWread; }
 
     /* Identifier */
-[a-zA-Z][a-zA-Z0-9]* { LIST_LITERAL("id", yytext); return ID; }
+[a-zA-Z][a-zA-Z0-9]* {
+    LIST_LITERAL("id", yytext);
+    yylval.identifier = strndup(yytext, MAX_ID_LENG);
+    return ID;
+}
 
     /* Integer (decimal/octal) */
-{integer} { LIST_LITERAL("integer", yytext); return INT_LITERAL; }
-0[0-7]+   { LIST_LITERAL("oct_integer", yytext); return INT_LITERAL; }
+{integer} {
+    LIST_LITERAL("integer", yytext);
+    yylval.integer = strtol(yytext, NULL, 10);
+    return INT_LITERAL;
+}
+0[0-7]+   {
+    LIST_LITERAL("oct_integer", yytext);
+    yylval.integer = strtol(yytext, NULL, 8);
+    return INT_LITERAL;
+}
 
     /* Floating-Point */
-{float} { LIST_LITERAL("float", yytext); return REAL_LITERAL; }
+{float} {
+    LIST_LITERAL("float", yytext);
+    yylval.real = strtof(yytext, NULL);
+    return REAL_LITERAL;
+}
 
     /* Scientific Notation [Ee][+-]?[0-9]+ */
-({nonzero_integer}|{nonzero_float})[Ee][+-]?({integer}) { LIST_LITERAL("scientific", yytext); return REAL_LITERAL; }
+({nonzero_integer}|{nonzero_float})[Ee][+-]?({integer}) {
+    LIST_LITERAL("scientific", yytext);
+    yylval.real = strtof(yytext, NULL);
+    return REAL_LITERAL;
+}
 
     /* String */
 \"([^"\n]|\"\")*\" {
@@ -141,6 +161,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
     }
     *str_ptr = '\0';
     LIST_LITERAL("string", string_literal);
+    yylval.string = strdup(yytext);
     return STRING_LITERAL;
 }
 
