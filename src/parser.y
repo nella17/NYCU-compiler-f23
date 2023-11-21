@@ -1,4 +1,11 @@
-%{
+%code top {
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+}
+
+%code requires {
 #include "AST/AstDumper.hpp"
 #include "AST/BinaryOperator.hpp"
 #include "AST/CompoundStatement.hpp"
@@ -20,10 +27,8 @@
 #include "AST/variable.hpp"
 #include "AST/while.hpp"
 
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <vector>
+#include <memory>
 
 #define YYLTYPE yyltype
 
@@ -33,8 +38,10 @@ typedef struct YYLTYPE {
     uint32_t last_line;
     uint32_t last_column;
 } yyltype;
+}
 
-extern int32_t line_num;    /* declared in scanner.l */
+%code provides {
+extern uint32_t line_num;   /* declared in scanner.l */
 extern char current_line[]; /* declared in scanner.l */
 extern FILE *yyin;          /* declared by lex */
 extern char *yytext;        /* declared by lex */
@@ -42,14 +49,8 @@ extern char *yytext;        /* declared by lex */
 static AstNode *root;
 
 extern "C" int yylex(void);
-static void yyerror(const char *msg);
+void yyerror(const char *msg);
 extern int yylex_destroy(void);
-%}
-
-%code requires {
-    class AstNode;
-    class CompoundStatementNode;
-    class ProgramNode;
 }
 
     /* For yylval */
