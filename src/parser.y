@@ -150,7 +150,7 @@ function_call_body: ID LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
 
 expressions: epsilon | expressions1;
 expressions1: expr | expr COMMA expressions1;
-expr: literal_constant | variable_reference | function_call_body | arith_expr
+expr: literal_constant_pos | variable_reference | function_call_body | arith_expr
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
 
 arith_expr:
@@ -194,6 +194,7 @@ array_type: KWarray INT_LITERAL KWof type;
 scalar_type: KWboolean | KWinteger | KWreal | KWstring;
 
 literal_constant: neg_or_empty INT_LITERAL | neg_or_empty REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
+literal_constant_pos: INT_LITERAL | REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
 neg_or_empty: epsilon | MINUS %prec UMINUS;
 
     /*
