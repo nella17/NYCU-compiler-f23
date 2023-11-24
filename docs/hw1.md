@@ -295,12 +295,12 @@ For example, `0` is a decimal integer because it is followed by zero octal digit
 
 A floating-point constant is formed by an integral part, a dot (`.`), and a fractional part. The dot (`.`) symbol is used to separate the integral part and the fractional part.
 
-The integral part is a decimal integer (see [Integer Constants](#integer-constants)) while the fractional part is a sequence of one or more digits without any redundant `0`. Here are some examples:
+The integral part is a decimal integer (see [Integer Constants](#integer-constants)) while the fractional part is a sequence of one or more digits without any redundant tailing `0`. Here are some examples:
 
 - `009.1` is a valid input according to the lexical definition, but it is recognized as two separate tokens:
 	- An octal integer: `00`
 	- A floating-point: `9.1`
-- `0.0` is a valid floating-point since there are no redundant `0`s in both side of the dot (`.`) symbol.
+- `0.0` is a valid floating-point since `0` is a decimal integer and there's no redundant tailing `0`.
 
 #### Scientific Notations
 
