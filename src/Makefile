@@ -2,11 +2,15 @@ CC = g++
 LEX = flex
 YACC = bison
 CFLAGS = -Wall -std=gnu++17 -g
+LDFLAGS =
 INCLUDE = -Iinclude
 ifeq ($(shell uname),Darwin)
 LIBS    = -ll
 else
 LIBS    = -lfl
+ifeq ($(DEBUG),1)
+LDFLAGS += -fsanitize=leak -fsanitize=address -fsanitize=undefined
+endif
 endif
 LIBS    += -ly
 
@@ -45,10 +49,10 @@ $(PARSER).cpp: %.cpp: %.y
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CC) -o $@ $(CFLAGS) $(INCLUDE) -c -MP -MMD $<
+	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $(INCLUDE) -c -MP -MMD $<
 
 $(EXEC): $(OBJS)
-	$(CC) -o $@ $^ $(LIBS) $(INCLUDE)
+	$(CC) -o $@ $^ $(LIBS) $(INCLUDE) $(LDFLAGS)
 
 clean:
 	$(RM) $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.h) $(OBJS) $(EXEC)
