@@ -7,5 +7,5 @@
 class StatementNode : virtual public AstNode {
 };
 
-using StatementNodeP = std::shared_ptr<StatementNode>;
-using StatementNodes = std::vector<std::shared_ptr<StatementNode>>;
+using StatementPtr = std::shared_ptr<StatementNode>;
+using Statements = std::vector<std::shared_ptr<StatementNode>>;

@@ -10,8 +10,8 @@ class VariableNode : public AstNode {
   public:
     VariableNode(const uint32_t line, const uint32_t col,
             char *const p_name,
-            TypeP p_type,
-            ConstantValueNodeP p_constant = nullptr);
+            TypePtr p_type,
+            ConstantPtr p_constant = nullptr);
     ~VariableNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
@@ -22,8 +22,8 @@ class VariableNode : public AstNode {
 
   private:
     std::string name;
-    TypeP type;
-    ConstantValueNodeP constant;
+    TypePtr type;
+    ConstantPtr constant;
 };
 
-using VariableNodes = std::vector<std::shared_ptr<VariableNode>>;
+using Variables = std::vector<std::shared_ptr<VariableNode>>;

@@ -7,7 +7,7 @@
 ProgramNode::ProgramNode(const uint32_t line, const uint32_t col,
         char *const p_name,
         DeclNodes *const p_decls,
-        FunctionNodes *const p_funcs,
+        Functions *const p_funcs,
         CompoundStatementNode *const p_body
     ) : AstNode(line, col),
         name(p_name),

@@ -2,8 +2,8 @@
 
 VariableNode::VariableNode(const uint32_t line, const uint32_t col,
         char *const p_name,
-        TypeP p_type,
-        ConstantValueNodeP p_constant
+        TypePtr p_type,
+        ConstantPtr p_constant
     ) : AstNode(line, col),
         name(p_name),
         type(p_type),

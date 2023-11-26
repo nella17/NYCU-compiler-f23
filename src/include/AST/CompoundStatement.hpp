@@ -10,7 +10,7 @@ class CompoundStatementNode : public StatementNode {
   public:
     CompoundStatementNode(const uint32_t line, const uint32_t col,
             DeclNodes *const p_decls,
-            StatementNodes *const p_stmts);
+            Statements *const p_stmts);
     ~CompoundStatementNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
@@ -18,7 +18,7 @@ class CompoundStatementNode : public StatementNode {
 
   private:
     DeclNodes decls;
-    StatementNodes stmts;
+    Statements stmts;
 };
 
-using CompoundStatementNodeP = std::shared_ptr<CompoundStatementNode>;
+using CompoundStatementPtr = std::shared_ptr<CompoundStatementNode>;

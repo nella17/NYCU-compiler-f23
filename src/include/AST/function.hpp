@@ -25,8 +25,8 @@ class FunctionNode : public AstNode {
   private:
     std::string name, type;
     DeclNodes decls;
-    TypeP ret_type;
-    CompoundStatementNodeP compound_stmt_p;
+    TypePtr ret_type;
+    CompoundStatementPtr compound_stmt_p;
 };
 
-using FunctionNodes = std::vector<std::shared_ptr<FunctionNode>>;
+using Functions = std::vector<std::shared_ptr<FunctionNode>>;

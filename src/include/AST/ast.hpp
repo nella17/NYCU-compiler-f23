@@ -57,4 +57,4 @@ class Type {
 };
 
 using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
-using TypeP = std::shared_ptr<Type>;
+using TypePtr = std::shared_ptr<Type>;

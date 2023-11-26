@@ -23,13 +23,13 @@ class DeclNode : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
-    TypeP getType() const { return type; }
-    VariableNodes getVars() const { return vars; }
+    TypePtr getType() const { return type; }
+    Variables getVars() const { return vars; }
 
   private:
-    TypeP type;
-    ConstantValueNodeP constant;
-    VariableNodes vars;
+    TypePtr type;
+    ConstantPtr constant;
+    Variables vars;
 };
 
 using DeclNodes = std::vector<std::shared_ptr<DeclNode>>;

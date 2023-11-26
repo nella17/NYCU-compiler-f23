@@ -66,10 +66,10 @@ extern int yylex_destroy(void);
     ProgramNode *program_p;
     DeclNodes *decls_p;
     DeclNode *decl_p;
-    FunctionNodes *funcs_p;
+    Functions *funcs_p;
     FunctionNode *func_p;
     IDs *ids_p;
-    StatementNodes *stmts_p;
+    Statements *stmts_p;
     StatementNode *stmt_p;
     CompoundStatementNode *compound_stmt_p;
     Type *type_p;
@@ -145,7 +145,7 @@ program:
 
 declarations:
     %empty {
-        $$ = new DeclNodes();
+        $$ = new DeclNodes;
     }
     |
     declarations declaration {
@@ -172,7 +172,7 @@ declaration:
 
 functions:
     %empty {
-        $$ = new FunctionNodes();
+        $$ = new Functions;
     }
     |
     functions function {
@@ -207,14 +207,14 @@ function_type:
 
 arguments:
     %empty {
-        $$ = new DeclNodes();
+        $$ = new DeclNodes;
     }
     |
     arguments1
 ;
 arguments1:
     argument {
-        $$ = new DeclNodes();
+        $$ = new DeclNodes;
         $$->emplace_back($1);
     }
     |
@@ -234,7 +234,7 @@ argument:
 
 identifier_list:
     ID {
-        $$ = new IDs();
+        $$ = new IDs;
         $$->emplace_back(@1.first_line, @1.first_column, $1);
     }
     |
@@ -253,7 +253,7 @@ expr_brackets: %empty | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_bra
 
 statements:
     %empty {
-        $$ = new StatementNodes;
+        $$ = new Statements;
     }
     |
     statements statement {

@@ -12,16 +12,16 @@ class ProgramNode final : public AstNode {
   private:
     std::string name;
     DeclNodes decls;
-    FunctionNodes funcs;
+    Functions funcs;
     // TODO: return type
-    CompoundStatementNodeP body;
+    CompoundStatementPtr body;
 
   public:
     ~ProgramNode() = default;
     ProgramNode(const uint32_t line, const uint32_t col,
                 char *const p_name,
                 DeclNodes *const p_decls,
-                FunctionNodes *const p_funcs,
+                Functions *const p_funcs,
                 CompoundStatementNode *const p_body
                 /* TODO: return type */);
 
