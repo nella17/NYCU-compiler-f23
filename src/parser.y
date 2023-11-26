@@ -72,6 +72,10 @@ extern int yylex_destroy(void);
     Statements *stmts_p;
     StatementNode *stmt_p;
     CompoundStatementNode *compound_stmt_p;
+    PrintNode *print_stmt_p;
+    FunctionInvocationNode *func_call_p;
+    Expressions *expres_p;
+    ExpressionNode *expr_p;
     Type *type_p;
     ConstantValueNode *constant_p;
     bool neg;
@@ -83,14 +87,13 @@ extern int yylex_destroy(void);
     /* Operator */
 %token ADD MINUS MUL DIV MOD ASSIGN OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ AND OR NOT
 
-%left AND OR
+%left AND
+%left OR
 %right NOT
 %left OP_LT OP_LTEQ OP_NEQ OP_GTEQ OP_GT OP_EQ
-%left MINUS
-%left ADD
-%left DIV MOD
-%left MUL
-%right UMINUS
+%left ADD MINUS
+%left MUL DIV MOD
+%nonassoc UMINUS
 
     /* Keyword */
 %token KWvar KWarray KWof KWboolean KWinteger KWreal KWstring KWtrue KWfalse KWdef KWreturn KWbegin KWend KWwhile KWdo KWif KWthen KWelse KWfor KWto KWprint KWread
@@ -111,10 +114,13 @@ extern int yylex_destroy(void);
 %nterm <funcs_p> functions
 %nterm <func_p> function
 %nterm <ids_p> identifier_list
-%nterm <stmts_p> statements;
-%nterm <stmt_p> statement;
+%nterm <stmts_p> statements
+%nterm <stmt_p> statement
 %nterm <compound_stmt_p> compound_statement
-
+%nterm <print_stmt_p> print_statement
+%nterm <func_call_p> function_call function_call_body
+%nterm <expres_p> expressions expressions1
+%nterm <expr_p> expr
 %nterm <type_p> type array_type scalar_type function_type
 %nterm <constant_p> literal_constant literal_constant_pos string_or_bool
 %nterm <neg> neg_or_empty
@@ -266,7 +272,7 @@ statement:
     |
     assignment
     |
-    print_statement
+    print_statement { $$ = $1; }
     |
     read_statement
     |
@@ -278,7 +284,7 @@ statement:
     |
     return_statement
     |
-    function_call
+    function_call { $$ = $1; }
 
 compound_statement:
     KWbegin
@@ -296,7 +302,14 @@ assignment:
     variable_reference ASSIGN expr SEMICOLON {
     }
 ;
-print_statement: KWprint expr SEMICOLON;
+print_statement:
+    KWprint expr SEMICOLON {
+        $$ = new PrintNode(
+            @1.first_line, @1.first_column,
+            $2
+        );
+    }
+;
 read_statement: KWread variable_reference SEMICOLON;
 
 conditional_statement: KWif expr KWthen compound_statement KWelse compound_statement KWend KWif;
@@ -308,44 +321,145 @@ for_statement: KWfor ID ASSIGN INT_LITERAL KWto INT_LITERAL KWdo compound_statem
 
 return_statement: KWreturn expr SEMICOLON;
 
-function_call: function_call_body SEMICOLON;
-function_call_body: ID LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
+function_call: function_call_body SEMICOLON { $$ = $1; };
+function_call_body:
+    ID LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS {
+        $$ = new FunctionInvocationNode(
+            @1.first_line, @1.first_column,
+            $1, $3
+        );
+    }
+;
 
-expressions: %empty | expressions1;
-expressions1: expr | expr COMMA expressions1;
-expr: literal_constant_pos | variable_reference | function_call_body | arith_expr
-    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
-
-arith_expr:
-    MINUS expr %prec UMINUS
+expressions:
+    %empty { $$ = new Expressions; }
     |
-    expr MUL expr
+    expressions1
+;
+expressions1:
+    expr {
+        $$ = new Expressions;
+        $$->emplace_back($1);
+    }
     |
-    expr DIV expr
+    expressions1 COMMA expr {
+        $$ = new Expressions;
+        $$->emplace_back($3);
+    }
+;
+expr:
+    literal_constant_pos { $$ = $1; }
     |
-    expr MOD expr
+    variable_reference { /* $$ = $1; */ }
     |
-    expr ADD expr
+    function_call_body { $$ = $1; }
     |
-    expr MINUS expr
+    LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { $$ = $2; }
     |
-    expr OP_LT expr
+    MINUS expr %prec UMINUS {
+        $$ = new UnaryOperatorNode(
+			@1.first_line, @1.first_column,
+			Operator::NEG, $2
+		);
+    }
     |
-    expr OP_LTEQ expr
+    expr MUL expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::MUL, $1, $3
+		);
+	}
     |
-    expr OP_NEQ expr
+    expr DIV expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::DIV, $1, $3
+		);
+	}
     |
-    expr OP_GTEQ expr
+    expr MOD expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::MOD, $1, $3
+		);
+	}
     |
-    expr OP_GT expr
+    expr ADD expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::ADD, $1, $3
+		);
+	}
     |
-    expr OP_EQ expr
+    expr MINUS expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::SUB, $1, $3
+		);
+	}
     |
-    expr AND expr
+    expr OP_LT expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_LT, $1, $3
+		);
+	}
     |
-    expr OR expr
+    expr OP_LTEQ expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_LTEQ, $1, $3
+		);
+	}
     |
-    NOT expr
+    expr OP_NEQ expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_NEQ, $1, $3
+		);
+	}
+    |
+    expr OP_GTEQ expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_GTEQ, $1, $3
+		);
+	}
+    |
+    expr OP_GT expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_GT, $1, $3
+		);
+	}
+    |
+    expr OP_EQ expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OP_EQ, $1, $3
+		);
+	}
+    |
+    expr AND expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::AND, $1, $3
+		);
+	}
+    |
+    expr OR expr {
+        $$ = new BinaryOperatorNode(
+            @2.first_line, @2.first_column,
+			Operator::OR, $1, $3
+		);
+	}
+    |
+    NOT expr {
+        $$ = new UnaryOperatorNode(
+			@1.first_line, @1.first_column,
+			Operator::NOT, $2
+		);
+    }
 ;
 
     /*
