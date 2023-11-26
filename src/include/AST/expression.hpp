@@ -16,12 +16,3 @@ class ExpressionNode : virtual public AstNode {
 
 using ExpressionPtr = std::shared_ptr<ExpressionNode>;
 using Expressions = std::vector<ExpressionPtr>;
-
-enum class Operator {
-    MUL, DIV, MOD, ADD, SUB,
-    OP_LT, OP_LTEQ, OP_NEQ, OP_GTEQ, OP_GT, OP_EQ,
-    AND, OR,
-    NEG, NOT
-};
-
-const char* to_cstring(Operator op);

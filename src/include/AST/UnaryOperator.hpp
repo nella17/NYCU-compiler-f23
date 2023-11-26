@@ -1,10 +1,11 @@
 #pragma once
 
 #include "AST/expression.hpp"
+#include "AST/operator.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
-class UnaryOperatorNode : public ExpressionNode {
+class UnaryOperatorNode : public OperatorNode {
   public:
     UnaryOperatorNode(const uint32_t line, const uint32_t col,
             Operator p_op,
@@ -14,9 +15,6 @@ class UnaryOperatorNode : public ExpressionNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
-    const char* getOpCString() const { return to_cstring(op); }
-
   private:
-    Operator op;
     ExpressionPtr expr;
 };
