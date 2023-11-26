@@ -7,3 +7,31 @@ AstNode::AstNode(const uint32_t line, const uint32_t col)
     : location(line, col) {}
 
 const Location &AstNode::getLocation() const { return location; }
+
+Type* Type::makeInteger() { return new Type(Value::Integer); }
+Type* Type::makeReal()    { return new Type(Value::Real); }
+Type* Type::makeString()  { return new Type(Value::String); }
+Type* Type::makeBoolean() { return new Type(Value::Boolean); }
+
+Type::Type(Type::Value p_value): value(p_value), dim(), name() {}
+void Type::addDim(int x) { dim.emplace_back(x); }
+
+const char* Type::getNameCString() {
+    name = "";
+    switch (value) {
+        case Value::Integer: name = "integer"; break;
+        case Value::Real   : name = "real"; break;
+        case Value::String : name = "string"; break;
+        case Value::Boolean: name = "boolean"; break;
+        case Value::None   : name = ""; break;
+    }
+    if (!dim.empty()) {
+        name += ' ';
+        for (auto it = dim.rbegin(); it != dim.rend(); it++) {
+            name += '[';
+            name += std::to_string(*it);
+            name += ']';
+        }
+    }
+    return name.c_str();
+}

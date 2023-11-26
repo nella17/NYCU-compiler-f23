@@ -1,18 +1,22 @@
 #pragma once
 
 #include "AST/ast.hpp"
+#include "AST/ConstantValue.hpp"
+#include "AST/variable.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
 class DeclNode : public AstNode {
   public:
     // variable declaration
-    DeclNode(const uint32_t line, const uint32_t col
-             /* TODO: identifiers, type */);
+    DeclNode(const uint32_t line, const uint32_t col,
+            IDs *const p_ids,
+            Type *const p_type);
 
     // constant variable declaration
-    //DeclNode(const uint32_t, const uint32_t col
-    //         /* TODO: identifiers, constant */);
+    DeclNode(const uint32_t, const uint32_t col,
+            IDs *const p_ids,
+            ConstantValueNode *const p_constant);
 
     ~DeclNode() = default;
 
@@ -20,5 +24,7 @@ class DeclNode : public AstNode {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    // TODO: variables
+    std::vector<std::shared_ptr<VariableNode>> vars;
 };
+
+using DeclNodes = std::vector<std::shared_ptr<DeclNode>>;

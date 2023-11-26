@@ -61,9 +61,15 @@ extern int yylex_destroy(void);
     float real;
     char *string;
 
-    AstNode *node;
-    ProgramNode *program;
-    CompoundStatementNode *compound_stmt;
+    AstNode *node_p;
+    ProgramNode *program_p;
+    DeclNodes *decls_p;
+    DeclNode *decl_p;
+    IDs *ids_p;
+    CompoundStatementNode *compound_stmt_p;
+    Type *type_p;
+    ConstantValueNode *constant_p;
+    bool neg;
 };
 
     /* Delimiter */
@@ -93,9 +99,18 @@ extern int yylex_destroy(void);
 %token <string> STRING_LITERAL
 
     /* Non-terminal */
-%nterm <node> program_unit
-%nterm <program> program
-%nterm <compound_stmt> compound_statement
+%nterm <node_p> program_unit
+%nterm <program_p> program
+%nterm <decls_p> declarations
+%nterm <decl_p> declaration
+%nterm <ids_p> identifier_list
+%nterm <compound_stmt_p> compound_statement
+
+%nterm <type_p> type array_type scalar_type
+%nterm <constant_p> literal_constant literal_constant_pos string_or_bool
+%nterm <neg> neg_or_empty
+
+%nterm <node_p> function
 
 %%
 
@@ -103,7 +118,11 @@ root: program_unit {
     root = $1;
 }
 
-program_unit: program | function;
+program_unit:
+    program { $$ = $1; }
+    |
+    function { $$ = $1; }
+;
 
 program:
     ID SEMICOLON
@@ -111,9 +130,36 @@ program:
     KWend {
         $$ = new ProgramNode(
             @1.first_line, @1.first_column,
-            $1, $5
+            $1,
+            $3, $5
         );
-        free($1);
+    }
+;
+
+declarations:
+    %empty {
+        $$ = new DeclNodes();
+    }
+    |
+    declarations declaration {
+        $$ = $1;
+        $$->emplace_back($2);
+    }
+;
+
+declaration:
+    KWvar identifier_list COLON type SEMICOLON {
+        $$ = new DeclNode(
+            @1.first_line, @1.first_column,
+            $2, $4
+        );
+    }
+    |
+    KWvar identifier_list COLON literal_constant SEMICOLON {
+        $$ = new DeclNode(
+            @1.first_line, @1.first_column,
+            $2, $4
+        );
     }
 ;
 
@@ -128,14 +174,17 @@ arguments: %empty | arguments1
 arguments1: argument | argument SEMICOLON arguments1
 argument: identifier_list COLON type
 
-declarations: %empty | declaration declarations
-declaration:
-    KWvar identifier_list COLON type SEMICOLON
+identifier_list:
+    ID {
+        $$ = new IDs();
+        $$->emplace_back(@1.first_line, @1.first_column, $1);
+    }
     |
-    KWvar identifier_list COLON literal_constant SEMICOLON
+    identifier_list COMMA ID {
+        $$ = $1;
+        $$->emplace_back(@3.first_line, @3.first_column, $3);
+    }
 ;
-
-identifier_list: ID | ID COMMA identifier_list;
 
 variable_reference: ID expr_brackets
 expr_brackets: %empty | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
@@ -215,12 +264,101 @@ arith_expr:
                                    */
 
 type: array_type | scalar_type;
-array_type: KWarray INT_LITERAL KWof type;
-scalar_type: KWboolean | KWinteger | KWreal | KWstring;
+array_type:
+    KWarray INT_LITERAL KWof type {
+        $$ = $4;
+        $$->addDim($2);
+    }
+;
+scalar_type:
+    KWboolean { $$ = Type::makeBoolean(); }
+    |
+    KWinteger { $$ = Type::makeInteger(); }
+    |
+    KWreal    { $$ = Type::makeReal(); }
+    |
+    KWstring  { $$ = Type::makeString(); }
+;
 
-literal_constant: neg_or_empty INT_LITERAL | neg_or_empty REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
-literal_constant_pos: INT_LITERAL | REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
-neg_or_empty: %empty | MINUS %prec UMINUS;
+literal_constant:
+    string_or_bool
+    |
+    neg_or_empty INT_LITERAL {
+        if ($1) {
+            $$ = new ConstantValueNode(
+                @1.first_line, @1.first_column,
+                -$2
+            );
+        } else {
+            $$ = new ConstantValueNode(
+                @2.first_line, @2.first_column,
+                $2
+            );
+        }
+    }
+    |
+    neg_or_empty REAL_LITERAL {
+        if ($1) {
+            $$ = new ConstantValueNode(
+                @1.first_line, @1.first_column,
+                -$2
+            );
+        } else {
+            $$ = new ConstantValueNode(
+                @2.first_line, @2.first_column,
+                $2
+            );
+        }
+    }
+;
+literal_constant_pos:
+    string_or_bool
+    |
+    INT_LITERAL {
+        $$ = new ConstantValueNode(
+            @1.first_line, @1.first_column,
+            $1
+        );
+    }
+    |
+    REAL_LITERAL {
+        $$ = new ConstantValueNode(
+            @1.first_line, @1.first_column,
+            $1
+        );
+    }
+;
+string_or_bool:
+    STRING_LITERAL {
+        $$ = new ConstantValueNode(
+            @1.first_line, @1.first_column,
+            $1
+        );
+    }
+    |
+    KWtrue {
+        $$ = new ConstantValueNode(
+            @1.first_line, @1.first_column,
+            true
+        );
+    }
+    |
+    KWfalse {
+        $$ = new ConstantValueNode(
+            @1.first_line, @1.first_column,
+            false
+        );
+    }
+;
+neg_or_empty:
+    %empty {
+        $$ = false;
+    }
+    |
+    MINUS %prec UMINUS {
+        $$ = true;
+    }
+;
 
 %%
 

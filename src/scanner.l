@@ -161,7 +161,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
     }
     *str_ptr = '\0';
     LIST_LITERAL("string", string_literal);
-    yylval.string = strdup(yytext);
+    yylval.string = strdup(string_literal);
     return STRING_LITERAL;
 }
 
