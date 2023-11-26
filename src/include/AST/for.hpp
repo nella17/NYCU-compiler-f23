@@ -1,10 +1,11 @@
 #pragma once
 
 #include "AST/ast.hpp"
+#include "AST/statement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
-class ForNode : public AstNode {
+class ForNode : public StatementNode {
   public:
     ForNode(const uint32_t line, const uint32_t col
             /* TODO: declaration, assignment, expression,

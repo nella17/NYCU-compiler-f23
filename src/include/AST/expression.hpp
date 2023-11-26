@@ -2,7 +2,7 @@
 
 #include "AST/ast.hpp"
 
-class ExpressionNode : public AstNode {
+class ExpressionNode : virtual public AstNode {
   public:
     ExpressionNode(const uint32_t line, const uint32_t col);
     ~ExpressionNode() = default;

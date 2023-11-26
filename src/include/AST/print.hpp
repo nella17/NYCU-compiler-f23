@@ -1,10 +1,11 @@
 #pragma once
 
 #include "AST/ast.hpp"
+#include "AST/statement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
-class PrintNode : public AstNode {
+class PrintNode : public StatementNode {
   public:
     PrintNode(const uint32_t line, const uint32_t col
               /* TODO: expression */);
