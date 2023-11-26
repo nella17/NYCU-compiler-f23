@@ -56,3 +56,5 @@ class Type {
     std::vector<int> dim;
     std::string name;
 };
+
+using TypeP = std::shared_ptr<Type>;

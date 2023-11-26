@@ -16,3 +16,5 @@ class CompoundStatementNode : public AstNode {
   private:
     // TODO: declarations, statements
 };
+
+using CompoundStatementNodeP = std::shared_ptr<CompoundStatementNode>;

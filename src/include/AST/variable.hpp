@@ -4,13 +4,14 @@
 #include "AST/ConstantValue.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
+#include <vector>
 
 class VariableNode : public AstNode {
   public:
     VariableNode(const uint32_t line, const uint32_t col,
             char *const p_name,
-            std::shared_ptr<Type> p_type,
-            std::shared_ptr<ConstantValueNode> p_constant = nullptr);
+            TypeP p_type,
+            ConstantValueNodeP p_constant = nullptr);
     ~VariableNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
@@ -21,6 +22,8 @@ class VariableNode : public AstNode {
 
   private:
     std::string name;
-    std::shared_ptr<Type> type;
-    std::shared_ptr<ConstantValueNode> constant;
+    TypeP type;
+    ConstantValueNodeP constant;
 };
+
+using VariableNodes = std::vector<std::shared_ptr<VariableNode>>;

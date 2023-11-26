@@ -12,7 +12,7 @@ class ProgramNode final : public AstNode {
     std::string name;
     DeclNodes decls;
     // TODO: return type, functions, compound statement
-    std::shared_ptr<CompoundStatementNode> body;
+    CompoundStatementNodeP body;
 
   public:
     ~ProgramNode() = default;

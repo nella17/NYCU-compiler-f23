@@ -24,7 +24,7 @@ class DeclNode : public AstNode {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    std::vector<std::shared_ptr<VariableNode>> vars;
+    VariableNodes vars;
 };
 
 using DeclNodes = std::vector<std::shared_ptr<DeclNode>>;

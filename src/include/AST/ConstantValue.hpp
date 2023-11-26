@@ -15,13 +15,15 @@ class ConstantValueNode : public ExpressionNode {
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
 
-    std::shared_ptr<Type> getType() const { return type; }
+    TypeP getType() const { return type; }
 
     const char* getNameCString() const { return type->getNameCString(); }
     const char* getValueCString() const { return value_str.c_str(); }
 
   private:
-    std::shared_ptr<Type> type;
+    TypeP type;
     std::variant<int, float, std::string, bool> value;
     std::string value_str;
 };
+
+using ConstantValueNodeP = std::shared_ptr<ConstantValueNode>;
