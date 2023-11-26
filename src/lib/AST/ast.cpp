@@ -8,7 +8,7 @@ AstNode::AstNode(const uint32_t line, const uint32_t col)
 
 const Location &AstNode::getLocation() const { return location; }
 
-Type* Type::makeNone()    { return new Type(Value::Void); }
+Type* Type::makeVoid()    { return new Type(Value::Void); }
 Type* Type::makeInteger() { return new Type(Value::Integer); }
 Type* Type::makeReal()    { return new Type(Value::Real); }
 Type* Type::makeString()  { return new Type(Value::String); }

@@ -192,7 +192,7 @@ function:
 ;
 function_type:
     %empty {
-        $$ = Type::makeNone();
+        $$ = Type::makeVoid();
     }
     |
     COLON scalar_type {

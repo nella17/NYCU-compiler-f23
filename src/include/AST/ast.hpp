@@ -28,11 +28,9 @@ class AstNode {
     virtual void visitChildNodes(AstNodeVisitor &p_visitor){};
 };
 
-using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
-
 class Type {
   public:
-    static Type* makeNone();
+    static Type* makeVoid();
     static Type* makeInteger();
     static Type* makeReal();
     static Type* makeString();
@@ -58,4 +56,5 @@ class Type {
     std::string name;
 };
 
+using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
 using TypeP = std::shared_ptr<Type>;
