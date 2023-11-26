@@ -24,6 +24,7 @@
 #include "AST/program.hpp"
 #include "AST/read.hpp"
 #include "AST/return.hpp"
+#include "AST/statement.hpp"
 #include "AST/variable.hpp"
 #include "AST/while.hpp"
 
@@ -68,6 +69,8 @@ extern int yylex_destroy(void);
     FunctionNodes *funcs_p;
     FunctionNode *func_p;
     IDs *ids_p;
+    StatementNodes *stmts_p;
+    StatementNode *stmt_p;
     CompoundStatementNode *compound_stmt_p;
     Type *type_p;
     ConstantValueNode *constant_p;
@@ -108,6 +111,8 @@ extern int yylex_destroy(void);
 %nterm <funcs_p> functions
 %nterm <func_p> function
 %nterm <ids_p> identifier_list
+%nterm <stmts_p> statements;
+%nterm <stmt_p> statement;
 %nterm <compound_stmt_p> compound_statement
 
 %nterm <type_p> type array_type scalar_type function_type
@@ -246,20 +251,51 @@ expr_brackets: %empty | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_bra
        Statements
                   */
 
-statements: %empty | statement statements
-statement: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
+statements:
+    %empty {
+        $$ = new StatementNodes;
+    }
+    |
+    statements statement {
+        $$ = $1;
+        $$->emplace_back($2);
+    }
+;
+statement:
+    compound_statement { $$ = $1; }
+    |
+    assignment
+    |
+    print_statement
+    |
+    read_statement
+    |
+    conditional_statement
+    |
+    while_statement
+    |
+    for_statement
+    |
+    return_statement
+    |
+    function_call
 
 compound_statement:
     KWbegin
     declarations
     statements
     KWend {
-        $$ = new CompoundStatementNode(@1.first_line, @1.first_column);
+        $$ = new CompoundStatementNode(
+            @1.first_line, @1.first_column,
+            $2, $3
+        );
     }
 ;
 
-simple_statement: assignment | print_statement | read_statement;
-assignment: variable_reference ASSIGN expr SEMICOLON;
+assignment:
+    variable_reference ASSIGN expr SEMICOLON {
+    }
+;
 print_statement: KWprint expr SEMICOLON;
 read_statement: KWread variable_reference SEMICOLON;
 

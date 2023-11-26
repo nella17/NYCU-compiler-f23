@@ -8,15 +8,17 @@
 
 class CompoundStatementNode : public StatementNode {
   public:
-    CompoundStatementNode(const uint32_t line, const uint32_t col
-                          /* TODO: declarations, statements */);
+    CompoundStatementNode(const uint32_t line, const uint32_t col,
+            DeclNodes *const p_decls,
+            StatementNodes *const p_stmts);
     ~CompoundStatementNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
   private:
-    // TODO: declarations, statements
+    DeclNodes decls;
+    StatementNodes stmts;
 };
 
 using CompoundStatementNodeP = std::shared_ptr<CompoundStatementNode>;
