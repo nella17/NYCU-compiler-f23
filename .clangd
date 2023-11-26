@@ -2,6 +2,5 @@ If:
     PathMatch: .*\.[ch]pp
 CompileFlags:
     Add: [
-      -I../../../src/include,
       -std=gnu++17, -Wall, -Wextra, -Wshadow, -Wconversion
     ]
