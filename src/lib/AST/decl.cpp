@@ -3,9 +3,11 @@
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
         IDs *const p_ids,
         Type *const p_type
-    ) : AstNode(line, col), vars{} {
+    ) : AstNode(line, col),
+        type(p_type),
+        vars{}
+    {
     vars.reserve(p_ids->size());
-    TypeP type(p_type);
     for (auto [id_line, id_col, id_name]: *p_ids)
         vars.emplace_back(std::make_shared<VariableNode>(id_line, id_col, id_name, type));
     delete p_ids;
@@ -14,10 +16,12 @@ DeclNode::DeclNode(const uint32_t line, const uint32_t col,
 DeclNode::DeclNode(const uint32_t line, const uint32_t col,
         IDs *const p_ids,
         ConstantValueNode *const p_constant
-    ) : AstNode(line, col), vars{} {
+    ) : AstNode(line, col),
+        type(p_constant->getType()),
+        constant(p_constant),
+        vars{}
+    {
     vars.reserve(p_ids->size());
-    ConstantValueNodeP constant(p_constant);
-    auto type = constant->getType();
     for (auto [id_line, id_col, id_name]: *p_ids)
         vars.emplace_back(std::make_shared<VariableNode>(id_line, id_col, id_name, type, constant));
     delete p_ids;

@@ -32,13 +32,14 @@ using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
 
 class Type {
   public:
+    static Type* makeNone();
     static Type* makeInteger();
     static Type* makeReal();
     static Type* makeString();
     static Type* makeBoolean();
 
     enum class Value {
-        None = 0,
+        Void = 0,
         Integer,
         Real,
         String,
@@ -47,7 +48,7 @@ class Type {
     const Value value;
     const char* getNameCString();
 
-    Type(Value = Value::None);
+    Type(Value = Value::Void);
     ~Type() = default;
 
     void addDim(int);

@@ -65,6 +65,8 @@ extern int yylex_destroy(void);
     ProgramNode *program_p;
     DeclNodes *decls_p;
     DeclNode *decl_p;
+    FunctionNodes *funcs_p;
+    FunctionNode *func_p;
     IDs *ids_p;
     CompoundStatementNode *compound_stmt_p;
     Type *type_p;
@@ -101,16 +103,16 @@ extern int yylex_destroy(void);
     /* Non-terminal */
 %nterm <node_p> program_unit
 %nterm <program_p> program
-%nterm <decls_p> declarations
-%nterm <decl_p> declaration
+%nterm <decls_p> declarations arguments arguments1
+%nterm <decl_p> declaration argument
+%nterm <funcs_p> functions
+%nterm <func_p> function
 %nterm <ids_p> identifier_list
 %nterm <compound_stmt_p> compound_statement
 
-%nterm <type_p> type array_type scalar_type
+%nterm <type_p> type array_type scalar_type function_type
 %nterm <constant_p> literal_constant literal_constant_pos string_or_bool
 %nterm <neg> neg_or_empty
-
-%nterm <node_p> function
 
 %%
 
@@ -131,7 +133,7 @@ program:
         $$ = new ProgramNode(
             @1.first_line, @1.first_column,
             $1,
-            $3, $5
+            $3, $4, $5
         );
     }
 ;
@@ -163,16 +165,67 @@ declaration:
     }
 ;
 
-functions: %empty | function functions
-function: function_declaration | function_definition;
-function_head: ID LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type;
-function_type: %empty | COLON scalar_type;
-function_declaration: function_head SEMICOLON;
-function_definition: function_head compound_statement KWend;
+functions:
+    %empty {
+        $$ = new FunctionNodes();
+    }
+    |
+    functions function {
+        $$ = $1;
+        $$->emplace_back($2);
+    }
+;
+function:
+    ID LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type SEMICOLON {
+        $$ = new FunctionNode(
+            @1.first_line, @1.first_column,
+            $1, $3, $5, nullptr
+        );
+    }
+    |
+    ID LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type compound_statement KWend {
+        $$ = new FunctionNode(
+            @1.first_line, @1.first_column,
+            $1, $3, $5, $6
+        );
+    }
+;
+function_type:
+    %empty {
+        $$ = Type::makeNone();
+    }
+    |
+    COLON scalar_type {
+        $$ = $2;
+    }
+;
 
-arguments: %empty | arguments1
-arguments1: argument | argument SEMICOLON arguments1
-argument: identifier_list COLON type
+arguments:
+    %empty {
+        $$ = new DeclNodes();
+    }
+    |
+    arguments1
+;
+arguments1:
+    argument {
+        $$ = new DeclNodes();
+        $$->emplace_back($1);
+    }
+    |
+    arguments1 SEMICOLON argument {
+        $$ = $1;
+        $$->emplace_back($3);
+    }
+;
+argument:
+    identifier_list COLON type {
+        $$ = new DeclNode(
+            @1.first_line, @1.first_column,
+            $1, $3
+        );
+    }
+;
 
 identifier_list:
     ID {

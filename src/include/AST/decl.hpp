@@ -23,7 +23,12 @@ class DeclNode : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
+    TypeP getType() const { return type; }
+    VariableNodes getVars() const { return vars; }
+
   private:
+    TypeP type;
+    ConstantValueNodeP constant;
     VariableNodes vars;
 };
 

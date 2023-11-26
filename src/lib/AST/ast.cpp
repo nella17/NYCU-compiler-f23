@@ -8,22 +8,22 @@ AstNode::AstNode(const uint32_t line, const uint32_t col)
 
 const Location &AstNode::getLocation() const { return location; }
 
+Type* Type::makeNone()    { return new Type(Value::Void); }
 Type* Type::makeInteger() { return new Type(Value::Integer); }
 Type* Type::makeReal()    { return new Type(Value::Real); }
 Type* Type::makeString()  { return new Type(Value::String); }
 Type* Type::makeBoolean() { return new Type(Value::Boolean); }
 
-Type::Type(Type::Value p_value): value(p_value), dim(), name() {}
+Type::Type(Type::Value p_value): value(p_value), dim(0), name() {}
 void Type::addDim(int x) { dim.emplace_back(x); }
 
 const char* Type::getNameCString() {
-    name = "";
     switch (value) {
         case Value::Integer: name = "integer"; break;
         case Value::Real   : name = "real"; break;
         case Value::String : name = "string"; break;
         case Value::Boolean: name = "boolean"; break;
-        case Value::None   : name = ""; break;
+        case Value::Void   : name = "void"; break;
     }
     if (!dim.empty()) {
         name += ' ';

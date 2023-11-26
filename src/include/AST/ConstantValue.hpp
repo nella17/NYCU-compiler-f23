@@ -17,7 +17,6 @@ class ConstantValueNode : public ExpressionNode {
 
     TypeP getType() const { return type; }
 
-    const char* getNameCString() const { return type->getNameCString(); }
     const char* getValueCString() const { return value_str.c_str(); }
 
   private:
