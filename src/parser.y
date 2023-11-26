@@ -69,10 +69,13 @@ extern int yylex_destroy(void);
     Functions *funcs_p;
     FunctionNode *func_p;
     IDs *ids_p;
+    VariableReferenceNode *var_ref_p;
     Statements *stmts_p;
     StatementNode *stmt_p;
     CompoundStatementNode *compound_stmt_p;
+    AssignmentNode *assign_p;
     PrintNode *print_stmt_p;
+    ReadNode *read_stmt_p;
     FunctionInvocationNode *func_call_p;
     Expressions *expres_p;
     ExpressionNode *expr_p;
@@ -114,12 +117,15 @@ extern int yylex_destroy(void);
 %nterm <funcs_p> functions
 %nterm <func_p> function
 %nterm <ids_p> identifier_list
+%nterm <var_ref_p> variable_reference
 %nterm <stmts_p> statements
 %nterm <stmt_p> statement
 %nterm <compound_stmt_p> compound_statement
+%nterm <assign_p> assignment;
 %nterm <print_stmt_p> print_statement
+%nterm <read_stmt_p> read_statement
 %nterm <func_call_p> function_call function_call_body
-%nterm <expres_p> expressions expressions1
+%nterm <expres_p> expressions expressions1 expr_brackets
 %nterm <expr_p> expr
 %nterm <type_p> type array_type scalar_type function_type
 %nterm <constant_p> literal_constant literal_constant_pos string_or_bool
@@ -250,8 +256,24 @@ identifier_list:
     }
 ;
 
-variable_reference: ID expr_brackets
-expr_brackets: %empty | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
+variable_reference:
+    ID expr_brackets {
+        $$ = new VariableReferenceNode(
+            @1.first_line, @1.first_column,
+            $1, $2
+        );
+    }
+;
+expr_brackets:
+    %empty {
+        $$ = new Expressions;
+    }
+    |
+    expr_brackets LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS {
+        $$ = $1;
+        $$->emplace_back($3);
+    }
+;
 
     /*
        Statements
@@ -270,7 +292,7 @@ statements:
 statement:
     compound_statement { $$ = $1; }
     |
-    assignment
+    assignment { $$ = $1; }
     |
     print_statement { $$ = $1; }
     |
@@ -300,6 +322,10 @@ compound_statement:
 
 assignment:
     variable_reference ASSIGN expr SEMICOLON {
+        $$ = new AssignmentNode(
+            @2.first_line, @2.first_column,
+            $1, $3
+        );
     }
 ;
 print_statement:
@@ -310,7 +336,14 @@ print_statement:
         );
     }
 ;
-read_statement: KWread variable_reference SEMICOLON;
+read_statement:
+    KWread variable_reference SEMICOLON {
+        $$ = new ReadNode(
+            @1.first_line, @1.first_column,
+            $2
+        );
+    }
+;
 
 conditional_statement: KWif expr KWthen compound_statement KWelse compound_statement KWend KWif;
 conditional_statement: KWif expr KWthen compound_statement KWend KWif;
