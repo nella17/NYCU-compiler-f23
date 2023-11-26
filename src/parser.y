@@ -117,18 +117,18 @@ program:
     }
 ;
 
-functions: epsilon | function functions
+functions: %empty | function functions
 function: function_declaration | function_definition;
 function_head: ID LEFT_PARENTHESIS arguments RIGHT_PARENTHESIS function_type;
-function_type: epsilon | COLON scalar_type;
+function_type: %empty | COLON scalar_type;
 function_declaration: function_head SEMICOLON;
 function_definition: function_head compound_statement KWend;
 
-arguments: epsilon | arguments1
+arguments: %empty | arguments1
 arguments1: argument | argument SEMICOLON arguments1
 argument: identifier_list COLON type
 
-declarations: epsilon | declaration declarations
+declarations: %empty | declaration declarations
 declaration:
     KWvar identifier_list COLON type SEMICOLON
     |
@@ -138,13 +138,13 @@ declaration:
 identifier_list: ID | ID COMMA identifier_list;
 
 variable_reference: ID expr_brackets
-expr_brackets: epsilon | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
+expr_brackets: %empty | LEFT_SQUARE_BRACKETS expr RIGHT_SQUARE_BRACKETS expr_brackets
 
     /*
        Statements
                   */
 
-statements: epsilon | statement statements
+statements: %empty | statement statements
 statement: compound_statement | simple_statement | conditional_statement | while_statement | for_statement | return_statement | function_call
 
 compound_statement:
@@ -173,7 +173,7 @@ return_statement: KWreturn expr SEMICOLON;
 function_call: function_call_body SEMICOLON;
 function_call_body: ID LEFT_PARENTHESIS expressions RIGHT_PARENTHESIS;
 
-expressions: epsilon | expressions1;
+expressions: %empty | expressions1;
 expressions1: expr | expr COMMA expressions1;
 expr: literal_constant_pos | variable_reference | function_call_body | arith_expr
     | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS;
@@ -220,12 +220,7 @@ scalar_type: KWboolean | KWinteger | KWreal | KWstring;
 
 literal_constant: neg_or_empty INT_LITERAL | neg_or_empty REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
 literal_constant_pos: INT_LITERAL | REAL_LITERAL | STRING_LITERAL | KWtrue | KWfalse;
-neg_or_empty: epsilon | MINUS %prec UMINUS;
-
-    /*
-       misc
-            */
-epsilon: ;
+neg_or_empty: %empty | MINUS %prec UMINUS;
 
 %%
 
