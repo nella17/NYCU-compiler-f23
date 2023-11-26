@@ -1,6 +1,7 @@
 CC = g++
 LEX = flex
 YACC = bison
+YACC_FLAGS = --defines=parser.h -v 
 CFLAGS = -Wall -std=gnu++17 -g
 LDFLAGS =
 INCLUDE = -Iinclude
@@ -11,6 +12,9 @@ LIBS    = -lfl
 ifeq ($(DEBUG),1)
 LDFLAGS += -fsanitize=leak -fsanitize=address -fsanitize=undefined
 endif
+endif
+ifeq ($(TRACE),1)
+YACC_FLAGS += --debug
 endif
 LIBS    += -ly
 
@@ -41,11 +45,11 @@ DEPS := $(OBJS:%.o=%.d)
 all: $(EXEC)
 
 # Static pattern rule
-$(SCANNER).cpp: %.cpp: %.l
+$(SCANNER).cpp: %.cpp: %.l $(PARSER).cpp
 	$(LEX) -o $@ $<
 
 $(PARSER).cpp: %.cpp: %.y
-	$(YACC) -o $@ --defines=parser.h -v $<
+	$(YACC) -o $@ $(YACC_FLAGS) $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
