@@ -308,7 +308,7 @@ statement:
     |
     for_statement
     |
-    return_statement
+    return_statement { $$ = $1; }
     |
     function_call { $$ = $1; }
 
