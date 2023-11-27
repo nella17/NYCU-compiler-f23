@@ -4,6 +4,7 @@
 #include "AST/decl.hpp"
 #include "AST/CompoundStatement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
+#include "type.hpp"
 #include <memory>
 #include <vector>
 

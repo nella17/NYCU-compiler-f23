@@ -29,33 +29,4 @@ class AstNode {
     virtual void visitChildNodes(AstNodeVisitor &p_visitor){};
 };
 
-class Type {
-  public:
-    static Type* makeVoid();
-    static Type* makeInteger();
-    static Type* makeReal();
-    static Type* makeString();
-    static Type* makeBoolean();
-
-    enum class Value {
-        Void = 0,
-        Integer,
-        Real,
-        String,
-        Boolean,
-    };
-    const Value value;
-    const char* getNameCString();
-
-    Type(Value = Value::Void);
-    ~Type() = default;
-
-    void addDim(int);
-
-  private:
-    std::vector<int> dim;
-    std::string name;
-};
-
 using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
-using TypePtr = std::shared_ptr<Type>;

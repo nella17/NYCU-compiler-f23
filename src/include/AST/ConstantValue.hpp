@@ -2,6 +2,7 @@
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
+#include "type.hpp"
 #include <variant>
 #include <memory>
 

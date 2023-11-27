@@ -27,6 +27,7 @@
 #include "AST/statement.hpp"
 #include "AST/variable.hpp"
 #include "AST/while.hpp"
+#include "type.hpp"
 
 #include <vector>
 #include <memory>

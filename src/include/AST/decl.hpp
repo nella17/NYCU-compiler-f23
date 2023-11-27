@@ -3,6 +3,7 @@
 #include "AST/ast.hpp"
 #include "AST/ConstantValue.hpp"
 #include "AST/variable.hpp"
+#include "type.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 

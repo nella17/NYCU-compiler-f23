@@ -21,14 +21,8 @@ LIBS    += -ly
 SCANNER = scanner
 PARSER = parser
 
-ASTDIR = lib/AST/
-AST := $(shell find $(ASTDIR) -name '*.cpp')
-
-VISITORDIR = lib/visitor/
-VISITOR := $(shell find $(VISITORDIR) -name '*.cpp')
-
-SRC := $(AST) \
-	   $(VISITOR)
+SRCDIR = lib/
+SRC := $(shell find $(SRCDIR) -name '*.cpp')
 
 EXEC = $(PARSER)
 OBJS = $(PARSER:=.cpp) \
