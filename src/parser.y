@@ -77,6 +77,7 @@ extern int yylex_destroy(void);
     ReadNode *read_stmt_p;
     IfNode *cond_stmt_p;
     WhileNode *while_stmt_p;
+    ReturnNode *ret_stmt_p;
     FunctionInvocationNode *func_call_p;
     Expressions *expres_p;
     ExpressionNode *expr_p;
@@ -126,6 +127,7 @@ extern int yylex_destroy(void);
 %nterm <read_stmt_p> read_statement
 %nterm <cond_stmt_p> conditional_statement
 %nterm <while_stmt_p> while_statement
+%nterm <ret_stmt_p> return_statement
 %nterm <func_call_p> function_call function_call_body
 %nterm <expres_p> expressions expressions1 expr_brackets
 %nterm <expr_p> expr
@@ -374,7 +376,14 @@ while_statement:
 
 for_statement: KWfor ID ASSIGN INT_LITERAL KWto INT_LITERAL KWdo compound_statement KWend KWdo;
 
-return_statement: KWreturn expr SEMICOLON;
+return_statement:
+    KWreturn expr SEMICOLON {
+        $$ = new ReturnNode(
+            @1.first_line, @1.first_column,
+            $2
+        );
+    }
+;
 
 function_call: function_call_body SEMICOLON { $$ = $1; };
 function_call_body:
