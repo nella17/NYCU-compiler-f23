@@ -75,6 +75,7 @@ extern int yylex_destroy(void);
     AssignmentNode *assign_p;
     PrintNode *print_stmt_p;
     ReadNode *read_stmt_p;
+    IfNode *cond_stmt_p;
     FunctionInvocationNode *func_call_p;
     Expressions *expres_p;
     ExpressionNode *expr_p;
@@ -122,6 +123,7 @@ extern int yylex_destroy(void);
 %nterm <assign_p> assignment;
 %nterm <print_stmt_p> print_statement
 %nterm <read_stmt_p> read_statement
+%nterm <cond_stmt_p> conditional_statement
 %nterm <func_call_p> function_call function_call_body
 %nterm <expres_p> expressions expressions1 expr_brackets
 %nterm <expr_p> expr
@@ -296,7 +298,7 @@ statement:
     |
     read_statement { $$ = $1; }
     |
-    conditional_statement
+    conditional_statement { $$ = $1; }
     |
     while_statement
     |
@@ -343,8 +345,21 @@ read_statement:
     }
 ;
 
-conditional_statement: KWif expr KWthen compound_statement KWelse compound_statement KWend KWif;
-conditional_statement: KWif expr KWthen compound_statement KWend KWif;
+conditional_statement:
+    KWif expr KWthen compound_statement KWelse compound_statement KWend KWif {
+        $$ = new IfNode(
+            @1.first_line, @1.first_column,
+            $2, $4, $6
+        );
+    }
+    |
+    KWif expr KWthen compound_statement KWend KWif {
+        $$ = new IfNode(
+            @1.first_line, @1.first_column,
+            $2, $4, nullptr
+        );
+    }
+;
 
 while_statement: KWwhile expr KWdo compound_statement KWend KWdo;
 
