@@ -84,7 +84,7 @@ void AstDumper::visit(FunctionNode &p_function) {
     std::printf("function declaration <line: %u, col: %u> %s %s\n",
         p_function.getLocation().line, p_function.getLocation().col,
         p_function.getNameCString(),
-        p_function.getTypeCString()
+        p_function.getPrototypeCString()
     );
 
     incrementIndentation();

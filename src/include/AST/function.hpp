@@ -13,21 +13,21 @@ class FunctionNode : public AstNode {
     FunctionNode(const uint32_t line, const uint32_t col,
                 char *const p_name,
                 DeclNodes *const p_decls,
-                Type *const p_ret_type,
-                CompoundStatementNode *const p_compound_stmt);
+                Type *const p_type,
+                CompoundStatementNode *const p_body);
     ~FunctionNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
     const char* getNameCString() const { return name.c_str(); }
-    const char* getTypeCString() const { return type.c_str(); }
+    const char* getPrototypeCString() const { return prototype.c_str(); }
 
   private:
-    std::string name, type;
+    std::string name, prototype;
     DeclNodes decls;
-    TypePtr ret_type;
-    CompoundStatementPtr compound_stmt_p;
+    TypePtr type;
+    CompoundStatementPtr body;
 };
 
 using Functions = std::vector<std::shared_ptr<FunctionNode>>;
