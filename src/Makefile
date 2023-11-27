@@ -14,7 +14,8 @@ LDFLAGS += -fsanitize=leak -fsanitize=address -fsanitize=undefined
 endif
 endif
 ifeq ($(TRACE),1)
-YACC_FLAGS += --debug
+CFLAGS 		+= -DTRACE
+YACC_FLAGS 	+= --debug
 endif
 LIBS    += -ly
 

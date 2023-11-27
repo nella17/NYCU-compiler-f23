@@ -655,6 +655,10 @@ int main(int argc, const char *argv[]) {
         exit(-1);
     }
 
+#ifdef TRACE
+    yydebug = 1;
+#endif
+
     yyin = fopen(argv[1], "r");
     if (yyin == NULL) {
         perror("fopen() failed");
