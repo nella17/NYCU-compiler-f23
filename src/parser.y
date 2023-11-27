@@ -413,7 +413,7 @@ expressions1:
     }
     |
     expressions1 COMMA expr {
-        $$ = new Expressions;
+        $$ = $1;
         $$->emplace_back($3);
     }
 ;
