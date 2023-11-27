@@ -184,6 +184,7 @@ class Grader:
         diff.write(self.diff_result)
         diff.close()
 
+        # NOTE: Return 1 on test failure to support GitHub CI; otherwise, such CI never fails.
         if total_score != max_score:
             return 1
         return 0
