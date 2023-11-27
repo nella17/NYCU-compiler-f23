@@ -121,7 +121,7 @@ extern int yylex_destroy(void);
 %nterm <func_p> function
 %nterm <ids_p> identifier_list
 %nterm <var_ref_p> variable_reference
-%nterm <compound_stmt_p> compound_statement
+%nterm <compound_stmt_p> compound_statement else_or_empty
 %nterm <assign_p> assignment;
 %nterm <print_stmt_p> print_statement
 %nterm <read_stmt_p> read_statement
@@ -350,23 +350,29 @@ read_statement:
 ;
 
 conditional_statement:
-    KWif expr KWthen compound_statement KWelse compound_statement KWend KWif {
+    KWif expr KWthen
+    compound_statement
+    else_or_empty
+    KWend KWif {
         $$ = new IfNode(
             @1.first_line, @1.first_column,
-            $2, $4, $6
-        );
-    }
-    |
-    KWif expr KWthen compound_statement KWend KWif {
-        $$ = new IfNode(
-            @1.first_line, @1.first_column,
-            $2, $4, nullptr
+            $2, $4, $5
         );
     }
 ;
 
+else_or_empty:
+    %empty { $$ = nullptr; }
+    |
+    KWelse compound_statement {
+        $$ = $2;
+    }
+;
+
 while_statement:
-    KWwhile expr KWdo compound_statement KWend KWdo {
+    KWwhile expr KWdo
+    compound_statement
+    KWend KWdo {
         $$ = new WhileNode(
             @1.first_line, @1.first_column,
             $2, $4
