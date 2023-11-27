@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-class ExpressionNode : virtual public AstNode {
+class ExpressionNode : public AstNode {
   public:
     ExpressionNode(const uint32_t line, const uint32_t col);
     ~ExpressionNode() = default;

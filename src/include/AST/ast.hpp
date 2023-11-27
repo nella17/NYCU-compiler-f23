@@ -30,3 +30,5 @@ class AstNode {
 };
 
 using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
+using AstPtr = std::shared_ptr<AstNode>;
+using Asts = std::vector<AstPtr>;

@@ -1,7 +1,7 @@
 #include "AST/operator.hpp"
 
 OperatorNode::OperatorNode(const uint32_t line, const uint32_t col, Operator p_op):
-    AstNode(line, col), ExpressionNode(line, col), op(p_op) {}
+    ExpressionNode(line, col), op(p_op) {}
 
 const char* to_cstring(Operator op) {
     switch (op) {

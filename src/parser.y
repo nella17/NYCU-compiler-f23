@@ -24,7 +24,6 @@
 #include "AST/program.hpp"
 #include "AST/read.hpp"
 #include "AST/return.hpp"
-#include "AST/statement.hpp"
 #include "AST/variable.hpp"
 #include "AST/while.hpp"
 #include "type.hpp"
@@ -64,6 +63,7 @@ extern int yylex_destroy(void);
     char *string;
 
     AstNode *node_p;
+    Asts *nodes_p;
     ProgramNode *program_p;
     DeclNodes *decls_p;
     DeclNode *decl_p;
@@ -71,8 +71,6 @@ extern int yylex_destroy(void);
     FunctionNode *func_p;
     IDs *ids_p;
     VariableReferenceNode *var_ref_p;
-    Statements *stmts_p;
-    StatementNode *stmt_p;
     CompoundStatementNode *compound_stmt_p;
     AssignmentNode *assign_p;
     PrintNode *print_stmt_p;
@@ -111,7 +109,8 @@ extern int yylex_destroy(void);
 %token <string> STRING_LITERAL
 
     /* Non-terminal */
-%nterm <node_p> program_unit
+%nterm <node_p> program_unit statement
+%nterm <nodes_p> statements
 %nterm <program_p> program
 %nterm <decls_p> declarations arguments arguments1
 %nterm <decl_p> declaration argument
@@ -119,8 +118,6 @@ extern int yylex_destroy(void);
 %nterm <func_p> function
 %nterm <ids_p> identifier_list
 %nterm <var_ref_p> variable_reference
-%nterm <stmts_p> statements
-%nterm <stmt_p> statement
 %nterm <compound_stmt_p> compound_statement
 %nterm <assign_p> assignment;
 %nterm <print_stmt_p> print_statement
@@ -282,7 +279,7 @@ expr_brackets:
 
 statements:
     %empty {
-        $$ = new Statements;
+        $$ = new Asts;
     }
     |
     statements statement {
@@ -297,7 +294,7 @@ statement:
     |
     print_statement { $$ = $1; }
     |
-    read_statement
+    read_statement { $$ = $1; }
     |
     conditional_statement
     |

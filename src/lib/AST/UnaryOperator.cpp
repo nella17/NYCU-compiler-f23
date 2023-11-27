@@ -3,8 +3,7 @@
 UnaryOperatorNode::UnaryOperatorNode(const uint32_t line, const uint32_t col,
         Operator p_op,
         ExpressionNode *const p_expr
-    ) : AstNode(line, col),
-    OperatorNode(line, col, p_op),
+    ) : OperatorNode(line, col, p_op),
     expr(p_expr)
     {}
 

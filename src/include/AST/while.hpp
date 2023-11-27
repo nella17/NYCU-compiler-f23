@@ -1,11 +1,10 @@
 #pragma once
 
 #include "AST/ast.hpp"
-#include "AST/statement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
-class WhileNode : public StatementNode {
+class WhileNode : public AstNode {
   public:
     WhileNode(const uint32_t line, const uint32_t col
               /* TODO: expression, compound statement */);

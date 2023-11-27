@@ -1,12 +1,11 @@
 #pragma once
 
 #include "AST/expression.hpp"
-#include "AST/statement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <string>
 #include <memory>
 
-class FunctionInvocationNode : public StatementNode, public ExpressionNode {
+class FunctionInvocationNode : public ExpressionNode {
   public:
     FunctionInvocationNode(const uint32_t line, const uint32_t col,
             char *const p_name,

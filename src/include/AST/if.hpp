@@ -1,11 +1,10 @@
 #pragma once
 
 #include "AST/ast.hpp"
-#include "AST/statement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
-class IfNode : public StatementNode {
+class IfNode : public AstNode {
   public:
     IfNode(const uint32_t line, const uint32_t col
            /* TODO: expression, compound statement, compound statement */);

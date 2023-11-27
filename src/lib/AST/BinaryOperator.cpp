@@ -4,8 +4,7 @@ BinaryOperatorNode::BinaryOperatorNode(const uint32_t line, const uint32_t col,
         Operator p_op,
         ExpressionNode *const p_left,
         ExpressionNode *const p_right
-    ) : AstNode(line, col),
-    OperatorNode(line, col, p_op),
+    ) : OperatorNode(line, col, p_op),
     left(p_left),
     right(p_right)
     {}
