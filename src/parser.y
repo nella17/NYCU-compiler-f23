@@ -77,6 +77,7 @@ extern int yylex_destroy(void);
     ReadNode *read_stmt_p;
     IfNode *cond_stmt_p;
     WhileNode *while_stmt_p;
+    ForNode *for_stmt_p;
     ReturnNode *ret_stmt_p;
     FunctionInvocationNode *func_call_p;
     Expressions *expres_p;
@@ -127,6 +128,7 @@ extern int yylex_destroy(void);
 %nterm <read_stmt_p> read_statement
 %nterm <cond_stmt_p> conditional_statement
 %nterm <while_stmt_p> while_statement
+%nterm <for_stmt_p> for_statement
 %nterm <ret_stmt_p> return_statement
 %nterm <func_call_p> function_call function_call_body
 %nterm <expres_p> expressions expressions1 expr_brackets
@@ -306,7 +308,7 @@ statement:
     |
     while_statement { $$ = $1; }
     |
-    for_statement
+    for_statement { $$ = $1; }
     |
     return_statement { $$ = $1; }
     |
@@ -380,7 +382,35 @@ while_statement:
     }
 ;
 
-for_statement: KWfor ID ASSIGN INT_LITERAL KWto INT_LITERAL KWdo compound_statement KWend KWdo;
+for_statement:
+    KWfor ID ASSIGN INT_LITERAL KWto INT_LITERAL KWdo
+    compound_statement
+    KWend KWdo {
+        auto decl = new DeclNode(
+            @2.first_line, @2.first_column,
+            new IDs{ { @2.first_line, @2.first_column, $2 } },
+            Type::makeInteger()
+        );
+        auto init = new AssignmentNode(
+            @3.first_line, @3.first_column,
+            new VariableReferenceNode(
+                @2.first_line, @2.first_column,
+                decl->getVars()[0],
+                new Expressions
+            ),
+            new ConstantValueNode(
+                @4.first_line, @4.first_column, $4
+            )
+        );
+        auto end = new ConstantValueNode(
+            @6.first_line, @6.first_column, $6
+        );
+        $$ = new ForNode(
+            @1.first_line, @1.first_column,
+            decl, init, end, $8
+        );
+    }
+;
 
 return_statement:
     KWreturn expr SEMICOLON {
@@ -402,7 +432,7 @@ function_call_body:
 ;
 
 expressions:
-    %empty { $$ = new Expressions; }
+    %empty { $$ = nullptr; }
     |
     expressions1
 ;

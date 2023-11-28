@@ -19,6 +19,7 @@ class VariableNode : public AstNode {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
     const char* getNameCString() const { return name.c_str(); }
+    std::string getNameString() const { return name; }
     const char* getTypeCString() const { return type->getNameCString(); }
 
   private:
@@ -27,4 +28,5 @@ class VariableNode : public AstNode {
     ConstantPtr constant;
 };
 
-using Variables = std::vector<std::shared_ptr<VariableNode>>;
+using VariablePtr = std::shared_ptr<VariableNode>;
+using Variables = std::vector<VariablePtr>;

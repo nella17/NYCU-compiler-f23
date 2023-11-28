@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/expression.hpp"
+#include "AST/variable.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 #include <string>
@@ -9,6 +10,9 @@ class VariableReferenceNode : public ExpressionNode {
   public:
     VariableReferenceNode(const uint32_t line, const uint32_t col,
             char *const p_name,
+            Expressions *const p_exprs);
+    VariableReferenceNode(const uint32_t line, const uint32_t col,
+            VariablePtr const p_ptr,
             Expressions *const p_exprs);
     ~VariableReferenceNode() = default;
 

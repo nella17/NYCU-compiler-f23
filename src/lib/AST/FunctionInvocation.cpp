@@ -5,11 +5,13 @@ FunctionInvocationNode::FunctionInvocationNode(
         char *const p_name,
         Expressions *const p_exprs
     ) : ExpressionNode(line, col),
-    name(p_name),
-    exprs(std::move(*p_exprs))
+    name(p_name), exprs{}
 {
     free(p_name);
-    delete p_exprs;
+    if (p_exprs) {
+        exprs = std::move(*p_exprs);
+        delete p_exprs;
+    }
 }
 
 void FunctionInvocationNode::visitChildNodes(AstNodeVisitor &p_visitor) {

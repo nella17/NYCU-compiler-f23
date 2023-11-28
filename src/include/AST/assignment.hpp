@@ -20,3 +20,5 @@ class AssignmentNode : public AstNode {
     VarRefPtr var_ref;
     ExpressionPtr expr;
 };
+
+using AssignmentPtr = std::shared_ptr<AssignmentNode>;

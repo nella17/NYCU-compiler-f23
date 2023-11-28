@@ -33,4 +33,5 @@ class DeclNode : public AstNode {
     Variables vars;
 };
 
-using DeclNodes = std::vector<std::shared_ptr<DeclNode>>;
+using DeclNodePtr = std::shared_ptr<DeclNode>;
+using DeclNodes = std::vector<DeclNodePtr>;
