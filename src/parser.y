@@ -41,7 +41,7 @@ typedef struct YYLTYPE {
 } yyltype;
 }
 
-%code provides {
+%code {
 extern uint32_t line_num;   /* declared in scanner.l */
 extern char current_line[]; /* declared in scanner.l */
 extern FILE *yyin;          /* declared by lex */
@@ -50,7 +50,7 @@ extern char *yytext;        /* declared by lex */
 static AstNode *root;
 
 extern "C" int yylex(void);
-void yyerror(const char *msg);
+static void yyerror(const char *msg);
 extern int yylex_destroy(void);
 }
 
