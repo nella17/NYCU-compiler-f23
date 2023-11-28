@@ -5,11 +5,16 @@ CompoundStatementNode::CompoundStatementNode(
     DeclNodes *const p_decls,
     Asts *const p_stmts)
     : AstNode(line, col),
-    decls(std::move(*p_decls)),
-    stmts(std::move(*p_stmts))
-    {
-    delete p_decls;
-    delete p_stmts;
+    decls{}, stmts{}
+{
+    if (p_decls) {
+        decls = std::move(*p_decls);
+        delete p_decls;
+    }
+    if (p_stmts) {
+        stmts = std::move(*p_stmts);
+        delete p_stmts;
+    }
 }
 
 void CompoundStatementNode::visitChildNodes(AstNodeVisitor &p_visitor) {

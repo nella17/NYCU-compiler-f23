@@ -10,7 +10,9 @@ FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
         decls(std::move(*p_decls)),
         type(p_type),
         body(p_body)
-    {
+{
+    free(p_name);
+    delete p_decls;
     prototype = type->getNameCString();
     prototype += " (";
     bool first = true;
@@ -20,8 +22,6 @@ FunctionNode::FunctionNode(const uint32_t line, const uint32_t col,
         prototype += var->getTypeCString();
     }
     prototype += ')';
-    free(p_name);
-    delete p_decls;
 }
 
 void FunctionNode::visitChildNodes(AstNodeVisitor &p_visitor) {

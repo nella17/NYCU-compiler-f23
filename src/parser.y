@@ -396,7 +396,7 @@ for_statement:
             new VariableReferenceNode(
                 @2.first_line, @2.first_column,
                 decl->getVars()[0],
-                new Expressions
+                nullptr
             ),
             new ConstantValueNode(
                 @4.first_line, @4.first_column, $4

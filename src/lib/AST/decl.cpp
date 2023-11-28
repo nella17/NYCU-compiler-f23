@@ -5,6 +5,7 @@ DeclNode::DeclNode(const uint32_t line, const uint32_t col,
         Type *const p_type
     ) : AstNode(line, col),
         type(p_type),
+        constant(nullptr),
         vars{}
     {
     vars.reserve(p_ids->size());
