@@ -65,7 +65,7 @@ As class diagram below, when AST node accept `AstNodeVisitor`, it invoke corespo
 `AstDumper::visit` dump information about its node, then call `AstNode::visitChildNodes` to recursively dump information about all child nodes.
 `AstNode::visitChildNodes` method accept `AstNodeVisitor` for all its child nodes.
 
-<img src="./res/imgs/class_diagram.png" width="800">
+<img src="../res/imgs/class_diagram.png" width="800">
 
 ## What is the hardest you think in this project
 
