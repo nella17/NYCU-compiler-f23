@@ -31,6 +31,7 @@ class Type {
 
     std::vector<int> dim;
     std::string name;
+    bool name_valid;
 };
 
 using TypePtr = std::shared_ptr<Type>;
