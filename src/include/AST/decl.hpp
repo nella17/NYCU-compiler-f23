@@ -28,6 +28,7 @@ class DeclNode : public AstNode {
     Variables getVars() const { return vars; }
 
   private:
+    void init(IDs *const p_ids);
     TypePtr type;
     ConstantPtr constant;
     Variables vars;
