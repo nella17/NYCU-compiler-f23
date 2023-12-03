@@ -6,6 +6,7 @@ IMAGE_NAME = compiler-f23-hw3
 DOCKERHUB_HOST_ACCOUNT = laiyt
 IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
+MAKEFLAGS += -j
 
 # TODO: add a clean build opiton
 project:
