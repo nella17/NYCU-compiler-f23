@@ -9,12 +9,12 @@ IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
 # TODO: add a clean build opiton
 project:
-	make -C src/
+	${MAKE} -C src/
 project-clean:
 	${MAKE} clean -C src/
 
 test:
-	make -C test/
+	${MAKE} -C test/
 test-clean:
 	${MAKE} clean -C test/
 
@@ -24,7 +24,7 @@ docker-pull:
 	docker pull ${IMAGE_FULLNAME}
 
 autograde: clean
-	make project && make test
+	${MAKE} project && ${MAKE} test
 
 # Docker
 # ========================================================
