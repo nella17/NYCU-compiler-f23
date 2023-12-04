@@ -9,12 +9,12 @@ IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
 # TODO: add a clean build opiton
 project:
-	make -C src/
+	${MAKE} -C src/
 project-clean:
 	${MAKE} clean -C src/
 
 test: project
-	make -C test/
+	${MAKE} -C test/
 test-clean:
 	${MAKE} clean -C test/
 
@@ -28,7 +28,7 @@ docker-pull:
 # outputs from being taken, leading to incorrect content in the diff section of the report.
 # To address this, `--ignore-errors` is added to Make to allow it to succeed even if the testing process fails.
 autograde: clean
-	make project && make --ignore-errors test
+	${MAKE} project && ${MAKE} --ignore-errors test
 
 # Docker
 # ========================================================
