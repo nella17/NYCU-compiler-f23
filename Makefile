@@ -6,16 +6,14 @@ IMAGE_NAME = compiler-f23-hw3
 DOCKERHUB_HOST_ACCOUNT = laiyt
 IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
-MAKEFLAGS += -j
-
 # TODO: add a clean build opiton
 project:
-	make -C src/
+	${MAKE} -C src/
 project-clean:
 	${MAKE} clean -C src/
 
 test: project
-	make -C test/
+	${MAKE} -C test/
 test-clean:
 	${MAKE} clean -C test/
 
@@ -25,7 +23,7 @@ docker-pull:
 	docker pull ${IMAGE_FULLNAME}
 
 autograde: clean
-	make project && make test
+	${MAKE} project && ${MAKE} test
 
 # Docker
 # ========================================================
