@@ -22,7 +22,7 @@ OBJS := $(OBJS:=.o)
 all: $(EXEC)
 
 # Static pattern rule
-$(SCANNER).c: %.c: %.l
+$(SCANNER).c: %.c: %.l $(PARSER).c
 	$(LEX) -o $@ $<
 
 $(PARSER).c: %.c: %.y
