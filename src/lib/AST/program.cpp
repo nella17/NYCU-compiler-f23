@@ -1,6 +1,4 @@
 #include "AST/program.hpp"
-
-#include <iostream>
 #include "AST/AstDumper.hpp"
 
 // TODO

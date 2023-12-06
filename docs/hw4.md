@@ -2,9 +2,7 @@
 
 **Introduction to Compiler Design by Prof. Yi-Ping You**
 
-### Due Date:
-
-To be announced.
+### Due Date: 23:59, December 24, 2023
 
 ---
 
@@ -36,7 +34,6 @@ To be announced.
 		- [Recommended Workflow of Developing](#recommended-workflow-of-developing)
 		- [Symbol Table Construction](#symbol-table-construction)
 		- [Source Code Listing in Semantic Error](#source-code-listing-in-semantic-error)
-		- [Visiting of FunctionNode](#visiting-of-functionnode)
 		- [Type Information Propagation](#type-information-propagation)
 	- [What Should Your Parser Do?](#what-should-your-parser-do)
 	- [Project Structure](#project-structure)
@@ -51,7 +48,10 @@ To be announced.
 In this assignment, you will extend your parser to perform semantic analyses for a given program written in `P` language using the information recorded in the AST, which has been constructed in the previous assignment.
 
 This assignment requires you to construct a symbol table for performing semantic analyses this time and code generation in the last assignment.
-You should design it using feasible data structures. **DO NOT just use string, unless you're obsessed with parsing strings for extracting information from them.**
+You should design it using feasible data structures.
+
+> [!important]
+> DO NOT use string for everything, unless you're obsessed with parsing strings for extracting information from them.
 
 ## Assignment Description
 
@@ -66,9 +66,9 @@ As a result, we need to maintain a data structure, symbol table, which stores so
 
 A symbol table is used for the following purposes:
 
-- To pass information from declarations to uses
-- To verify if a symbol has been declared before uses
-- To help type checking when analyzing assignments, operations, and return statement
+- To pass information from declarations to uses.
+- To verify if a symbol has been declared before uses.
+- To help type checking when analyzing assignments, operations, and return statement.
 
 **Components**
 
@@ -79,8 +79,8 @@ A symbol table is simply a table that contains entries for each name of program,
 | Name | The name of the symbol. Each symbol have the length between 1 to 32. The extra part of an identifier will be discarded. |
 | Kind | The name type of the symbol. There are **six** kinds of symbols: program, function, parameter, variable, loop\_var, and constant. |
 | Level | The scope level of the symbol. 0 represents the global scope. Local scope levels start from 1, and the scope level is incremented at the start of a scope and decremented at the end of the scope.  |
-| Type | The type of the symbol. Each symbol is of types integer, real, boolean, string, or the signature of an array. (Note that this field can be used for the return type of a function ) |
-| Attribute | Other attributes of the symbol, the value of a constant or list of the types of the formal parameters of a function. |
+| Type | The type of the symbol. Each symbol is of types integer, real, boolean, string, or the signature of an array. (Note that this field can be used for the return type of a function.) |
+| Attribute | Other attributes of the symbol, the value of a constant, or list of the types of the formal parameters of a function. |
 
 #### Implementation
 
@@ -107,7 +107,7 @@ A scope corresponds to a symbol table. `ProgramNode`, `FunctionNode`, `ForNode` 
 
 Following are the special rules that you should be careful of:
 
-- A `FunctionNode` should share the same symbol table with its body (CompoundStatementNode). More specifically, parameters of a `FunctionNode` should be declared in the same symbol table with those declared in the `CompoundStatementNode`.
+- A `FunctionNode` should share the same symbol table with its body (`CompoundStatementNode`). More specifically, parameters of a `FunctionNode` should be declared in the same symbol table with those declared in the `CompoundStatementNode`.
 - A `ForNode` contains a symbol table for the loop variable. That is, there is a scope (symbol table) in a `ForNode` with **only one symbol of a loop variable**.
 
 #### Scope Rules
@@ -117,16 +117,17 @@ After entering a node that forms a scope, we may encounter some declarations. Th
 When constructing an entry in a symbol table, there are some rules to conform:
 
 - Scope rules are similar to C.
-- Name must be unique within a given scope. The identifier designates the entity declared closest to it, that is, the identifier declared in the outer scope is hidden by the one declared in the inner scope.
-	- Unlike the normal variable, the symbol of a loop variable **CANNOT** be redeclared whether it's in the same scope or the inner scope.
+- Name must be unique within a given scope. The identifier designates the entity declared closest to it; that is, the identifier declared in the outer scope is hidden by the one declared in the inner scope.
+	- Unlike the normal variable, the symbol of a loop variable **CANNOT** be redeclared, whether it's in the same scope or the inner scope.
 	- If there are multiple declarations with the same identifier in the same scope, only the first declaration will be placed in the symbol table.
 - Declarations within a compound statement, a function, or a for statement are local to the statements in the same block or the inner block, and no longer exist after exiting the block in which it's declared.
 
-If there is a violation, your parser should report a semantic error. (we'll discuss it later)
+If there is a violation, your parser should report a semantic error. (we'll discuss it later.)
 
 #### Output Format
 
-> Note that your parser should dump the symbol table to **`stdout`**.
+> [!note]
+> Your parser should dump the symbol table to **`stdout`**.
 
 Format of each component:
 
@@ -227,7 +228,7 @@ In this assignment, one more option is added:
 
 Now we have a basic grasp of what the symbol table is. Let's see how to use it in semantic analysis.
 
-Before that, we need to talk about when to perform semantic analyses. Basically, semantic analyses can be separated into two parts by the performed order. One is performed in pre-order, while another one is in post-order. There is only one semantic analysis that should be performed in pre-order, that is symbol redeclaration. Except for symbol redeclaration, all other semantic analyses are performed in post-order.
+Before that, we need to talk about when to perform semantic analyses. Basically, semantic analyses can be separated into two parts by the performed order. One is performed in _pre-order_, while another one is in _post-order_. There is only one semantic analysis that should be performed in pre-order, that is symbol redeclaration. Except for symbol redeclaration, all other semantic analyses are performed in post-order.
 
 In this assignment, you have to implement a semantic analyzer to perform semantic analyses on a given program by traversing the AST of it. When meeting a node, your analyzer should behave like this:
 
@@ -244,7 +245,8 @@ void visitXXXNode(/* omitted for simplicity */) {
 }
 ```
 
-Note that **once your parser has found a semantic error in a child node of some node, the parser has no need to check semantic errors related to the child node since the parser cannot use the wrong information for the rest examinations.**
+> [!note]
+> Once your parser has found a semantic error in a child node of some node, the parser has no need to check semantic errors related to the child node since the parser cannot use the wrong information for the rest examinations.
 
 
 Let's look at a simple example:
@@ -298,7 +300,7 @@ In this example, I'll skip the `ProgramNode` and directly demonstrate how should
 			3. In step 4, the semantic analyses of a `BinaryOperatorNode` basically check whether the operands are the same types. <br>
 			The analyzer will find that the left operand is an integer, while the right operand is a string. We cannot add an integer with a string, so it will report the semantic error and skip the rest checks of the `BinaryOperatorNode`.
 	3. Perform semantic analyses of an `AssignmentNode`.
-		- Note that the spec has mentioned that we don't have to do further checks if the current node's child nodes have semantic errors. Be careful! The spec says that we don't have to do further checks **that are related to the child node which has a semantic error rather than all checks in the current node.**<br>
+		- Note that the spec has mentioned that we don't have to do further checks if the current node's child nodes have semantic errors. Be careful! The spec says that we don't have to do further checks **that are related to the child node which has a semantic error rather than all checks in the current node.** <br>
 		Therefore, the analyzer will still find that the variable reference is a reference to a constant variable, which is prohibited and report the semantic error! After all, the variable reference is unrelated to the expression. We can still check the semantic definitions of the variable reference in the `AssignmentNode`.
 
 More details about semantic definitions of each kind of node are listed in the next section.
@@ -309,7 +311,8 @@ This section describes the semantic definitions of each kind of node. Each kind 
 
 When your parser encounters a semantic error, the parser should report an error with relevant error messages and format, which are described in [error-message.md](./error-message.md) and skip the rest semantic checks of the node.
 
-> Note that your parser should report the error to **`stderr`**.
+> [!note]
+> Your parser should report the error to **`stderr`**.
 
 #### Symbol Table
 
@@ -471,10 +474,10 @@ The initial value of the loop variable and the constant value of the condition m
 
 ### Recommended Workflow of Developing
 
-1. Design and implement the symbol table construction and related checks (symbol redeclaration)
-2. Add the switch buttom of pseudocomment D for turning on/off the symbol table dumping
-3. Implement one of semantic checks in the order listed in [0x02. Semantic Definition](#0x02-semantic-definition)
-4. Examine the functionality of checks by utilizing the test cases we provide
+1. Design and implement the symbol table construction and related checks (symbol redeclaration).
+2. Add the switch button of pseudocomment D for turning on/off the symbol table dumping.
+3. Implement one of semantic checks in the order listed in [0x02. Semantic Definition](#0x02-semantic-definition).
+4. Examine the functionality of checks by utilizing the test cases we provide.
 5. Repeat 3 ~ 4. until all semantic checks have been done.
 
 ### Symbol Table Construction
@@ -517,7 +520,8 @@ Here are some possible approaches to implement this function:
 1. Use `strdup()` to record each line of source code in an array of pointer to `char`.
 2. Record the file position of head of each line in an array of `long`, then use `fseek()` + `fgets()` to get the source code when needed.
 
-> Note that the maximum lines of code are 200.
+> [!note]
+> The maximum lines of code are 200.
 
 ### Type Information Propagation
 
@@ -569,15 +573,15 @@ If you want to preview your report in GitHub style markdown before pushing to Gi
 
 ## Assessment Rubrics (Grading)
 
-Total of 100 points
+Total of 105 points
 
 + Passing all test cases (95 pts)
-+ Report (5 pts) \
++ Report (10 pts) \
   0: empty \
-  1: bad \
-  3: normal \
-  4: good \
-  5: excellent
+  3: bad \
+  5: normal \
+  7: good \
+  10: excellent
 
 ## Build and Execute
 
@@ -589,15 +593,13 @@ Total of 100 points
 
 ### Build Project
 
-TA would use `src/Makefile` to build your project by simply typing `make clean && make` on CS workstation or Hw4 docker image. You have to make sure that it will generate an executable named '`parser`'. **No further grading will be made if the `make` process fails or the executable '`parser`' is not found.**
+TA would use `src/Makefile` to build your project by simply typing `make clean && make` from the docker container. You have to make sure that it will generate an executable named '`parser`'. **No further grading will be made if the `make` process fails or the executable '`parser`' is not found.**
 
 ### Test your parser
 
-We provide some basic tests in the test folder. Simply type `make test` to test your parser. The grade you got will be shown on the terminal. You can also check diff.txt in test/result folder to know the diff result between the outputs of your parser and the sample solutions.
+We provide all the test cases in the `test` folder. Simply type `make test` to test your parser. The grade you got will be shown on the terminal. You can also check `diff.txt` in `test/result` folder to know the `diff` result between the outputs of your parser and the sample solutions.
 
-The objective we provide sample test cases is making sure your parser outputs in correct format and parses program correctly. You will get at least **95 pts** if you pass all the test cases.
-
-Please use `student_` as the prefix of your own tests to prevent TAs from overriding your files. For example: `student_identifier_test`.
+Please use `student_` as the prefix of your own tests to prevent TAs from overwriting your files. For example: `student_identifier_test`.
 
 ## Submitting the Assignment
 

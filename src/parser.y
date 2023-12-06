@@ -6,7 +6,6 @@
 }
 
 %code requires {
-#include "AST/AstDumper.hpp"
 #include "AST/BinaryOperator.hpp"
 #include "AST/CompoundStatement.hpp"
 #include "AST/ConstantValue.hpp"
@@ -27,6 +26,9 @@
 #include "AST/variable.hpp"
 #include "AST/while.hpp"
 #include "type.hpp"
+
+#include "AST/AstDumper.hpp"
+#include "sema/SemanticAnalyzer.hpp"
 
 #include <vector>
 #include <memory>
@@ -702,10 +704,14 @@ int main(int argc, const char *argv[]) {
         root->accept(ast_dumper);
     }
 
+    SemanticAnalyzer sema_analyzer;
+    root->accept(sema_analyzer);
+
+    // TODO: do not print this if there's any semantic error
     printf("\n"
-           "|--------------------------------|\n"
-           "|  There is no syntactic error!  |\n"
-           "|--------------------------------|\n");
+           "|---------------------------------------------------|\n"
+           "|  There is no syntactic error and semantic error!  |\n"
+           "|---------------------------------------------------|\n");
 
     delete root;
     fclose(yyin);
