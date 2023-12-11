@@ -1,5 +1,4 @@
-#ifndef SEMA_SEMANTIC_ANALYZER_H
-#define SEMA_SEMANTIC_ANALYZER_H
+#pragma once
 
 #include "visitor/AstNodeVisitor.hpp"
 
@@ -30,5 +29,3 @@ class SemanticAnalyzer final : public AstNodeVisitor {
     void visit(ForNode &p_for) override;
     void visit(ReturnNode &p_return) override;
 };
-
-#endif
