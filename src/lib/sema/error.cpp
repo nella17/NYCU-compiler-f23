@@ -143,3 +143,10 @@ SemanticError* ConditionTypeError(Location loc) {
         "the expression of condition must be boolean type"
     );
 }
+
+SemanticError* LoopError(Location loc) {
+    return new SemanticError(
+        loc,
+        "the lower bound and upper bound of iteration count must be in the incremental order"
+    );
+}

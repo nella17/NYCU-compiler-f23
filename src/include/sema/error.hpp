@@ -48,3 +48,4 @@ SemanticError* ConstAssignError(Location, std::string);
 SemanticError* LoopVarAssignError(Location);
 SemanticError* IncompatibleAssignError(Location, TypePtr, TypePtr);
 SemanticError* ConditionTypeError(Location);
+SemanticError* LoopError(Location);

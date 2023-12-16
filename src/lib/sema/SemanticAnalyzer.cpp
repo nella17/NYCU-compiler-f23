@@ -418,6 +418,16 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
 
     p_for.visitChildNodes(*this);
 
+    try {
+        if (p_for.getBegin() > p_for.getEnd()) {
+            throw LoopError(
+                p_for.getLocation()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
+
     contexts.pop_back();
     symbolmanager.popScope();
 }

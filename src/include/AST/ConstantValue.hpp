@@ -18,6 +18,7 @@ class ConstantValueNode : public ExpressionNode {
 
     const char* getValueCString() const { return value_str.c_str(); }
     std::string getValueString() const { return value_str; }
+    auto getValue() const { return value; }
 
   private:
     std::variant<int, float, std::string, bool> value;

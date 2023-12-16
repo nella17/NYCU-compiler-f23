@@ -7,7 +7,9 @@ ForNode::ForNode(
         ConstantValueNode *const p_end,
         CompoundStatementNode *const p_body
     ) : AstNode(line, col),
-    decl(p_decl), init(p_init), end(p_end), body(p_body)
+    decl(p_decl), init(p_init),
+    begin(std::dynamic_pointer_cast<ConstantValueNode>(p_init->getExpr())),
+    end(p_end), body(p_body)
 {}
 
 void ForNode::visitChildNodes(AstNodeVisitor &p_visitor) {

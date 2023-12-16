@@ -20,9 +20,12 @@ class ForNode : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
+    int getBegin() const { return std::get<int>(begin->getValue()); }
+    int getEnd() const { return std::get<int>(end->getValue()); }
+
   private:
     DeclNodePtr decl;
     AssignmentPtr init;
-    ConstantPtr end;
+    ConstantPtr begin, end;
     CompoundStatementPtr body;
 };
