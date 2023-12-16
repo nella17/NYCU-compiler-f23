@@ -380,12 +380,36 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
 
 void SemanticAnalyzer::visit(IfNode &p_if) {
     p_if.visitChildNodes(*this);
-    // TODO
+
+    try {
+        auto expr = p_if.getExpr();
+        auto type = expr->getType();
+        if (!type) throw nullptr;
+        if (!type->isBool()) {
+            throw ConditionTypeError(
+                expr->getLocation()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(WhileNode &p_while) {
     p_while.visitChildNodes(*this);
-    // TODO
+
+    try {
+        auto expr = p_while.getExpr();
+        auto type = expr->getType();
+        if (!type) throw nullptr;
+        if (!type->isBool()) {
+            throw ConditionTypeError(
+                expr->getLocation()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(ForNode &p_for) {

@@ -136,3 +136,10 @@ SemanticError* IncompatibleAssignError(Location loc, TypePtr type_of_variable_re
         "assigning to '" + type_of_variable_reference->getNameString() + "' from incompatible type '" + type_of_expression->getNameString() + "'"
     );
 }
+
+SemanticError* ConditionTypeError(Location loc) {
+    return new SemanticError(
+        loc,
+        "the expression of condition must be boolean type"
+    );
+}
