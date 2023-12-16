@@ -29,6 +29,7 @@ class Type {
     void addDim(int);
     void popDim();
     bool checkDim();
+    bool isVoid() const { return value == Value::Void; }
     bool isInteger() const { return dim.empty() and value == Value::Integer; }
     bool isReal() const { return dim.empty() and value == Value::Real; }
     bool capReal() const { return isReal() or isInteger(); }

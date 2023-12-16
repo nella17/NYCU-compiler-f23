@@ -150,3 +150,17 @@ SemanticError* LoopError(Location loc) {
         "the lower bound and upper bound of iteration count must be in the incremental order"
     );
 }
+
+SemanticError* ReturnVoidError(Location loc) {
+    return new SemanticError(
+        loc,
+        "program/procedure should not return a value"
+    );
+}
+
+SemanticError* ReturnTypeError(Location loc, TypePtr type_of_expression, TypePtr return_type) {
+    return new SemanticError(
+        loc,
+        "return '" + type_of_expression->getNameString() + "' from a function with return type '" + return_type->getNameString() + "'"
+    );
+}

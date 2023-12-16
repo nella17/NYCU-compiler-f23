@@ -16,12 +16,10 @@ enum class ContextKind {
 
 class SemanticAnalyzer final : public AstNodeVisitor {
   private:
-    // TODO: something like symbol manager (manage symbol tables)
-    //       context manager, return type manager
-
     SymbolManager symbolmanager;
     std::vector<ContextKind> contexts{};
     std::vector<SemanticErrorPtr> errors{};
+    std::vector<TypePtr> retTypes;
 
     bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
     bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }

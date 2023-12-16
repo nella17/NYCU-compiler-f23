@@ -9,6 +9,7 @@ void SemanticAnalyzer::dumpError() {
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
     symbolmanager.pushGlobalScope();
     contexts.emplace_back(ContextKind::kProgram);
+    retTypes.emplace_back(p_program.getType());
 
     symbolmanager.addSymbol(
         p_program.getNameString(),
@@ -17,6 +18,7 @@ void SemanticAnalyzer::visit(ProgramNode &p_program) {
     );
     p_program.visitChildNodes(*this);
 
+    retTypes.pop_back();
     contexts.pop_back();
     symbolmanager.popScope();
 }
@@ -83,9 +85,11 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
 
     symbolmanager.pushScope();
     contexts.emplace_back(ContextKind::kFunction);
+    retTypes.emplace_back(p_function.getType());
 
     p_function.visitChildNodes(*this);
 
+    retTypes.pop_back();
     contexts.pop_back();
     symbolmanager.popScope();
 }
@@ -434,5 +438,24 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
 
 void SemanticAnalyzer::visit(ReturnNode &p_return) {
     p_return.visitChildNodes(*this);
-    // TODO
+
+    try {
+        if (retTypes.back()->isVoid()) {
+            throw ReturnVoidError(
+                p_return.getLocation()
+            );
+        }
+        auto expr = p_return.getExpr();
+        auto type = expr->getType();
+        if (!type) throw nullptr;
+        if (!(type <= retTypes.back())) {
+            throw ReturnTypeError(
+                expr->getLocation(),
+                type,
+                retTypes.back()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }

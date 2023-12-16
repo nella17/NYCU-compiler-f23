@@ -49,3 +49,5 @@ SemanticError* LoopVarAssignError(Location);
 SemanticError* IncompatibleAssignError(Location, TypePtr, TypePtr);
 SemanticError* ConditionTypeError(Location);
 SemanticError* LoopError(Location);
+SemanticError* ReturnVoidError(Location);
+SemanticError* ReturnTypeError(Location, TypePtr, TypePtr);
