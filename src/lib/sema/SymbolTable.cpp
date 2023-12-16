@@ -13,16 +13,20 @@ void SymbolTable::addSymbol(SymbolEntryPtr entry) {
 }
 
 SymbolEntryPtr SymbolManager::addSymbol(
-        std::string p_name, SymbolKind p_kind, TypePtr p_type,
-        SymbolEntry::AttrT p_attr
-    ) {
+    std::string p_name, SymbolKind p_kind, TypePtr p_type,
+    SymbolEntry::AttrT p_attr
+) {
     auto it = entries.find(p_name);
-    if (it != entries.end() and !it->second.empty() and it->second.back()->level == level)
-        return nullptr;
+    if (it != entries.end() and !it->second.empty()) {
+        auto last = it->second.back();
+        if (last->level == level or last->kind == SymbolKind::kLoopVar)
+            return nullptr;
+    }
     auto entry = std::make_shared<SymbolEntry>(
         p_name, p_kind, level, p_type, p_attr
     );
     currentScope()->addSymbol(entry);
+    pushEntry(entry);
     return entry;
 }
 
@@ -90,9 +94,9 @@ std::ostream& operator<<(std::ostream& os, const SymbolEntry& entry) {
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolEntry::AttrT& attr) {
-    if (auto constant = std::get_if<ConstantPtr>(&attr)) {
+    if (auto constant = std::get_if<ConstantPtr>(&attr); constant and *constant) {
         os << (*constant)->getValueString();
-    } else if (auto args = std::get_if<ArgsPtr>(&attr)) {
+    } else if (auto args = std::get_if<ArgsPtr>(&attr); args and *args) {
         os << (*args)->getPrototypeString();
     }else {
         os << "";

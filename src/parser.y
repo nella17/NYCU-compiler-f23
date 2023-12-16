@@ -708,11 +708,14 @@ int main(int argc, const char *argv[]) {
     SemanticAnalyzer sema_analyzer;
     root->accept(sema_analyzer);
 
-    // TODO: do not print this if there's any semantic error
-    printf("\n"
-           "|---------------------------------------------------|\n"
-           "|  There is no syntactic error and semantic error!  |\n"
-           "|---------------------------------------------------|\n");
+    if (sema_analyzer.hasError()) {
+        sema_analyzer.dumpError();
+    } else {
+        printf("\n"
+               "|---------------------------------------------------|\n"
+               "|  There is no syntactic error and semantic error!  |\n"
+               "|---------------------------------------------------|\n");
+    }
 
     delete root;
     fclose(yyin);

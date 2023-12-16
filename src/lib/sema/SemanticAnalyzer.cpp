@@ -1,6 +1,11 @@
 #include "sema/SemanticAnalyzer.hpp"
 #include "visitor/AstNodeInclude.hpp"
 
+void SemanticAnalyzer::dumpError() {
+    for (auto error: errors)
+        std::cout << error;
+}
+
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
     symbolmanager.pushGlobalScope();
     contexts.emplace_back(ContextKind::kProgram);
@@ -21,25 +26,27 @@ void SemanticAnalyzer::visit(DeclNode &p_decl) {
 }
 
 void SemanticAnalyzer::visit(VariableNode &p_variable) {
-    SymbolEntryPtr entry;
-    if (!p_variable.getConstant()) {
-        auto kind = SymbolKind::kVariable;
-        if (inFunction()) kind = SymbolKind::kParameter;
-        if (inFor()) kind = SymbolKind::kLoopVar;
-        entry = symbolmanager.addSymbol(
-            p_variable.getNameString(),
-            kind,
-            p_variable.getType()
-        );
-    } else {
-        entry = symbolmanager.addSymbol(
-            p_variable.getNameString(),
-            SymbolKind::kConstant,
-            p_variable.getType(),
-            p_variable.getConstant()
+    auto kind = SymbolKind::kVariable;
+    if (inFunction())
+        kind = SymbolKind::kParameter;
+    if (inFor())
+        kind = SymbolKind::kLoopVar;
+    if (p_variable.getConstant())
+        kind = SymbolKind::kConstant;
+    auto entry = symbolmanager.addSymbol(
+        p_variable.getNameString(),
+        kind,
+        p_variable.getType(),
+        p_variable.getConstant()
+    );
+    if (!entry) {
+        errors.emplace_back(
+            new SymbolRedeclError(
+                p_variable.getLocation(),
+                p_variable.getNameString()
+            )
         );
     }
-    if (!entry) ;// TODO
     p_variable.visitChildNodes(*this);
 }
 
@@ -57,12 +64,20 @@ void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
-    symbolmanager.addSymbol(
+    auto entry = symbolmanager.addSymbol(
         p_function.getNameString(),
         SymbolKind::kFunction,
         p_function.getType(),
         p_function.getArgs()
     );
+    if (!entry) {
+        errors.emplace_back(
+            new SymbolRedeclError(
+                p_function.getLocation(),
+                p_function.getNameString()
+            )
+        );
+    }
 
     symbolmanager.pushScope();
     contexts.emplace_back(ContextKind::kFunction);

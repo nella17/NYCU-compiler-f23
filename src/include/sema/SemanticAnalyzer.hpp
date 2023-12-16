@@ -2,6 +2,7 @@
 
 #include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolTable.hpp"
+#include "sema/error.hpp"
 
 #include <vector>
 
@@ -19,7 +20,8 @@ class SemanticAnalyzer final : public AstNodeVisitor {
     //       context manager, return type manager
 
     SymbolManager symbolmanager;
-    std::vector<ContextKind> contexts;
+    std::vector<ContextKind> contexts{};
+    std::vector<SemanticErrorPtr> errors{};
 
     bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
     bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }
@@ -27,6 +29,9 @@ class SemanticAnalyzer final : public AstNodeVisitor {
   public:
     ~SemanticAnalyzer() = default;
     SemanticAnalyzer() = default;
+
+    void dumpError();
+    bool hasError() const { return !errors.empty(); }
 
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;

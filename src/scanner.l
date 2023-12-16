@@ -20,6 +20,7 @@
 #define LIST_LITERAL(name, literal) do { LIST_SOURCE; if(opt_tok) printf("<%s: %s>\n", name, literal); } while(0)
 #define MAX_LINE_LENG               512
 #define MAX_ID_LENG                 32
+#define MAX_LINE                    200
 
 // prevent undefined reference error in newer version of flex
 extern "C" int yylex(void);
@@ -27,6 +28,7 @@ extern "C" int yylex(void);
 uint32_t line_num = 1;
 uint32_t col_num = 1;
 char current_line[MAX_LINE_LENG];
+char* lines[MAX_LINE];
 
 static uint32_t opt_src = 1;
 static uint32_t opt_tok = 1;
@@ -199,6 +201,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
     if (opt_src) {
         printf("%d: %s\n", line_num, current_line);
     }
+    lines[line_num] = strdup(current_line);
     ++line_num;
     col_num = 1;
     current_line[0] = '\0';
