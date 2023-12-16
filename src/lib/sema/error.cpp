@@ -87,3 +87,24 @@ SemanticError* IncompatibleError(Location loc, TypePtr type_of_argument, TypePtr
         "incompatible type passing '" + type_of_argument->getNameString() + "' to parameter of type '" + type_of_parameter->getNameString() + "'"
     );
 }
+
+SemanticError* PrintTypeError(Location loc) {
+    return new SemanticError(
+        loc,
+        "expression of print statement must be scalar type"
+    );
+}
+
+SemanticError* ReadTypeError(Location loc) {
+    return new SemanticError(
+        loc,
+        "variable reference of read statement must be scalar type"
+    );
+}
+
+SemanticError* ReadROError(Location loc) {
+    return new SemanticError(
+        loc,
+        "variable reference of read statement cannot be a constant or loop variable"
+    );
+}

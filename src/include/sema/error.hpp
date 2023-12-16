@@ -40,3 +40,6 @@ SemanticError* InvalidUnaryOp(Location, Operator, TypePtr);
 SemanticError* NonFunctionError(Location, std::string);
 SemanticError* ArgsError(Location, std::string);
 SemanticError* IncompatibleError(Location, TypePtr, TypePtr);
+SemanticError* PrintTypeError(Location);
+SemanticError* ReadTypeError(Location);
+SemanticError* ReadROError(Location);

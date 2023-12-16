@@ -102,7 +102,18 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
 
 void SemanticAnalyzer::visit(PrintNode &p_print) {
     p_print.visitChildNodes(*this);
-    // TODO
+
+    try {
+        auto expr = p_print.getExpr();
+        if (expr->isError()) throw nullptr;
+        if (!expr->getType()->isScalar()) {
+            throw PrintTypeError(
+                expr->getLocation()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
@@ -308,7 +319,25 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
 
 void SemanticAnalyzer::visit(ReadNode &p_read) {
     p_read.visitChildNodes(*this);
-    // TODO
+
+    try {
+        auto var_ref = p_read.getVarRef();
+        if (var_ref->isError()) throw nullptr;
+        if (!var_ref->getType()->isScalar()) {
+            throw ReadTypeError(
+                var_ref->getLocation()
+            );
+        }
+        auto entry = symbolmanager.lookup(var_ref->getNameString());
+        if (entry->isError()) throw nullptr;
+        if (entry->getKind() == SymbolKind::kConstant or entry->getKind() == SymbolKind::kLoopVar) {
+            throw ReadROError(
+                var_ref->getLocation()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(IfNode &p_if) {

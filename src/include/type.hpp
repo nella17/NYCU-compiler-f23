@@ -34,6 +34,7 @@ class Type {
     bool capReal() const { return isReal() or isInteger(); }
     bool isString() const { return dim.empty() and value == Value::String; }
     bool isBool() const { return dim.empty() and value == Value::Boolean; }
+    bool isScalar() const { return dim.empty(); }
     const auto& getDim() const { return dim; }
 
   private:

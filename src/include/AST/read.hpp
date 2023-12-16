@@ -14,6 +14,8 @@ class ReadNode : public AstNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
+    VarRefPtr getVarRef() const { return var_ref; }
+
   private:
     VarRefPtr var_ref;
 };
