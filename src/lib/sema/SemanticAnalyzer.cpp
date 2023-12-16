@@ -63,10 +63,6 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     }
 }
 
-void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
-    // TODO
-}
-
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
     auto entry = symbolmanager.addSymbol(
         p_function.getNameString(),
