@@ -27,9 +27,14 @@ class Type {
     ~Type() = default;
 
     void addDim(int);
+    void popDim();
     bool checkDim();
-    bool isInteger();
-    size_t getSize() const { return dim.size(); }
+    bool isInteger() const { return dim.empty() and value == Value::Integer; }
+    bool isReal() const { return dim.empty() and value == Value::Real; }
+    bool capReal() const { return isReal() or isInteger(); }
+    bool isString() const { return dim.empty() and value == Value::String; }
+    bool isBool() const { return dim.empty() and value == Value::Boolean; }
+    const auto& getDim() const { return dim; }
 
   private:
     Type(Value);

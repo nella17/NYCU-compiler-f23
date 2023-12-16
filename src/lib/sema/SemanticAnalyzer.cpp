@@ -107,68 +107,162 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
 
 void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     p_bin_op.visitChildNodes(*this);
-    // TODO
+
+    auto left = p_bin_op.getLeft(), right = p_bin_op.getRight();
+    auto Ltype = left->getType(), Rtype = right->getType();
+    auto op = p_bin_op.getOp();
+    try {
+        if (left->isError() or right->isError()) throw false;
+        if (!Ltype or !Rtype) throw false;
+        TypePtr type = nullptr;
+        switch (op) {
+            case Operator::ADD:
+                if (Ltype->isString() and Rtype->isString()) {
+                    type = Ltype;
+                    break;
+                }
+            case Operator::SUB:
+            case Operator::MUL:
+            case Operator::DIV:
+                if (Ltype->isInteger() and Rtype->isInteger()) {
+                    type = Ltype;
+                    break;
+                }
+                if (Ltype->capReal() and Rtype->capReal()) {
+                    type = Ltype->isReal() ? Ltype : Rtype;
+                    break;
+                }
+                throw true;
+            case Operator::MOD:
+                if (Ltype->isInteger() and Rtype->isInteger()) {
+                    type = Ltype;
+                    break;
+                }
+                throw true;
+            case Operator::OP_LT:
+            case Operator::OP_LTEQ:
+            case Operator::OP_NEQ:
+            case Operator::OP_GTEQ:
+            case Operator::OP_GT:
+            case Operator::OP_EQ:
+                if (Ltype->isInteger() and Rtype->isInteger()) {
+                    type = TypePtr(Type::makeBoolean());
+                    break;
+                }
+                if (Ltype->capReal() and Rtype->capReal()) {
+                    type = TypePtr(Type::makeBoolean());
+                    break;
+                }
+                throw true;
+            case Operator::AND:
+            case Operator::OR:
+                if (Ltype->isBool() and Rtype->isBool()) {
+                    type = Ltype;
+                    break;
+                }
+                throw true;
+            default:
+                throw true;
+        }
+        p_bin_op.setType(type);
+    } catch (bool error) {
+        p_bin_op.setError();
+        if (error) {
+            errors.emplace_back(
+                InvalidBinaryOp(
+                    p_bin_op.getLocation(),
+                    op, Ltype, Rtype
+                )
+            );
+        }
+    }
 }
 
 void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     p_un_op.visitChildNodes(*this);
-    // TODO
+
+    auto expr = p_un_op.getExpr();
+    auto type = expr->getType();
+    auto op = p_un_op.getOp();
+    try {
+        if (expr->isError() or !expr->getType()) throw false;
+        switch (op) {
+            case Operator::NEG:
+                if (type->isInteger() or type->isReal())
+                    break;
+                throw true;
+            case Operator::NOT:
+                if (type->isBool())
+                    break;
+                throw true;
+            default:
+                throw true;
+        }
+        p_un_op.setType(type);
+    } catch (bool error) {
+        p_un_op.setError();
+        if (error) {
+            errors.emplace_back(
+                InvalidUnaryOp(
+                    p_un_op.getLocation(),
+                    op, type
+                )
+            );
+        }
+    }
 }
 
 void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     p_func_invocation.visitChildNodes(*this);
+
     // TODO
+    auto entry = symbolmanager.lookup(p_func_invocation.getNameString());
+    p_func_invocation.setType(entry->getType());
 }
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     p_variable_ref.visitChildNodes(*this);
 
     auto entry = symbolmanager.lookup(p_variable_ref.getNameString());
-    if (!entry) {
-        errors.emplace_back(
-            UndeclaredError(
+    try {
+        if (!entry) {
+            throw UndeclaredError(
                 p_variable_ref.getLocation(),
                 p_variable_ref.getNameString()
-            )
-        );
-    } else if (!entry->isError()) {
+            );
+        }
+        if (entry->isError()) throw nullptr;
         auto kind = entry->getKind();
         switch (kind) {
         case SymbolKind::kParameter:
         case SymbolKind::kVariable:
         case SymbolKind::kLoopVar:
-        case SymbolKind::kConstant: {
-            bool error = false;
-            for (auto expr: p_variable_ref.getExprs()) {
-                if (!expr->getType()->isInteger()) {
-                    errors.emplace_back(
-                        ArrayRefIntError(
-                            expr->getLocation()
-                        )
-                    );
-                    error = true;
-                    break;
-                }
-            }
-            if (error) break;
-            if (p_variable_ref.getExprs().size() > entry->getType()->getSize()) {
-                errors.emplace_back(
-                    OverArraySubError(
-                        p_variable_ref.getLocation(),
-                        p_variable_ref.getNameString()
-                    )
-                );
-            }
+        case SymbolKind::kConstant:
             break;
-        }
         default:
-            errors.emplace_back(
-                NonVariableError(
-                    p_variable_ref.getLocation(),
-                    p_variable_ref.getNameString()
-                )
+            throw NonVariableError(
+                p_variable_ref.getLocation(),
+                p_variable_ref.getNameString()
             );
         }
+        auto type = std::make_shared<Type>(*entry->getType());
+        for (auto expr: p_variable_ref.getExprs()) {
+            if (expr->isError() or !expr->getType()) throw nullptr;
+            if (!expr->getType()->isInteger())
+                throw ArrayRefIntError(
+                    expr->getLocation()
+                );
+            if (type->getDim().empty())
+                throw OverArraySubError(
+                    p_variable_ref.getLocation(),
+                    p_variable_ref.getNameString()
+                );
+            type->popDim();
+        }
+        p_variable_ref.setType(type);
+    } catch (SemanticError* error) {
+        p_variable_ref.setError();
+        if (error) errors.emplace_back(error);
     }
 }
 

@@ -17,6 +17,8 @@ class OperatorNode : public ExpressionNode {
     ~OperatorNode() = default;
 
     const char* getOpCString() const { return to_cstring(op); }
+    Operator getOp() const { return op; }
+
   protected:
     const Operator op;
 };

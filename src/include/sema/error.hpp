@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AST/ast.hpp"
+#include "AST/operator.hpp"
+#include "type.hpp"
 
 #include <iostream>
 #include <memory>
@@ -33,3 +35,5 @@ SemanticError* UndeclaredError(Location, std::string);
 SemanticError* NonVariableError(Location, std::string);
 SemanticError* ArrayRefIntError(Location);
 SemanticError* OverArraySubError(Location, std::string);
+SemanticError* InvalidBinaryOp(Location, Operator, TypePtr, TypePtr);
+SemanticError* InvalidUnaryOp(Location, Operator, TypePtr);

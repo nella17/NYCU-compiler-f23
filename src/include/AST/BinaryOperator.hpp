@@ -16,6 +16,9 @@ class BinaryOperatorNode : public OperatorNode {
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
+    ExpressionPtr getLeft() const { return left; }
+    ExpressionPtr getRight() const { return right; }
+
   private:
     ExpressionPtr left, right;
 };

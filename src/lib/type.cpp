@@ -11,16 +11,16 @@ void Type::addDim(int x) {
     dim.emplace_back(x);
     name_valid = false;
 }
+void Type::popDim() {
+    dim.pop_back();
+    name_valid = false;
+}
 
 bool Type::checkDim() {
     for (auto d: dim)
         if (d <= 0)
             return false;
     return true;
-}
-
-bool Type::isInteger() {
-    return dim.empty() and value == Value::Integer;
 }
 
 void Type::ensureName() {

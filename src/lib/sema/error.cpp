@@ -52,3 +52,17 @@ SemanticError* OverArraySubError(Location loc, std::string symbol_name) {
         "there is an over array subscript on '" + symbol_name + "'"
     );
 }
+
+SemanticError* InvalidBinaryOp(Location loc, Operator op, TypePtr Ltype, TypePtr Rtype) {
+    return new SemanticError(
+        loc,
+        "invalid operands to binary operator '" + std::string(to_cstring(op)) + "' ('" + Ltype->getNameString() + "' and '" + Rtype->getNameString() + "')"
+    );
+}
+
+SemanticError* InvalidUnaryOp(Location loc, Operator op, TypePtr type) {
+    return new SemanticError(
+        loc,
+        "invalid operand to unary operator '" + std::string(to_cstring(op)) + "' ('" + type->getNameString() + "')"
+    );
+}

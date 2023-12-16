@@ -11,9 +11,13 @@ class ExpressionNode : public AstNode {
     ~ExpressionNode() = default;
 
     TypePtr getType() const { return type; }
+    void setType(TypePtr p_type) { type = p_type; }
+    bool isError() const { return error; }
+    void setError() { error = true; }
 
   protected:
-    TypePtr type;
+    TypePtr type = nullptr;
+    bool error = false;
 };
 
 using ExpressionPtr = std::shared_ptr<ExpressionNode>;
