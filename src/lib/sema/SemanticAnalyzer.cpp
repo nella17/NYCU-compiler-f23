@@ -47,7 +47,11 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
             )
         );
     }
+
+    p_variable.visitChildNodes(*this);
+
     if (!p_variable.getType()->checkDim()) {
+        entry->setError();
         errors.emplace_back(
             ArrayDeclGT0Error(
                 p_variable.getLocation(),
@@ -55,7 +59,6 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
             )
         );
     }
-    p_variable.visitChildNodes(*this);
 }
 
 void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
@@ -119,7 +122,54 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     p_variable_ref.visitChildNodes(*this);
-    // TODO
+
+    auto entry = symbolmanager.lookup(p_variable_ref.getNameString());
+    if (!entry) {
+        errors.emplace_back(
+            UndeclaredError(
+                p_variable_ref.getLocation(),
+                p_variable_ref.getNameString()
+            )
+        );
+    } else if (!entry->isError()) {
+        auto kind = entry->getKind();
+        switch (kind) {
+        case SymbolKind::kParameter:
+        case SymbolKind::kVariable:
+        case SymbolKind::kLoopVar:
+        case SymbolKind::kConstant: {
+            bool error = false;
+            for (auto expr: p_variable_ref.getExprs()) {
+                if (!expr->getType()->isInteger()) {
+                    errors.emplace_back(
+                        ArrayRefIntError(
+                            expr->getLocation()
+                        )
+                    );
+                    error = true;
+                    break;
+                }
+            }
+            if (error) break;
+            if (p_variable_ref.getExprs().size() > entry->getType()->getSize()) {
+                errors.emplace_back(
+                    OverArraySubError(
+                        p_variable_ref.getLocation(),
+                        p_variable_ref.getNameString()
+                    )
+                );
+            }
+            break;
+        }
+        default:
+            errors.emplace_back(
+                NonVariableError(
+                    p_variable_ref.getLocation(),
+                    p_variable_ref.getNameString()
+                )
+            );
+        }
+    }
 }
 
 void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {

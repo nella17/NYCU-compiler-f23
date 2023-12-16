@@ -4,7 +4,7 @@
 
 SymbolEntry::SymbolEntry(
     std::string p_name, SymbolKind p_kind, int p_level, TypePtr p_type, AttrT p_attr
-): name(p_name), kind(p_kind), level(p_level), type(p_type), attr(p_attr) {}
+): name(p_name), kind(p_kind), level(p_level), type(p_type), attr(p_attr), error(false) {}
 
 SymbolTable::SymbolTable(int p_level): level(p_level) {}
 
@@ -16,11 +16,9 @@ SymbolEntryPtr SymbolManager::addSymbol(
     std::string p_name, SymbolKind p_kind, TypePtr p_type,
     SymbolEntry::AttrT p_attr
 ) {
-    auto it = entries.find(p_name);
-    if (it != entries.end() and !it->second.empty()) {
-        auto last = it->second.back();
-        if (last->level == level or last->kind == SymbolKind::kLoopVar)
-            return nullptr;
+    auto prev = lookup(p_name);
+    if (prev and (prev->level == level or prev->kind == SymbolKind::kLoopVar)) {
+        return nullptr;
     }
     auto entry = std::make_shared<SymbolEntry>(
         p_name, p_kind, level, p_type, p_attr
@@ -28,6 +26,12 @@ SymbolEntryPtr SymbolManager::addSymbol(
     currentScope()->addSymbol(entry);
     pushEntry(entry);
     return entry;
+}
+
+SymbolEntryPtr SymbolManager::lookup(std::string name) {
+    auto it = entries.find(name);
+    if (it == entries.end() or it->second.empty()) return nullptr;
+    return it->second.back();
 }
 
 void SymbolManager::pushEntry(SymbolEntryPtr entry) {

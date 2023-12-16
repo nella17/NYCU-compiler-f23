@@ -20,6 +20,9 @@ class VariableReferenceNode : public ExpressionNode {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
     const char* getNameCString() const { return name.c_str(); }
+    std::string getNameString() const { return name; }
+
+    const Expressions& getExprs() const { return exprs; }
 
   private:
     std::string name;

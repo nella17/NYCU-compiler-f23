@@ -29,3 +29,7 @@ std::ostream& operator<<(std::ostream& os, SemanticErrorPtr);
 
 SemanticError* SymbolRedeclError(Location, std::string);
 SemanticError* ArrayDeclGT0Error(Location, std::string);
+SemanticError* UndeclaredError(Location, std::string);
+SemanticError* NonVariableError(Location, std::string);
+SemanticError* ArrayRefIntError(Location);
+SemanticError* OverArraySubError(Location, std::string);

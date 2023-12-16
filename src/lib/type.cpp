@@ -19,6 +19,10 @@ bool Type::checkDim() {
     return true;
 }
 
+bool Type::isInteger() {
+    return dim.empty() and value == Value::Integer;
+}
+
 void Type::ensureName() {
     if (!name_valid) {
         switch (value) {

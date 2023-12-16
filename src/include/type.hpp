@@ -28,6 +28,8 @@ class Type {
 
     void addDim(int);
     bool checkDim();
+    bool isInteger();
+    size_t getSize() const { return dim.size(); }
 
   private:
     Type(Value);

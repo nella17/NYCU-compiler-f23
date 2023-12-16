@@ -35,12 +35,17 @@ class SymbolEntry {
   public:
     using AttrT = std::variant<std::nullptr_t, ConstantPtr, ArgsPtr>;
     SymbolEntry(std::string, SymbolKind, int, TypePtr, AttrT = nullptr);
+    SymbolKind getKind() const { return kind; }
+    TypePtr getType() const { return type; }
+    bool isError() const { return error; }
+    void setError() { error = true; }
   private:
     std::string name;
     SymbolKind kind;
     int level;
     TypePtr type;
     AttrT attr;
+    bool error;
 };
 std::ostream& operator<<(std::ostream&, const SymbolEntry::AttrT&);
 
@@ -66,6 +71,7 @@ class SymbolManager {
   public:
     SymbolTablePtr currentScope() { return tables.back(); }
     SymbolEntryPtr addSymbol(std::string, SymbolKind, TypePtr, SymbolEntry::AttrT = nullptr);
+    SymbolEntryPtr lookup(std::string);
     void pushEntry(SymbolEntryPtr);
     void popEntry(SymbolEntryPtr);
     void pushGlobalScope();
