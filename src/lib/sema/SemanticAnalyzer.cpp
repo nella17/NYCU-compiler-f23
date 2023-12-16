@@ -252,7 +252,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
         }
         for (size_t i = 0, sz = exprs.size(); i < sz; i++) {
             if (!(exprs[i]->getType() <= types[i])) {
-                throw IncompatibleError(
+                throw IncompatibleParamError(
                     exprs[i]->getLocation(),
                     exprs[i]->getType(),
                     types[i]
@@ -306,6 +306,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
             type->popDim();
         }
         p_variable_ref.setType(type);
+        p_variable_ref.setEntry(entry);
     } catch (SemanticError* error) {
         p_variable_ref.setError();
         if (error) errors.emplace_back(error);
@@ -314,7 +315,44 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
 
 void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
     p_assignment.visitChildNodes(*this);
-    // TODO
+
+    try {
+        auto var_ref = p_assignment.getVarRef();
+        auto entry = var_ref->getEntry();
+        if (var_ref->isError() or !entry) throw nullptr;
+        if (!var_ref->getType()->getDim().empty()) {
+            throw ArrayAssignError(
+                var_ref->getLocation()
+            );
+        }
+        if (entry->getKind() == SymbolKind::kConstant) {
+            throw ConstAssignError(
+                var_ref->getLocation(),
+                var_ref->getNameString()
+            );
+        }
+        if (!inFor() and entry->getKind() == SymbolKind::kLoopVar) {
+            throw LoopVarAssignError(
+                var_ref->getLocation()
+            );
+        }
+        auto expr = p_assignment.getExpr();
+        if (expr->isError()) throw nullptr;
+        if (!expr->getType()->getDim().empty()) {
+            throw ArrayAssignError(
+                expr->getLocation()
+            );
+        }
+        if (!(expr->getType() <= var_ref->getType())) {
+            throw IncompatibleAssignError(
+                p_assignment.getLocation(),
+                var_ref->getType(),
+                expr->getType()
+            );
+        }
+    } catch (SemanticError* error) {
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(ReadNode &p_read) {

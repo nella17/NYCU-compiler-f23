@@ -81,7 +81,7 @@ SemanticError* ArgsError(Location loc, std::string symbol_name) {
     );
 }
 
-SemanticError* IncompatibleError(Location loc, TypePtr type_of_argument, TypePtr type_of_parameter) {
+SemanticError* IncompatibleParamError(Location loc, TypePtr type_of_argument, TypePtr type_of_parameter) {
     return new SemanticError(
         loc,
         "incompatible type passing '" + type_of_argument->getNameString() + "' to parameter of type '" + type_of_parameter->getNameString() + "'"
@@ -106,5 +106,33 @@ SemanticError* ReadROError(Location loc) {
     return new SemanticError(
         loc,
         "variable reference of read statement cannot be a constant or loop variable"
+    );
+}
+
+SemanticError* ArrayAssignError(Location loc) {
+    return new SemanticError(
+        loc,
+        "array assignment is not allowed"
+    );
+}
+
+SemanticError* ConstAssignError(Location loc, std::string symbol_name) {
+    return new SemanticError(
+        loc,
+        "cannot assign to variable '" + symbol_name + "' which is a constant"
+    );
+}
+
+SemanticError* LoopVarAssignError(Location loc) {
+    return new SemanticError(
+        loc,
+        "the value of loop variable cannot be modified inside the loop body"
+    );
+}
+
+SemanticError* IncompatibleAssignError(Location loc, TypePtr type_of_variable_reference, TypePtr type_of_expression) {
+    return new SemanticError(
+        loc,
+        "assigning to '" + type_of_variable_reference->getNameString() + "' from incompatible type '" + type_of_expression->getNameString() + "'"
     );
 }
