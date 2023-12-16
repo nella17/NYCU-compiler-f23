@@ -39,6 +39,7 @@ class SymbolEntry {
     TypePtr getType() const { return type; }
     bool isError() const { return error; }
     void setError() { error = true; }
+    ArgsPtr getArgs() const { auto args = std::get_if<ArgsPtr>(&attr); return args ? *args : nullptr; }
   private:
     std::string name;
     SymbolKind kind;

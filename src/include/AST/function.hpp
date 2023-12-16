@@ -14,6 +14,7 @@ class Args {
   public:
     Args(const DeclNodes&);
     std::string getPrototypeString() const { return args; }
+    const auto& getTypes() const { return types; }
 };
 using ArgsPtr = std::shared_ptr<Args>;
 

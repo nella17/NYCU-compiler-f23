@@ -14,6 +14,7 @@ class FunctionInvocationNode : public ExpressionNode {
 
     const char *getNameCString() const { return name.c_str(); }
     std::string getNameString() const { return name; }
+    const Expressions& getExprs() const { return exprs; }
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;

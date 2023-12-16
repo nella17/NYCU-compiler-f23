@@ -215,9 +215,44 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
 void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     p_func_invocation.visitChildNodes(*this);
 
-    // TODO
-    auto entry = symbolmanager.lookup(p_func_invocation.getNameString());
-    p_func_invocation.setType(entry->getType());
+    try {
+        auto entry = symbolmanager.lookup(p_func_invocation.getNameString());
+        if (!entry) {
+            throw UndeclaredError(
+                p_func_invocation.getLocation(),
+                p_func_invocation.getNameString()
+            );
+        }
+        if (entry->isError()) throw nullptr;
+        auto args = entry->getArgs();
+        if (entry->getKind() != SymbolKind::kFunction or !args) {
+            throw NonFunctionError(
+                p_func_invocation.getLocation(),
+                p_func_invocation.getNameString()
+            );
+        }
+        auto& exprs = p_func_invocation.getExprs();
+        auto& types = args->getTypes();
+        if (exprs.size() != types.size()) {
+            throw ArgsError(
+                p_func_invocation.getLocation(),
+                p_func_invocation.getNameString()
+            );
+        }
+        for (size_t i = 0, sz = exprs.size(); i < sz; i++) {
+            if (!(exprs[i]->getType() <= types[i])) {
+                throw IncompatibleError(
+                    exprs[i]->getLocation(),
+                    exprs[i]->getType(),
+                    types[i]
+                );
+            }
+        }
+        p_func_invocation.setType(entry->getType());
+    } catch (SemanticError* error) {
+        p_func_invocation.setError();
+        if (error) errors.emplace_back(error);
+    }
 }
 
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {

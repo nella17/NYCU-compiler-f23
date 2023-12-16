@@ -54,6 +54,16 @@ std::string Type::getNameString() {
     return name;
 }
 
+bool operator<=(TypePtr Ltype, TypePtr Rtype) {
+    if (Ltype->isInteger() and Rtype->isInteger())
+        return true;
+    if (Ltype->capReal() and Rtype->isReal())
+        return true;
+    if (Ltype->getNameString() == Rtype->getNameString())
+        return true;
+    return false;
+}
+
 std::ostream& operator<<(std::ostream& os, TypePtr type) {
     return os << type->getNameString();
 }

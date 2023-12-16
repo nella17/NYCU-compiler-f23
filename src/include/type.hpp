@@ -46,4 +46,6 @@ class Type {
 };
 
 using TypePtr = std::shared_ptr<Type>;
+
+bool operator<=(TypePtr, TypePtr);
 std::ostream& operator<<(std::ostream&, TypePtr);

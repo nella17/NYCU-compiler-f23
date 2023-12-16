@@ -37,3 +37,6 @@ SemanticError* ArrayRefIntError(Location);
 SemanticError* OverArraySubError(Location, std::string);
 SemanticError* InvalidBinaryOp(Location, Operator, TypePtr, TypePtr);
 SemanticError* InvalidUnaryOp(Location, Operator, TypePtr);
+SemanticError* NonFunctionError(Location, std::string);
+SemanticError* ArgsError(Location, std::string);
+SemanticError* IncompatibleError(Location, TypePtr, TypePtr);
