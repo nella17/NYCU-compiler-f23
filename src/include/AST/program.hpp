@@ -13,8 +13,8 @@ class ProgramNode final : public AstNode {
     std::string name;
     DeclNodes decls;
     Functions funcs;
-    // TODO: return type
     CompoundStatementPtr body;
+    TypePtr type;
 
   public:
     ~ProgramNode() = default;
@@ -22,10 +22,12 @@ class ProgramNode final : public AstNode {
                 char *const p_name,
                 DeclNodes *const p_decls,
                 Functions *const p_funcs,
-                CompoundStatementNode *const p_body
-                /* TODO: return type */);
+                CompoundStatementNode *const p_body,
+                Type *const p_type);
 
     const char *getNameCString() const { return name.c_str(); }
+    std::string getNameString() const { return name; }
+    TypePtr getType() const { return type; }
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 };

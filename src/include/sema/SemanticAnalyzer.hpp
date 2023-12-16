@@ -1,11 +1,28 @@
 #pragma once
 
 #include "visitor/AstNodeVisitor.hpp"
+#include "sema/SymbolTable.hpp"
+
+#include <vector>
+
+enum class ContextKind {
+    kNone = 0,
+    kProgram,
+    kFunction,
+    kCompound,
+    kFor,
+};
 
 class SemanticAnalyzer final : public AstNodeVisitor {
   private:
     // TODO: something like symbol manager (manage symbol tables)
     //       context manager, return type manager
+
+    SymbolManager symbolmanager;
+    std::vector<ContextKind> contexts;
+
+    bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
+    bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }
 
   public:
     ~SemanticAnalyzer() = default;

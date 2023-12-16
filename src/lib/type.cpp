@@ -12,7 +12,7 @@ void Type::addDim(int x) {
     name_valid = false;
 }
 
-const char* Type::getNameCString() {
+void Type::ensureName() {
     if (!name_valid) {
         switch (value) {
             case Value::Integer: name = "integer"; break;
@@ -31,5 +31,18 @@ const char* Type::getNameCString() {
         }
         name_valid = true;
     }
+}
+
+const char* Type::getNameCString() {
+    ensureName();
     return name.c_str();
+}
+
+std::string Type::getNameString() {
+    ensureName();
+    return name;
+}
+
+std::ostream& operator<<(std::ostream& os, TypePtr type) {
+    return os << type->getNameString();
 }

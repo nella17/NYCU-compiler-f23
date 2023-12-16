@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <iostream>
 
 class Type {
   public:
@@ -21,6 +22,7 @@ class Type {
     };
     const Value value;
     const char* getNameCString();
+    std::string getNameString();
 
     ~Type() = default;
 
@@ -28,6 +30,7 @@ class Type {
 
   private:
     Type(Value);
+    void ensureName();
 
     std::vector<int> dim;
     std::string name;
@@ -35,3 +38,4 @@ class Type {
 };
 
 using TypePtr = std::shared_ptr<Type>;
+std::ostream& operator<<(std::ostream&, TypePtr);

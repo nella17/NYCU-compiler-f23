@@ -21,6 +21,9 @@ class VariableNode : public AstNode {
     const char* getNameCString() const { return name.c_str(); }
     std::string getNameString() const { return name; }
     const char* getTypeCString() const { return type->getNameCString(); }
+    std::string getTypeString() const { return type->getNameString(); }
+    TypePtr getType() const { return type; }
+    ConstantPtr getConstant() const { return constant; }
 
   private:
     std::string name;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/ast.hpp"
+#include "type.hpp"
 #include <memory>
 #include <vector>
 
@@ -9,9 +10,10 @@ class ExpressionNode : public AstNode {
     ExpressionNode(const uint32_t line, const uint32_t col);
     ~ExpressionNode() = default;
 
+    TypePtr getType() const { return type; }
+
   protected:
-    // for carrying type of result of an expression
-    // TODO: for next assignment
+    TypePtr type;
 };
 
 using ExpressionPtr = std::shared_ptr<ExpressionNode>;

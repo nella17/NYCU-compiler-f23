@@ -2,16 +2,18 @@
 #include "visitor/AstNodeInclude.hpp"
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    symbolmanager.pushGlobalScope();
+    contexts.emplace_back(ContextKind::kProgram);
+
+    symbolmanager.addSymbol(
+        p_program.getNameString(),
+        SymbolKind::kProgram,
+        p_program.getType()
+    );
+    p_program.visitChildNodes(*this);
+
+    contexts.pop_back();
+    symbolmanager.popScope();
 }
 
 void SemanticAnalyzer::visit(DeclNode &p_decl) {
@@ -19,16 +21,26 @@ void SemanticAnalyzer::visit(DeclNode &p_decl) {
 }
 
 void SemanticAnalyzer::visit(VariableNode &p_variable) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    SymbolEntryPtr entry;
+    if (!p_variable.getConstant()) {
+        auto kind = SymbolKind::kVariable;
+        if (inFunction()) kind = SymbolKind::kParameter;
+        if (inFor()) kind = SymbolKind::kLoopVar;
+        entry = symbolmanager.addSymbol(
+            p_variable.getNameString(),
+            kind,
+            p_variable.getType()
+        );
+    } else {
+        entry = symbolmanager.addSymbol(
+            p_variable.getNameString(),
+            SymbolKind::kConstant,
+            p_variable.getType(),
+            p_variable.getConstant()
+        );
+    }
+    if (!entry) ;// TODO
+    p_variable.visitChildNodes(*this);
 }
 
 void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
@@ -45,29 +57,30 @@ void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    symbolmanager.addSymbol(
+        p_function.getNameString(),
+        SymbolKind::kFunction,
+        p_function.getType(),
+        p_function.getArgs()
+    );
+
+    symbolmanager.pushScope();
+    contexts.emplace_back(ContextKind::kFunction);
+
+    p_function.visitChildNodes(*this);
+
+    contexts.pop_back();
+    symbolmanager.popScope();
 }
 
 void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    if (!inFunction()) symbolmanager.pushScope();
+    contexts.emplace_back(ContextKind::kCompound);
+
+    p_compound_statement.visitChildNodes(*this);
+
+    contexts.pop_back();
+    if (!inFunction()) symbolmanager.popScope();
 }
 
 void SemanticAnalyzer::visit(PrintNode &p_print) {
@@ -188,16 +201,13 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
 }
 
 void SemanticAnalyzer::visit(ForNode &p_for) {
-    /*
-     * TODO:
-     *
-     * 1. Push a new symbol table if this node forms a scope.
-     * 2. Insert the symbol into current symbol table if this node is related to
-     *    declaration (ProgramNode, VariableNode, FunctionNode).
-     * 3. Travere child nodes of this node.
-     * 4. Perform semantic analyses of this node.
-     * 5. Pop the symbol table pushed at the 1st step.
-     */
+    symbolmanager.pushScope();
+    contexts.emplace_back(ContextKind::kFor);
+
+    p_for.visitChildNodes(*this);
+
+    contexts.pop_back();
+    symbolmanager.popScope();
 }
 
 void SemanticAnalyzer::visit(ReturnNode &p_return) {

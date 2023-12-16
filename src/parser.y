@@ -158,7 +158,8 @@ program:
         $$ = new ProgramNode(
             @1.first_line, @1.first_column,
             $1,
-            $3, $4, $5
+            $3, $4, $5,
+            Type::makeVoid()
         );
     }
 ;

@@ -16,12 +16,10 @@ class ConstantValueNode : public ExpressionNode {
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
 
-    TypePtr getType() const { return type; }
-
     const char* getValueCString() const { return value_str.c_str(); }
+    std::string getValueString() const { return value_str; }
 
   private:
-    TypePtr type;
     std::variant<int, float, std::string, bool> value;
     std::string value_str;
 };
