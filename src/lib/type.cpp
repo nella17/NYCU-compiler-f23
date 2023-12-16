@@ -12,6 +12,13 @@ void Type::addDim(int x) {
     name_valid = false;
 }
 
+bool Type::checkDim() {
+    for (auto d: dim)
+        if (d <= 0)
+            return false;
+    return true;
+}
+
 void Type::ensureName() {
     if (!name_valid) {
         switch (value) {

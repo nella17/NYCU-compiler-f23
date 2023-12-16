@@ -41,7 +41,15 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
     );
     if (!entry) {
         errors.emplace_back(
-            new SymbolRedeclError(
+            SymbolRedeclError(
+                p_variable.getLocation(),
+                p_variable.getNameString()
+            )
+        );
+    }
+    if (!p_variable.getType()->checkDim()) {
+        errors.emplace_back(
+            ArrayDeclGT0Error(
                 p_variable.getLocation(),
                 p_variable.getNameString()
             )
@@ -72,7 +80,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
     );
     if (!entry) {
         errors.emplace_back(
-            new SymbolRedeclError(
+            SymbolRedeclError(
                 p_function.getLocation(),
                 p_function.getNameString()
             )

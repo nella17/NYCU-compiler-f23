@@ -11,13 +11,12 @@ extern char* lines[MAX_LINE];
 class SemanticError {
   protected:
     Location loc;
+    std::string reason;
 
   public:
-    SemanticError(Location p_loc): loc(p_loc) {}
+    SemanticError(Location p_loc, std::string p_reason): loc(p_loc), reason(p_reason) {}
     virtual ~SemanticError() = default;
-    virtual void dump(std::ostream&) = 0;
-    void show_line_col(std::ostream&);
-    void show_source(std::ostream&);
+    void dump(std::ostream&);
 
     SemanticError(const SemanticError &) = delete;
     SemanticError(SemanticError &&) = delete;
@@ -28,11 +27,5 @@ class SemanticError {
 using SemanticErrorPtr = std::shared_ptr<SemanticError>;
 std::ostream& operator<<(std::ostream& os, SemanticErrorPtr);
 
-class SymbolRedeclError : public SemanticError {
-  private:
-    std::string symbol_name;
-  public:
-    SymbolRedeclError(Location p_loc, std::string p_name): SemanticError(p_loc), symbol_name(p_name) {}
-    virtual ~SymbolRedeclError() = default;
-    void dump(std::ostream&) override;
-};
+SemanticError* SymbolRedeclError(Location, std::string);
+SemanticError* ArrayDeclGT0Error(Location, std::string);

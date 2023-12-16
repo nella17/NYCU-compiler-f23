@@ -27,6 +27,7 @@ class Type {
     ~Type() = default;
 
     void addDim(int);
+    bool checkDim();
 
   private:
     Type(Value);
