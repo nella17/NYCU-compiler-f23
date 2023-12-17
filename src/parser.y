@@ -711,7 +711,7 @@ int main(int argc, const char *argv[]) {
     if (sema_analyzer.hasError()) {
         sema_analyzer.dumpError();
     } else {
-        printf("\n"
+        fprintf(stderr, "\n"
                "|---------------------------------------------------|\n"
                "|  There is no syntactic error and semantic error!  |\n"
                "|---------------------------------------------------|\n");

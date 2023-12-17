@@ -210,7 +210,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
 
     /* Catch the character which is not accepted by all rules above */
 . {
-    printf("Error at line %d: bad character \"%s\"\n", line_num, yytext);
+    fprintf(stderr, "Error at line %d: bad character \"%s\"\n", line_num, yytext);
     exit(-1);
 }
 

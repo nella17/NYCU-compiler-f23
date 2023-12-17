@@ -3,7 +3,7 @@
 
 void SemanticAnalyzer::dumpError() {
     for (auto error: errors)
-        std::cout << error;
+        std::cerr << error;
 }
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
