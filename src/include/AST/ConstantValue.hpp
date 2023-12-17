@@ -2,27 +2,26 @@
 
 #include "AST/expression.hpp"
 #include "visitor/AstNodeVisitor.hpp"
-#include "type.hpp"
-#include <variant>
+#include "constant.hpp"
 #include <memory>
 
 class ConstantValueNode : public ExpressionNode {
   public:
-    ConstantValueNode(const uint32_t line, const uint32_t col, int p_int);
-    ConstantValueNode(const uint32_t line, const uint32_t col, float p_real);
-    ConstantValueNode(const uint32_t line, const uint32_t col, char *const p_str);
-    ConstantValueNode(const uint32_t line, const uint32_t col, bool p_bool);
+    template<typename T>
+    ConstantValueNode(const uint32_t line, const uint32_t col, T value):
+        ExpressionNode(line, col), constant(std::make_shared<ConstantValue>(std::forward<T>(value))) {}
     ~ConstantValueNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
 
-    const char* getValueCString() const { return value_str.c_str(); }
-    std::string getValueString() const { return value_str; }
-    auto getValue() const { return value; }
+    const char* getValueCString() const { return constant->getValueCString(); }
+    std::string getValueString() const { return constant->getValueString(); }
+    auto getValue() const { return constant->getValue(); }
+    auto getConstant() const { return constant; }
+    auto getType() const { return constant->getType(); }
 
   private:
-    std::variant<int, float, std::string, bool> value;
-    std::string value_str;
+    ConstantPtr constant;
 };
 
-using ConstantPtr = std::shared_ptr<ConstantValueNode>;
+using ConstantNodePtr = std::shared_ptr<ConstantValueNode>;

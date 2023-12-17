@@ -35,6 +35,7 @@ class SemanticAnalyzer final : public AstNodeVisitor {
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;
     void visit(VariableNode &p_variable) override;
+    void visit(ConstantValueNode &p_constant_value) override;
     void visit(FunctionNode &p_function) override;
     void visit(CompoundStatementNode &p_compound_statement) override;
     void visit(PrintNode &p_print) override;

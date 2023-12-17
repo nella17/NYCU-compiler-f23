@@ -12,7 +12,7 @@ class VariableNode : public AstNode {
     VariableNode(const uint32_t line, const uint32_t col,
             char *const p_name,
             TypePtr p_type,
-            ConstantPtr p_constant = nullptr);
+            ConstantNodePtr p_constant = nullptr);
     ~VariableNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
@@ -23,12 +23,12 @@ class VariableNode : public AstNode {
     const char* getTypeCString() const { return type->getNameCString(); }
     std::string getTypeString() const { return type->getNameString(); }
     TypePtr getType() const { return type; }
-    ConstantPtr getConstant() const { return constant; }
+    ConstantPtr getConstant() const { return constant ? constant->getConstant() : nullptr; }
 
   private:
     std::string name;
     TypePtr type;
-    ConstantPtr constant;
+    ConstantNodePtr constant;
 };
 
 using VariablePtr = std::shared_ptr<VariableNode>;

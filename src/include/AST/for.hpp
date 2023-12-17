@@ -26,6 +26,6 @@ class ForNode : public AstNode {
   private:
     DeclNodePtr decl;
     AssignmentPtr init;
-    ConstantPtr begin, end;
+    ConstantNodePtr begin, end;
     CompoundStatementPtr body;
 };

@@ -30,7 +30,7 @@ class DeclNode : public AstNode {
   private:
     void init(IDs *const p_ids);
     TypePtr type;
-    ConstantPtr constant;
+    ConstantNodePtr constant;
     Variables vars;
 };
 
