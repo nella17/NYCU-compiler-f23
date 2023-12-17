@@ -1,5 +1,7 @@
 #include "sema/error.hpp"
 
+#include <iomanip>
+
 std::ostream& operator<<(std::ostream& os, SemanticErrorPtr error) {
     error->dump(os);
     return os;
@@ -7,8 +9,9 @@ std::ostream& operator<<(std::ostream& os, SemanticErrorPtr error) {
 
 void SemanticError::dump(std::ostream& os) {
     os << "<Error> Found in line " << loc.line << ", column " << loc.col << ": " << reason << '\n'
-        << std::string(4, ' ') << lines[loc.line] << '\n'
-        << std::string(3 + loc.col, ' ') << "^\n";
+        << std::setfill(' ')
+        << std::setw(4) << " " << lines[loc.line] << '\n'
+        << std::setw(3 + (int)loc.col) << " " << "^\n";
 }
 
 SemanticError* SymbolRedeclError(Location loc, std::string symbol_name) {

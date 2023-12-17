@@ -87,7 +87,7 @@ std::ostream& operator<<(std::ostream& os, SymbolKind kind) {
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolEntry& entry) {
-    os << std::left
+    os << std::left << std::setfill(' ')
         << std::setw(33) << entry.name
         << std::setw(11) << entry.kind
         << std::setw(11) << (std::to_string(entry.level) + (entry.level ? "(local)" : "(global)"))
@@ -110,17 +110,17 @@ std::ostream& operator<<(std::ostream& os, const SymbolEntry::AttrT& attr) {
 
 
 std::ostream& operator<<(std::ostream& os, const SymbolTable& table) {
-    os << std::string(110, '=') << '\n';
-    os << std::left
+    os << std::setfill('=') << std::setw(110) << "" << '\n';
+    os << std::left << std::setfill(' ')
         << std::setw(33) << "Name"
         << std::setw(11) << "Kind"
         << std::setw(11) << "Level"
         << std::setw(17) << "Type"
         << std::setw(11) << "Attribute"
         << '\n';
-    os << std::string(110, '-') << '\n';
+    os << std::setfill('-') << std::setw(110) << "" << '\n';
     for (auto entry: table.entries)
         os << *entry;
-    os << std::string(110, '-') << '\n';
+    os << std::setfill('-') << std::setw(110) << "" << '\n';
     return os;
 }
