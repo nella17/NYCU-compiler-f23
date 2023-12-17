@@ -23,6 +23,7 @@ class SemanticAnalyzer final : public AstNodeVisitor {
 
     bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
     bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }
+    SymbolKind varKind(VariableNode&) const;
 
   public:
     ~SemanticAnalyzer() = default;

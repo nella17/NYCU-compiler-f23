@@ -27,17 +27,20 @@ void SemanticAnalyzer::visit(DeclNode &p_decl) {
     p_decl.visitChildNodes(*this);
 }
 
-void SemanticAnalyzer::visit(VariableNode &p_variable) {
-    auto kind = SymbolKind::kVariable;
+SymbolKind SemanticAnalyzer::varKind(VariableNode &p_variable) const {
     if (inFunction())
-        kind = SymbolKind::kParameter;
+        return SymbolKind::kParameter;
     if (inFor())
-        kind = SymbolKind::kLoopVar;
+        return SymbolKind::kLoopVar;
     if (p_variable.getConstant())
-        kind = SymbolKind::kConstant;
+        return SymbolKind::kConstant;
+    return SymbolKind::kVariable;
+}
+
+void SemanticAnalyzer::visit(VariableNode &p_variable) {
     auto entry = symbolmanager.addSymbol(
         p_variable.getNameString(),
-        kind,
+        varKind(p_variable),
         p_variable.getType(),
         p_variable.getConstant()
     );
