@@ -6,7 +6,7 @@ SymbolEntry::SymbolEntry(
     std::string p_name, SymbolKind p_kind, int p_level, TypePtr p_type, AttrT p_attr
 ): name(p_name), kind(p_kind), level(p_level), type(p_type), attr(p_attr), error(false) {}
 
-SymbolTable::SymbolTable(int p_level): level(p_level) {}
+SymbolTable::SymbolTable(int p_level): level(p_level), entries{} {}
 
 void SymbolTable::addSymbol(SymbolEntryPtr entry) {
     entries.emplace_back(entry);

@@ -175,15 +175,16 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
 "//&"[STD][+-].* {
     LIST_SOURCE;
     char option = yytext[3];
+    uint32_t value = (yytext[4] == '+') ? 1 : 0;
     switch (option) {
     case 'S':
-        opt_src = (yytext[4] == '+') ? 1 : 0;
+        opt_src = value;
         break;
     case 'T':
-        opt_tok = (yytext[4] == '+') ? 1 : 0;
+        opt_tok = value;
         break;
     case 'D':
-        opt_dmp = (yytext[4] == '+') ? 1 : 0;
+        opt_dmp = value;
         break;
     }
 }
