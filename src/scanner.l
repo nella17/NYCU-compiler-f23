@@ -28,7 +28,7 @@ extern "C" int yylex(void);
 uint32_t line_num = 1;
 uint32_t col_num = 1;
 char current_line[MAX_LINE_LENG];
-char* lines[MAX_LINE];
+uint32_t lines_idx[MAX_LINE];
 
 static uint32_t opt_src = 1;
 static uint32_t opt_tok = 1;
@@ -202,7 +202,7 @@ nonzero_float ({nonzero_integer}\.(0|[0-9]*[1-9]))|(0\.([0-9]*[1-9]))
     if (opt_src) {
         printf("%d: %s\n", line_num, current_line);
     }
-    lines[line_num] = strdup(current_line);
+    lines_idx[line_num] = lines_idx[line_num-1] + col_num-1;
     ++line_num;
     col_num = 1;
     current_line[0] = '\0';

@@ -708,9 +708,7 @@ int main(int argc, const char *argv[]) {
     SemanticAnalyzer sema_analyzer;
     root->accept(sema_analyzer);
 
-    if (sema_analyzer.hasError()) {
-        sema_analyzer.dumpError();
-    } else {
+    if (!sema_analyzer.hasError()) {
         fprintf(stderr, "\n"
                "|---------------------------------------------------|\n"
                "|  There is no syntactic error and semantic error!  |\n"

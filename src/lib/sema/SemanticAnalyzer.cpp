@@ -1,9 +1,11 @@
 #include "sema/SemanticAnalyzer.hpp"
 #include "visitor/AstNodeInclude.hpp"
 
-void SemanticAnalyzer::dumpError() {
-    for (auto error: errors)
-        std::cerr << error;
+void SemanticAnalyzer::push_error(SemanticError* error) {
+    if (!error) return;
+    has_error = true;
+    std::cerr << *error;
+    delete error;
 }
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
@@ -45,7 +47,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
         p_variable.getConstant()
     );
     if (!entry) {
-        errors.emplace_back(
+        push_error(
             SymbolRedeclError(
                 p_variable.getLocation(),
                 p_variable.getNameString()
@@ -57,7 +59,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
 
     if (!p_variable.getType()->checkDim()) {
         entry->setError();
-        errors.emplace_back(
+        push_error(
             ArrayDeclGT0Error(
                 p_variable.getLocation(),
                 p_variable.getNameString()
@@ -78,7 +80,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
         p_function.getArgs()
     );
     if (!entry) {
-        errors.emplace_back(
+        push_error(
             SymbolRedeclError(
                 p_function.getLocation(),
                 p_function.getNameString()
@@ -119,7 +121,7 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -186,7 +188,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     } catch (bool error) {
         p_bin_op.setError();
         if (error) {
-            errors.emplace_back(
+            push_error(
                 InvalidBinaryOp(
                     p_bin_op.getLocation(),
                     op, Ltype, Rtype
@@ -220,7 +222,7 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     } catch (bool error) {
         p_un_op.setError();
         if (error) {
-            errors.emplace_back(
+            push_error(
                 InvalidUnaryOp(
                     p_un_op.getLocation(),
                     op, type
@@ -269,7 +271,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
         p_func_invocation.setInferType(entry->getType());
     } catch (SemanticError* error) {
         p_func_invocation.setError();
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -316,7 +318,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         p_variable_ref.setEntry(entry);
     } catch (SemanticError* error) {
         p_variable_ref.setError();
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -358,7 +360,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -381,7 +383,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -398,7 +400,7 @@ void SemanticAnalyzer::visit(IfNode &p_if) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -415,7 +417,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }
 
@@ -432,7 +434,7 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 
     contexts.pop_back();
@@ -459,6 +461,6 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
             );
         }
     } catch (SemanticError* error) {
-        if (error) errors.emplace_back(error);
+        if (error) push_error(error);
     }
 }

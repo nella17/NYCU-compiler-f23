@@ -2,16 +2,24 @@
 
 #include <iomanip>
 
-std::ostream& operator<<(std::ostream& os, SemanticErrorPtr error) {
-    error->dump(os);
+std::ostream& operator<<(std::ostream& os, const SemanticError& error) {
+    error.dump(os);
     return os;
 }
 
-void SemanticError::dump(std::ostream& os) {
+void SemanticError::dump(std::ostream& os) const {
+    auto prev = os.fill(' ');
+    std::string source;
+    size_t size = lines_idx[loc.line] - lines_idx[loc.line-1];
+    char buf[size];
+    if (fseek(yyin, lines_idx[loc.line-1], SEEK_SET) < 0 or fgets(buf, (int)size, yyin) == NULL)
+        source = std::strerror(errno);
+    else
+        source = { buf, size-1 };
     os << "<Error> Found in line " << loc.line << ", column " << loc.col << ": " << reason << '\n'
-        << std::setfill(' ')
-        << std::setw(4) << " " << lines[loc.line] << '\n'
-        << std::setw(3 + (int)loc.col) << " " << "^\n";
+        << std::setw(4) << " " << source << '\n'
+        << std::setw(4 + (int)loc.col) << "^" << '\n';
+    os.fill(prev);
 }
 
 SemanticError* SymbolRedeclError(Location loc, std::string symbol_name) {

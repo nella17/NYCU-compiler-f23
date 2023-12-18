@@ -8,7 +8,9 @@
 #include <memory>
 
 #define MAX_LINE 200
-extern char* lines[MAX_LINE];
+#define MAX_LINE_LENG 512
+extern uint32_t lines_idx[MAX_LINE];
+extern FILE *yyin;
 
 class SemanticError {
   protected:
@@ -18,7 +20,7 @@ class SemanticError {
   public:
     SemanticError(Location p_loc, std::string p_reason): loc(p_loc), reason(p_reason) {}
     virtual ~SemanticError() = default;
-    void dump(std::ostream&);
+    void dump(std::ostream&) const;
 
     SemanticError(const SemanticError &) = delete;
     SemanticError(SemanticError &&) = delete;
@@ -27,7 +29,7 @@ class SemanticError {
 };
 
 using SemanticErrorPtr = std::shared_ptr<SemanticError>;
-std::ostream& operator<<(std::ostream& os, SemanticErrorPtr);
+std::ostream& operator<<(std::ostream& os, const SemanticError&);
 
 SemanticError* SymbolRedeclError(Location, std::string);
 SemanticError* ArrayDeclGT0Error(Location, std::string);

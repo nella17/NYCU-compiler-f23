@@ -18,19 +18,19 @@ class SemanticAnalyzer final : public AstNodeVisitor {
   private:
     SymbolManager symbolmanager;
     std::vector<ContextKind> contexts{};
-    std::vector<SemanticErrorPtr> errors{};
+    bool has_error = false;
     std::vector<TypePtr> retTypes;
 
     bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
     bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }
     SymbolKind varKind(VariableNode&) const;
+    void push_error(SemanticError*);
 
   public:
     ~SemanticAnalyzer() = default;
     SemanticAnalyzer() = default;
 
-    void dumpError();
-    bool hasError() const { return !errors.empty(); }
+    bool hasError() const { return has_error; }
 
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;

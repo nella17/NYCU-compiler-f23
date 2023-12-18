@@ -82,6 +82,7 @@ std::ostream& operator<<(std::ostream& os, SymbolKind kind) {
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolEntry& entry) {
+    auto prev = os.fill(' ');
     os << std::left << std::setfill(' ')
         << std::setw(33) << entry.name
         << std::setw(11) << entry.kind
@@ -89,6 +90,7 @@ std::ostream& operator<<(std::ostream& os, const SymbolEntry& entry) {
         << std::setw(17) << entry.type
         << std::setw(11) << entry.attr
         << '\n';
+    os.fill(prev);
     return os;
 }
 
@@ -105,6 +107,7 @@ std::ostream& operator<<(std::ostream& os, const SymbolEntry::AttrT& attr) {
 
 
 std::ostream& operator<<(std::ostream& os, const SymbolTable& table) {
+    auto prev = os.fill(' ');
     os << std::setfill('=') << std::setw(110) << "" << '\n';
     os << std::left << std::setfill(' ')
         << std::setw(33) << "Name"
@@ -115,7 +118,8 @@ std::ostream& operator<<(std::ostream& os, const SymbolTable& table) {
         << '\n';
     os << std::setfill('-') << std::setw(110) << "" << '\n';
     for (auto entry: table.entries)
-        os << *entry;
+        os << std::setfill(prev) << *entry;
     os << std::setfill('-') << std::setw(110) << "" << '\n';
+    os.fill(prev);
     return os;
 }
