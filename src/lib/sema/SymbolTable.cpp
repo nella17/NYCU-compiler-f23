@@ -2,12 +2,6 @@
 
 #include <iomanip>
 
-SymbolEntry::SymbolEntry(
-    std::string p_name, SymbolKind p_kind, int p_level, TypePtr p_type, AttrT p_attr
-): name(p_name), kind(p_kind), level(p_level), type(p_type), attr(p_attr), error(false) {}
-
-SymbolTable::SymbolTable(int p_level): level(p_level), entries{} {}
-
 void SymbolTable::addSymbol(SymbolEntryPtr entry) {
     entries.emplace_back(entry);
 }
@@ -52,8 +46,8 @@ void SymbolManager::pushGlobalScope() {
 }
 
 void SymbolManager::pushScope(SymbolTablePtr table) {
-    level++;
-    if (!table) table = std::make_shared<SymbolTable>(level);
+    if (!table) table = std::make_shared<SymbolTable>(++level);
+    else level = table->level;
     tables.emplace_back(table);
     for (auto entry: table->entries)
         pushEntry(entry);
@@ -64,7 +58,8 @@ void SymbolManager::popScope() {
     for (auto entry: table->entries)
         popEntry(entry);
     tables.pop_back();
-    level--;
+    if (tables.empty()) level = table->level-1;
+    else level = tables.back()->level;
     if (opt_dmp) std::cout << *table;
 }
 

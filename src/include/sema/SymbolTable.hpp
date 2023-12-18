@@ -34,7 +34,13 @@ class SymbolEntry {
     friend std::ostream& operator<<(std::ostream&, const SymbolEntry&);
   public:
     using AttrT = std::variant<std::nullptr_t, ConstantPtr, ArgsPtr>;
-    SymbolEntry(std::string, SymbolKind, int, TypePtr, AttrT = nullptr);
+    SymbolEntry(
+        std::string p_name,
+        SymbolKind p_kind,
+        int p_level,
+        TypePtr p_type,
+        AttrT p_attr = nullptr
+    ): name(p_name), kind(p_kind), level(p_level), type(p_type), attr(p_attr), error(false) {}
     SymbolKind getKind() const { return kind; }
     TypePtr getType() const { return type; }
     bool isError() const { return error; }
@@ -57,7 +63,7 @@ class SymbolTable {
     friend SymbolManager;
     friend std::ostream& operator<<(std::ostream&, const SymbolTable&);
   public:
-    SymbolTable(int);
+    SymbolTable(int p_level): level(p_level), entries{} {}
     void addSymbol(SymbolEntryPtr);
     // other methods
   private:
@@ -70,6 +76,7 @@ std::ostream& operator<<(std::ostream&, const SymbolTablePtr&);
 
 class SymbolManager {
   public:
+    SymbolManager(): level(0), entries{}, tables{} {}
     SymbolTablePtr currentScope() { return tables.back(); }
     SymbolEntryPtr addSymbol(std::string, SymbolKind, TypePtr, SymbolEntry::AttrT = nullptr);
     SymbolEntryPtr lookup(std::string);
@@ -80,7 +87,7 @@ class SymbolManager {
     void popScope();
     // other methods
   private:
-    int level = 0;
+    int level;
     std::unordered_map<std::string, SymbolEntrys> entries;
     std::vector<SymbolTablePtr> tables;
 };
