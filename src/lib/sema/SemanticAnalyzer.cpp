@@ -67,7 +67,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
 }
 
 void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
-    p_constant_value.setType(p_constant_value.getConstant()->getType());
+    p_constant_value.setInferType(p_constant_value.getType());
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
@@ -113,7 +113,7 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
     try {
         auto expr = p_print.getExpr();
         if (expr->isError()) throw nullptr;
-        if (!expr->getType()->isScalar()) {
+        if (!expr->getInferredType()->isScalar()) {
             throw PrintTypeError(
                 expr->getLocation()
             );
@@ -127,7 +127,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     p_bin_op.visitChildNodes(*this);
 
     auto left = p_bin_op.getLeft(), right = p_bin_op.getRight();
-    auto Ltype = left->getType(), Rtype = right->getType();
+    auto Ltype = left->getInferredType(), Rtype = right->getInferredType();
     auto op = p_bin_op.getOp();
     try {
         if (left->isError() or right->isError()) throw false;
@@ -182,7 +182,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
             default:
                 throw true;
         }
-        p_bin_op.setType(type);
+        p_bin_op.setInferType(type);
     } catch (bool error) {
         p_bin_op.setError();
         if (error) {
@@ -200,10 +200,10 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     p_un_op.visitChildNodes(*this);
 
     auto expr = p_un_op.getExpr();
-    auto type = expr->getType();
+    auto type = expr->getInferredType();
     auto op = p_un_op.getOp();
     try {
-        if (expr->isError() or !expr->getType()) throw false;
+        if (expr->isError() or !expr->getInferredType()) throw false;
         switch (op) {
             case Operator::NEG:
                 if (type->isInteger() or type->isReal())
@@ -216,7 +216,7 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
             default:
                 throw true;
         }
-        p_un_op.setType(type);
+        p_un_op.setInferType(type);
     } catch (bool error) {
         p_un_op.setError();
         if (error) {
@@ -258,15 +258,15 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
             );
         }
         for (size_t i = 0, sz = exprs.size(); i < sz; i++) {
-            if (!(exprs[i]->getType() <= types[i])) {
+            if (!(exprs[i]->getInferredType() <= types[i])) {
                 throw IncompatibleParamError(
                     exprs[i]->getLocation(),
-                    exprs[i]->getType(),
+                    exprs[i]->getInferredType(),
                     types[i]
                 );
             }
         }
-        p_func_invocation.setType(entry->getType());
+        p_func_invocation.setInferType(entry->getType());
     } catch (SemanticError* error) {
         p_func_invocation.setError();
         if (error) errors.emplace_back(error);
@@ -300,8 +300,8 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
         }
         auto type = std::make_shared<Type>(*entry->getType());
         for (auto expr: p_variable_ref.getExprs()) {
-            if (expr->isError() or !expr->getType()) throw nullptr;
-            if (!expr->getType()->isInteger())
+            if (expr->isError() or !expr->getInferredType()) throw nullptr;
+            if (!expr->getInferredType()->isInteger())
                 throw ArrayRefIntError(
                     expr->getLocation()
                 );
@@ -312,7 +312,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
                 );
             type->popDim();
         }
-        p_variable_ref.setType(type);
+        p_variable_ref.setInferType(type);
         p_variable_ref.setEntry(entry);
     } catch (SemanticError* error) {
         p_variable_ref.setError();
@@ -327,7 +327,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
         auto var_ref = p_assignment.getVarRef();
         auto entry = var_ref->getEntry();
         if (var_ref->isError() or !entry) throw nullptr;
-        if (!var_ref->getType()->getDim().empty()) {
+        if (!var_ref->getInferredType()->getDim().empty()) {
             throw ArrayAssignError(
                 var_ref->getLocation()
             );
@@ -345,16 +345,16 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
         }
         auto expr = p_assignment.getExpr();
         if (expr->isError()) throw nullptr;
-        if (!expr->getType()->getDim().empty()) {
+        if (!expr->getInferredType()->getDim().empty()) {
             throw ArrayAssignError(
                 expr->getLocation()
             );
         }
-        if (!(expr->getType() <= var_ref->getType())) {
+        if (!(expr->getInferredType() <= var_ref->getInferredType())) {
             throw IncompatibleAssignError(
                 p_assignment.getLocation(),
-                var_ref->getType(),
-                expr->getType()
+                var_ref->getInferredType(),
+                expr->getInferredType()
             );
         }
     } catch (SemanticError* error) {
@@ -368,7 +368,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
     try {
         auto var_ref = p_read.getVarRef();
         if (var_ref->isError()) throw nullptr;
-        if (!var_ref->getType()->isScalar()) {
+        if (!var_ref->getInferredType()->isScalar()) {
             throw ReadTypeError(
                 var_ref->getLocation()
             );
@@ -390,7 +390,7 @@ void SemanticAnalyzer::visit(IfNode &p_if) {
 
     try {
         auto expr = p_if.getExpr();
-        auto type = expr->getType();
+        auto type = expr->getInferredType();
         if (!type) throw nullptr;
         if (!type->isBool()) {
             throw ConditionTypeError(
@@ -407,7 +407,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
 
     try {
         auto expr = p_while.getExpr();
-        auto type = expr->getType();
+        auto type = expr->getInferredType();
         if (!type) throw nullptr;
         if (!type->isBool()) {
             throw ConditionTypeError(
@@ -449,7 +449,7 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
             );
         }
         auto expr = p_return.getExpr();
-        auto type = expr->getType();
+        auto type = expr->getInferredType();
         if (!type) throw nullptr;
         if (!(type <= retTypes.back())) {
             throw ReturnTypeError(

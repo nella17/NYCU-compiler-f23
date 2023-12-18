@@ -10,13 +10,13 @@ class ExpressionNode : public AstNode {
     ExpressionNode(const uint32_t line, const uint32_t col);
     ~ExpressionNode() = default;
 
-    TypePtr getType() const { return type; }
-    void setType(TypePtr p_type) { type = p_type; }
+    TypePtr getInferredType() const { return inferred_type; }
+    void setInferType(TypePtr p_type) { inferred_type = p_type; }
     bool isError() const { return error; }
     void setError() { error = true; }
 
   protected:
-    TypePtr type = nullptr;
+    TypePtr inferred_type = nullptr;
     bool error = false;
 };
 
