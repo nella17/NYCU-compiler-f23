@@ -35,6 +35,7 @@
 		- [Symbol Table Construction](#symbol-table-construction)
 		- [Source Code Listing in Semantic Error](#source-code-listing-in-semantic-error)
 		- [Type Information Propagation](#type-information-propagation)
+  		- [Error Report](#error-report)
 	- [What Should Your Parser Do?](#what-should-your-parser-do)
 	- [Project Structure](#project-structure)
 	- [Assessment Rubrics (Grading)](#assessment-rubrics-grading)
@@ -528,6 +529,10 @@ Here are some possible approaches to implement this function:
 Some semantic checks are related to type incompatibility. You need to design a mechanism to propagate the type information from a child node to its parent node. For example, you need to propagate the type of the result of an expression to a BinaryOperatorNode, so that it can check whether its operation is legal or not.
 
 You may reuse the class/struct used in hw3 for representing the type of P language and then store it in the AST nodes for propagating the type information.
+
+### Error Report
+
+As long as you report error messages to `stderr` and other messages to `stdout`, there's no need to store the error messages as a string and report them all at once. Our test script writes the messages to the file in the order of `stdout` before `stderr`, so it's fine to interleave them.
 
 ## What Should Your Parser Do?
 
