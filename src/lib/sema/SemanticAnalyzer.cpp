@@ -201,8 +201,8 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     auto op = p_un_op.getOp();
     try {
         if (expr->isError() or !expr->getInferredType()) throw nullptr;
-        auto inferType = opInferredType(op, type);
-        if (!inferType) {
+        auto inferredType = opInferredType(op, type);
+        if (!inferredType) {
             throw InvalidUnaryOp(
                 p_un_op.getLocation(),
                 op, type
