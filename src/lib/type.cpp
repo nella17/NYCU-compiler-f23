@@ -12,6 +12,8 @@ void Type::addDim(int x) {
     name_valid = false;
 }
 void Type::popDim() {
+    dim.at(dim.size()-1);
+    if (dim.empty()) throw std::out_of_range("Type::popDim");
     dim.pop_back();
     name_valid = false;
 }

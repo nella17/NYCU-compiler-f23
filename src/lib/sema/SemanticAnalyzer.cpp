@@ -1,11 +1,9 @@
 #include "sema/SemanticAnalyzer.hpp"
 #include "visitor/AstNodeInclude.hpp"
 
-void SemanticAnalyzer::push_error(SemanticError* error) {
-    if (!error) return;
+void SemanticAnalyzer::logError(const SemanticError& error) {
     has_error = true;
-    std::cerr << *error;
-    delete error;
+    std::cerr << error.what();
 }
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
@@ -47,7 +45,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
         p_variable.getConstant()
     );
     if (!entry) {
-        push_error(
+        logError(
             SymbolRedeclError(
                 p_variable.getLocation(),
                 p_variable.getNameString()
@@ -59,7 +57,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
 
     if (!p_variable.getType()->checkDim()) {
         entry->setError();
-        push_error(
+        logError(
             ArrayDeclGT0Error(
                 p_variable.getLocation(),
                 p_variable.getNameString()
@@ -69,7 +67,7 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
 }
 
 void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
-    p_constant_value.setInferType(p_constant_value.getType());
+    p_constant_value.setInferredType(p_constant_value.getType());
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
@@ -80,7 +78,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
         p_function.getArgs()
     );
     if (!entry) {
-        push_error(
+        logError(
             SymbolRedeclError(
                 p_function.getLocation(),
                 p_function.getNameString()
@@ -120,9 +118,54 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
                 expr->getLocation()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
+}
+
+TypePtr opInferredType(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
+    switch (op) {
+        case Operator::ADD:
+            if (Ltype->isString() and Rtype->isString())
+                return Ltype;
+        case Operator::SUB:
+        case Operator::MUL:
+        case Operator::DIV:
+            if (Ltype->isInteger() and Rtype->isInteger())
+                return Ltype;
+            if (Ltype->capReal() and Rtype->capReal())
+                return Ltype->isReal() ? Ltype : Rtype;
+        case Operator::MOD:
+            if (Ltype->isInteger() and Rtype->isInteger())
+                return Ltype;
+            return nullptr;
+        case Operator::OP_LT:
+        case Operator::OP_LTEQ:
+        case Operator::OP_NEQ:
+        case Operator::OP_GTEQ:
+        case Operator::OP_GT:
+        case Operator::OP_EQ:
+            if (Ltype->isInteger() and Rtype->isInteger())
+                return TypePtr(Type::makeBoolean());
+            if (Ltype->capReal() and Rtype->capReal())
+                return TypePtr(Type::makeBoolean());
+            return nullptr;
+        case Operator::AND:
+        case Operator::OR:
+            if (Ltype->isBool() and Rtype->isBool())
+                return Ltype;
+            return nullptr;
+        case Operator::NEG:
+            if (Ltype->isInteger() or Ltype->isReal())
+                return Ltype;
+            return nullptr;
+        case Operator::NOT:
+            if (Ltype->isBool())
+                return Ltype;
+            return nullptr;
+    }
+    return nullptr;
 }
 
 void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
@@ -132,69 +175,21 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     auto Ltype = left->getInferredType(), Rtype = right->getInferredType();
     auto op = p_bin_op.getOp();
     try {
-        if (left->isError() or right->isError()) throw false;
-        if (!Ltype or !Rtype) throw false;
-        TypePtr type = nullptr;
-        switch (op) {
-            case Operator::ADD:
-                if (Ltype->isString() and Rtype->isString()) {
-                    type = Ltype;
-                    break;
-                }
-            case Operator::SUB:
-            case Operator::MUL:
-            case Operator::DIV:
-                if (Ltype->isInteger() and Rtype->isInteger()) {
-                    type = Ltype;
-                    break;
-                }
-                if (Ltype->capReal() and Rtype->capReal()) {
-                    type = Ltype->isReal() ? Ltype : Rtype;
-                    break;
-                }
-                throw true;
-            case Operator::MOD:
-                if (Ltype->isInteger() and Rtype->isInteger()) {
-                    type = Ltype;
-                    break;
-                }
-                throw true;
-            case Operator::OP_LT:
-            case Operator::OP_LTEQ:
-            case Operator::OP_NEQ:
-            case Operator::OP_GTEQ:
-            case Operator::OP_GT:
-            case Operator::OP_EQ:
-                if (Ltype->isInteger() and Rtype->isInteger()) {
-                    type = TypePtr(Type::makeBoolean());
-                    break;
-                }
-                if (Ltype->capReal() and Rtype->capReal()) {
-                    type = TypePtr(Type::makeBoolean());
-                    break;
-                }
-                throw true;
-            case Operator::AND:
-            case Operator::OR:
-                if (Ltype->isBool() and Rtype->isBool()) {
-                    type = Ltype;
-                    break;
-                }
-                throw true;
-            default:
-                throw true;
-        }
-        p_bin_op.setInferType(type);
-    } catch (bool error) {
-        p_bin_op.setError();
-        if (error) {
-            push_error(
-                InvalidBinaryOp(
-                    p_bin_op.getLocation(),
-                    op, Ltype, Rtype
-                )
+        if (left->isError() or right->isError()) throw nullptr;
+        if (!Ltype or !Rtype) throw nullptr;
+        TypePtr type = opInferredType(op, Ltype, Rtype);
+        if (!type) {
+            throw InvalidBinaryOp(
+                p_bin_op.getLocation(),
+                op, Ltype, Rtype
             );
         }
+        p_bin_op.setInferredType(type);
+    } catch (const SemanticError& error) {
+        logError(error);
+        p_bin_op.setError();
+    } catch (nullptr_t) {
+        p_bin_op.setError();
     }
 }
 
@@ -205,30 +200,20 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     auto type = expr->getInferredType();
     auto op = p_un_op.getOp();
     try {
-        if (expr->isError() or !expr->getInferredType()) throw false;
-        switch (op) {
-            case Operator::NEG:
-                if (type->isInteger() or type->isReal())
-                    break;
-                throw true;
-            case Operator::NOT:
-                if (type->isBool())
-                    break;
-                throw true;
-            default:
-                throw true;
-        }
-        p_un_op.setInferType(type);
-    } catch (bool error) {
-        p_un_op.setError();
-        if (error) {
-            push_error(
-                InvalidUnaryOp(
-                    p_un_op.getLocation(),
-                    op, type
-                )
+        if (expr->isError() or !expr->getInferredType()) throw nullptr;
+        auto inferType = opInferredType(op, type);
+        if (!inferType) {
+            throw InvalidUnaryOp(
+                p_un_op.getLocation(),
+                op, type
             );
         }
+        p_un_op.setInferredType(type);
+    } catch (const SemanticError& error) {
+        logError(error);
+        p_un_op.setError();
+    } catch (nullptr_t) {
+        p_un_op.setError();
     }
 }
 
@@ -268,10 +253,12 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
                 );
             }
         }
-        p_func_invocation.setInferType(entry->getType());
-    } catch (SemanticError* error) {
+        p_func_invocation.setInferredType(entry->getType());
+    } catch (const SemanticError& error) {
+        logError(error);
         p_func_invocation.setError();
-        if (error) push_error(error);
+    } catch (nullptr_t) {
+        p_func_invocation.setError();
     }
 }
 
@@ -307,18 +294,22 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
                 throw ArrayRefIntError(
                     expr->getLocation()
                 );
-            if (type->getDim().empty())
+            try {
+                type->popDim();
+            } catch (std::out_of_range) {
                 throw OverArraySubError(
                     p_variable_ref.getLocation(),
                     p_variable_ref.getNameString()
                 );
-            type->popDim();
+            }
         }
-        p_variable_ref.setInferType(type);
+        p_variable_ref.setInferredType(type);
         p_variable_ref.setEntry(entry);
-    } catch (SemanticError* error) {
+    } catch (const SemanticError& error) {
+        logError(error);
         p_variable_ref.setError();
-        if (error) push_error(error);
+    } catch (nullptr_t) {
+        p_variable_ref.setError();
     }
 }
 
@@ -359,8 +350,9 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
                 expr->getInferredType()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
 }
 
@@ -382,8 +374,9 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
                 var_ref->getLocation()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
 }
 
@@ -399,8 +392,9 @@ void SemanticAnalyzer::visit(IfNode &p_if) {
                 expr->getLocation()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
 }
 
@@ -416,8 +410,9 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
                 expr->getLocation()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
 }
 
@@ -433,8 +428,8 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
                 p_for.getLocation()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
     }
 
     contexts.pop_back();
@@ -460,7 +455,8 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
                 retTypes.back()
             );
         }
-    } catch (SemanticError* error) {
-        if (error) push_error(error);
+    } catch (const SemanticError& error) {
+        logError(error);
+    } catch (nullptr_t) {
     }
 }

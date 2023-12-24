@@ -11,7 +11,7 @@ class ExpressionNode : public AstNode {
     ~ExpressionNode() = default;
 
     TypePtr getInferredType() const { return inferred_type; }
-    void setInferType(TypePtr p_type) { inferred_type = p_type; }
+    void setInferredType(TypePtr p_type) { inferred_type = p_type; }
     bool isError() const { return error; }
     void setError() { error = true; }
 
