@@ -296,7 +296,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
                 );
             try {
                 type->popDim();
-            } catch (std::out_of_range) {
+            } catch (std::out_of_range&) {
                 throw OverArraySubError(
                     p_variable_ref.getLocation(),
                     p_variable_ref.getNameString()

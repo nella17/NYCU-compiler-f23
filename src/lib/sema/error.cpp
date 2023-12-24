@@ -1,5 +1,7 @@
 #include "sema/error.hpp"
 
+#include <cstring>
+
 std::string getSource(Location loc) {
     size_t size = lines_idx[loc.line] - lines_idx[loc.line-1];
     char buf[size];
