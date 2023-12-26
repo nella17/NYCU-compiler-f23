@@ -90,6 +90,8 @@ def main():
         '-e', f'LOCAL_USER_ID={os.getuid()}',
         '-e', f'LOCAL_USER_GID={os.getgid()}',
         '-v', f'{os.getcwd()}:/home/{DOCKER_USER_NAME}',
+        '--privileged',
+        '-v', '/dev/bus/usb:/dev/bus/usb',
 
         # bash history file
         '-v', f'{dirpath}/.history/docker_bash_history:/{dk_home}/.bash_history',

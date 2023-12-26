@@ -25,7 +25,7 @@ PARSER = parser
 SRCDIR = lib/
 SRC := $(shell find $(SRCDIR) -name '*.cpp')
 
-EXEC = $(PARSER)
+EXEC = compiler
 OBJS = $(PARSER:=.cpp) \
        $(SCANNER:=.cpp) \
        $(SRC)

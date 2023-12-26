@@ -29,6 +29,7 @@
 
 #include "AST/AstDumper.hpp"
 #include "sema/SemanticAnalyzer.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 #include <vector>
 #include <memory>
@@ -707,6 +708,9 @@ int main(int argc, const char *argv[]) {
 
     SemanticAnalyzer sema_analyzer;
     root->accept(sema_analyzer);
+
+    CodeGenerator code_generator(argv[1], (argc == 4) ? argv[3] : "");
+    root->accept(code_generator);
 
     if (!sema_analyzer.hasError()) {
         fprintf(stderr, "\n"
