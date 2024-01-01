@@ -473,8 +473,6 @@ In loop B, the following steps should happen:
 9. Leaves 'loop_var initialization' scope.
 
 The rule aims to clarify error messages by only report redeclaration errors for a redeclared loop_var.
-
----
 </details>
 (Skip the rest of semantic checks if there are any errors in the node of the expression)
 
