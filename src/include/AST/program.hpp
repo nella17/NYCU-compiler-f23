@@ -25,6 +25,10 @@ class ProgramNode final : public AstNode {
                 CompoundStatementNode *const p_body,
                 Type *const p_type);
 
+    const DeclNodes &getDeclNodes() const { return decls; }
+    const Functions &getFuncNodes() const { return funcs; }
+    const CompoundStatementNode &getBody() const { return *body.get(); }
+
     const char *getNameCString() const { return name.c_str(); }
     std::string getNameString() const { return name; }
     TypePtr getType() const { return type; }

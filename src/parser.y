@@ -685,7 +685,7 @@ void yyerror(const char *msg) {
 
 int main(int argc, const char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <filename> [--dump-ast]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <filename> --save-path [save path]\n", argv[0]);
         exit(-1);
     }
 
@@ -709,14 +709,15 @@ int main(int argc, const char *argv[]) {
     SemanticAnalyzer sema_analyzer;
     root->accept(sema_analyzer);
 
-    CodeGenerator code_generator(argv[1], (argc == 4) ? argv[3] : "");
-    root->accept(code_generator);
 
     if (!sema_analyzer.hasError()) {
         fprintf(stderr, "\n"
                "|---------------------------------------------------|\n"
                "|  There is no syntactic error and semantic error!  |\n"
                "|---------------------------------------------------|\n");
+
+        CodeGenerator code_generator(argv[1], (argc == 4) ? argv[3] : "");
+        root->accept(code_generator);
     }
 
     delete root;
