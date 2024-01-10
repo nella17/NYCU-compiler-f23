@@ -10,8 +10,7 @@ CodeGenerator::CodeGenerator(const std::string &source_file_name,
                              const std::string &save_path)
     : m_source_file_path(source_file_name) {
     // FIXME: assume that the source file is always xxxx.p
-    const auto &real_path =
-        save_path.empty() ? std::string{"."} : save_path;
+    const auto &real_path = save_path.empty() ? std::string{"."} : save_path;
     auto slash_pos = source_file_name.rfind("/");
     auto dot_pos = source_file_name.rfind(".");
 
@@ -46,7 +45,7 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     dumpInstructions(m_output_file.get(), riscv_assembly_file_prologue,
                      m_source_file_path.c_str());
 
-    // Hint: Maintain a table to lookup symbols that are visible in the current scope, 
+    // Hint: Maintain a table to lookup symbols that are visible in the current scope,
     // TODO: Entering scope (Add symbols in the current scope to the 'visible table')
 
     auto visit_ast_node = [&](auto &ast_node) { ast_node->accept(*this); };
@@ -67,7 +66,7 @@ void CodeGenerator::visit(VariableNode &p_variable) {}
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {}
 
 void CodeGenerator::visit(FunctionNode &p_function) {
-    // Hint: Maintain a table to lookup symbols that are visible in the current scope, 
+    // Hint: Maintain a table to lookup symbols that are visible in the current scope,
     // TODO: Entering scope (Add symbols in the current scope to the 'visible table')
 
     p_function.visitChildNodes(*this);
@@ -76,7 +75,7 @@ void CodeGenerator::visit(FunctionNode &p_function) {
 }
 
 void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
-    // Hint: Maintain a table to lookup symbols that are visible in the current scope, 
+    // Hint: Maintain a table to lookup symbols that are visible in the current scope,
     // TODO: Entering scope (Add symbols in the current scope to the 'visible table')
 
     p_compound_statement.visitChildNodes(*this);
@@ -103,7 +102,7 @@ void CodeGenerator::visit(IfNode &p_if) {}
 void CodeGenerator::visit(WhileNode &p_while) {}
 
 void CodeGenerator::visit(ForNode &p_for) {
-    // Hint: Maintain a table to lookup symbols that are visible in the current scope, 
+    // Hint: Maintain a table to lookup symbols that are visible in the current scope,
     // TODO: Entering scope (Add symbols in the current scope to the 'visible table')
 
     p_for.visitChildNodes(*this);

@@ -7,9 +7,10 @@
 
 class UnaryOperatorNode : public OperatorNode {
   public:
-    UnaryOperatorNode(const uint32_t line, const uint32_t col,
-            Operator p_op,
-            ExpressionNode *const p_expr);
+    UnaryOperatorNode(const uint32_t line,
+                      const uint32_t col,
+                      Operator p_op,
+                      ExpressionNode *const p_expr);
     ~UnaryOperatorNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }

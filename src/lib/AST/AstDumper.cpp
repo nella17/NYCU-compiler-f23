@@ -42,10 +42,8 @@ void AstDumper::visit(VariableNode &p_variable) {
     outputIndentationSpace(m_indentation);
 
     std::printf("variable <line: %u, col: %u> %s %s\n",
-        p_variable.getLocation().line, p_variable.getLocation().col,
-        p_variable.getNameCString(),
-        p_variable.getTypeCString()
-    );
+                p_variable.getLocation().line, p_variable.getLocation().col,
+                p_variable.getNameCString(), p_variable.getTypeCString());
 
     incrementIndentation();
     p_variable.visitChildNodes(*this);
@@ -56,20 +54,17 @@ void AstDumper::visit(ConstantValueNode &p_constant_value) {
     outputIndentationSpace(m_indentation);
 
     std::printf("constant <line: %u, col: %u> %s\n",
-        p_constant_value.getLocation().line,
-        p_constant_value.getLocation().col,
-        p_constant_value.getValueCString()
-    );
+                p_constant_value.getLocation().line,
+                p_constant_value.getLocation().col,
+                p_constant_value.getValueCString());
 }
 
 void AstDumper::visit(FunctionNode &p_function) {
     outputIndentationSpace(m_indentation);
 
     std::printf("function declaration <line: %u, col: %u> %s %s\n",
-        p_function.getLocation().line, p_function.getLocation().col,
-        p_function.getNameCString(),
-        p_function.getPrototypeCString()
-    );
+                p_function.getLocation().line, p_function.getLocation().col,
+                p_function.getNameCString(), p_function.getPrototypeCString());
 
     incrementIndentation();
     p_function.visitChildNodes(*this);
@@ -103,9 +98,8 @@ void AstDumper::visit(BinaryOperatorNode &p_bin_op) {
     outputIndentationSpace(m_indentation);
 
     std::printf("binary operator <line: %u, col: %u> %s\n",
-        p_bin_op.getLocation().line, p_bin_op.getLocation().col,
-        p_bin_op.getOpCString()
-    );
+                p_bin_op.getLocation().line, p_bin_op.getLocation().col,
+                p_bin_op.getOpCString());
 
     incrementIndentation();
     p_bin_op.visitChildNodes(*this);
@@ -116,9 +110,8 @@ void AstDumper::visit(UnaryOperatorNode &p_un_op) {
     outputIndentationSpace(m_indentation);
 
     std::printf("unary operator <line: %u, col: %u> %s\n",
-        p_un_op.getLocation().line, p_un_op.getLocation().col,
-        p_un_op.getOpCString()
-    );
+                p_un_op.getLocation().line, p_un_op.getLocation().col,
+                p_un_op.getOpCString());
 
     incrementIndentation();
     p_un_op.visitChildNodes(*this);
@@ -129,10 +122,9 @@ void AstDumper::visit(FunctionInvocationNode &p_func_invocation) {
     outputIndentationSpace(m_indentation);
 
     std::printf("function invocation <line: %u, col: %u> %s\n",
-        p_func_invocation.getLocation().line,
-        p_func_invocation.getLocation().col,
-        p_func_invocation.getNameCString()
-    );
+                p_func_invocation.getLocation().line,
+                p_func_invocation.getLocation().col,
+                p_func_invocation.getNameCString());
 
     incrementIndentation();
     p_func_invocation.visitChildNodes(*this);
@@ -143,10 +135,9 @@ void AstDumper::visit(VariableReferenceNode &p_variable_ref) {
     outputIndentationSpace(m_indentation);
 
     std::printf("variable reference <line: %u, col: %u> %s\n",
-        p_variable_ref.getLocation().line,
-        p_variable_ref.getLocation().col,
-        p_variable_ref.getNameCString()
-    );
+                p_variable_ref.getLocation().line,
+                p_variable_ref.getLocation().col,
+                p_variable_ref.getNameCString());
 
     incrementIndentation();
     p_variable_ref.visitChildNodes(*this);

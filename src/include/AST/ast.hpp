@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 class AstNodeVisitor;
 
@@ -34,6 +34,6 @@ class AstNode {
     virtual void visitChildNodes(AstNodeVisitor &p_visitor){};
 };
 
-using IDs = std::vector<std::tuple<uint32_t, uint32_t, char*>>;
+using IDs = std::vector<std::tuple<uint32_t, uint32_t, char *>>;
 using AstPtr = std::shared_ptr<AstNode>;
 using Asts = std::vector<AstPtr>;

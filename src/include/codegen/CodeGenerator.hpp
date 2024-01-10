@@ -10,7 +10,7 @@
 class CodeGenerator final : public AstNodeVisitor {
   private:
     std::string m_source_file_path;
-    std::unique_ptr<FILE, decltype(&fclose)> m_output_file{ nullptr, &fclose };
+    std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
 
   public:
     ~CodeGenerator() = default;

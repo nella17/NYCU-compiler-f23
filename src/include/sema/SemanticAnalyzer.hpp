@@ -1,8 +1,8 @@
 #pragma once
 
-#include "visitor/AstNodeVisitor.hpp"
 #include "sema/SymbolTable.hpp"
 #include "sema/error.hpp"
+#include "visitor/AstNodeVisitor.hpp"
 
 #include <vector>
 
@@ -21,10 +21,14 @@ class SemanticAnalyzer final : public AstNodeVisitor {
     bool has_error = false;
     std::vector<TypePtr> retTypes;
 
-    bool inFunction() const { return !contexts.empty() and contexts.back() == ContextKind::kFunction; }
-    bool inFor() const { return !contexts.empty() and contexts.back() == ContextKind::kFor; }
-    SymbolKind varKind(VariableNode&) const;
-    void logError(const SemanticError&);
+    bool inFunction() const {
+        return !contexts.empty() and contexts.back() == ContextKind::kFunction;
+    }
+    bool inFor() const {
+        return !contexts.empty() and contexts.back() == ContextKind::kFor;
+    }
+    SymbolKind varKind(VariableNode &) const;
+    void logError(const SemanticError &);
 
   public:
     ~SemanticAnalyzer() = default;

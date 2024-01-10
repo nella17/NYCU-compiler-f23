@@ -1,25 +1,27 @@
 #include "type.hpp"
 
-Type* Type::makeVoid()    { return new Type(Value::Void); }
-Type* Type::makeInteger() { return new Type(Value::Integer); }
-Type* Type::makeReal()    { return new Type(Value::Real); }
-Type* Type::makeString()  { return new Type(Value::String); }
-Type* Type::makeBoolean() { return new Type(Value::Boolean); }
+Type *Type::makeVoid() { return new Type(Value::Void); }
+Type *Type::makeInteger() { return new Type(Value::Integer); }
+Type *Type::makeReal() { return new Type(Value::Real); }
+Type *Type::makeString() { return new Type(Value::String); }
+Type *Type::makeBoolean() { return new Type(Value::Boolean); }
 
-Type::Type(Type::Value p_value): value(p_value), dim(0), name(), name_valid(false) {}
+Type::Type(Type::Value p_value)
+    : value(p_value), dim(0), name(), name_valid(false) {}
 void Type::addDim(int x) {
     dim.emplace_back(x);
     name_valid = false;
 }
 void Type::popDim() {
-    dim.at(dim.size()-1);
-    if (dim.empty()) throw std::out_of_range("Type::popDim");
+    dim.at(dim.size() - 1);
+    if (dim.empty())
+        throw std::out_of_range("Type::popDim");
     dim.pop_back();
     name_valid = false;
 }
 
 bool Type::checkDim() {
-    for (auto d: dim)
+    for (auto d : dim)
         if (d <= 0)
             return false;
     return true;
@@ -28,11 +30,21 @@ bool Type::checkDim() {
 void Type::ensureName() {
     if (!name_valid) {
         switch (value) {
-            case Value::Integer: name = "integer"; break;
-            case Value::Real   : name = "real"; break;
-            case Value::String : name = "string"; break;
-            case Value::Boolean: name = "boolean"; break;
-            case Value::Void   : name = "void"; break;
+        case Value::Integer:
+            name = "integer";
+            break;
+        case Value::Real:
+            name = "real";
+            break;
+        case Value::String:
+            name = "string";
+            break;
+        case Value::Boolean:
+            name = "boolean";
+            break;
+        case Value::Void:
+            name = "void";
+            break;
         }
         if (!dim.empty()) {
             name += ' ';
@@ -46,7 +58,7 @@ void Type::ensureName() {
     }
 }
 
-const char* Type::getNameCString() {
+const char *Type::getNameCString() {
     ensureName();
     return name.c_str();
 }
@@ -66,6 +78,6 @@ bool operator<=(TypePtr Ltype, TypePtr Rtype) {
     return false;
 }
 
-std::ostream& operator<<(std::ostream& os, TypePtr type) {
+std::ostream &operator<<(std::ostream &os, TypePtr type) {
     return os << type->getNameString();
 }

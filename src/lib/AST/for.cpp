@@ -1,16 +1,14 @@
 #include "AST/for.hpp"
 
-ForNode::ForNode(
-        const uint32_t line, const uint32_t col,
-        DeclNode *const p_decl,
-        AssignmentNode *const p_init,
-        ConstantValueNode *const p_end,
-        CompoundStatementNode *const p_body
-    ) : AstNode(line, col),
-    decl(p_decl), init(p_init),
-    begin(std::dynamic_pointer_cast<ConstantValueNode>(p_init->getExpr())),
-    end(p_end), body(p_body)
-{}
+ForNode::ForNode(const uint32_t line,
+                 const uint32_t col,
+                 DeclNode *const p_decl,
+                 AssignmentNode *const p_init,
+                 ConstantValueNode *const p_end,
+                 CompoundStatementNode *const p_body)
+    : AstNode(line, col), decl(p_decl), init(p_init),
+      begin(std::dynamic_pointer_cast<ConstantValueNode>(p_init->getExpr())),
+      end(p_end), body(p_body) {}
 
 void ForNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     decl->accept(p_visitor);

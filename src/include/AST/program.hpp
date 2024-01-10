@@ -1,9 +1,9 @@
 #pragma once
 
+#include "AST/CompoundStatement.hpp"
 #include "AST/ast.hpp"
 #include "AST/decl.hpp"
 #include "AST/function.hpp"
-#include "AST/CompoundStatement.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 #include <string>
@@ -18,7 +18,8 @@ class ProgramNode final : public AstNode {
 
   public:
     ~ProgramNode() = default;
-    ProgramNode(const uint32_t line, const uint32_t col,
+    ProgramNode(const uint32_t line,
+                const uint32_t col,
                 char *const p_name,
                 DeclNodes *const p_decls,
                 Functions *const p_funcs,

@@ -7,8 +7,9 @@
 
 class ReturnNode : public AstNode {
   public:
-    ReturnNode(const uint32_t line, const uint32_t col,
-        ExpressionNode *const p_expr);
+    ReturnNode(const uint32_t line,
+               const uint32_t col,
+               ExpressionNode *const p_expr);
     ~ReturnNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }

@@ -10,14 +10,24 @@
 
 #include "parser.h"
 
-#define YY_USER_ACTION \
-    yylloc.first_line = line_num; \
-    yylloc.first_column = col_num; \
+#define YY_USER_ACTION                                                         \
+    yylloc.first_line = line_num;                                              \
+    yylloc.first_column = col_num;                                             \
     col_num += yyleng;
 
 #define LIST_SOURCE                 appendToCurrentLine(yytext)
-#define LIST_TOKEN(name)            do { LIST_SOURCE; if(opt_tok) printf("<%s>\n", name); } while(0)
-#define LIST_LITERAL(name, literal) do { LIST_SOURCE; if(opt_tok) printf("<%s: %s>\n", name, literal); } while(0)
+#define LIST_TOKEN(name)                                                       \
+    do {                                                                       \
+        LIST_SOURCE;                                                           \
+        if (opt_tok)                                                           \
+            printf("<%s>\n", name);                                            \
+    } while (0)
+#define LIST_LITERAL(name, literal)                                            \
+    do {                                                                       \
+        LIST_SOURCE;                                                           \
+        if (opt_tok)                                                           \
+            printf("<%s: %s>\n", name, literal);                               \
+    } while (0)
 #define MAX_LINE_LENG               512
 #define MAX_ID_LENG                 32
 #define MAX_LINE                    200

@@ -7,10 +7,11 @@
 
 class BinaryOperatorNode : public OperatorNode {
   public:
-    BinaryOperatorNode(const uint32_t line, const uint32_t col,
-            Operator p_op,
-            ExpressionNode *const p_left,
-            ExpressionNode *const p_right);
+    BinaryOperatorNode(const uint32_t line,
+                       const uint32_t col,
+                       Operator p_op,
+                       ExpressionNode *const p_left,
+                       ExpressionNode *const p_right);
     ~BinaryOperatorNode() = default;
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
