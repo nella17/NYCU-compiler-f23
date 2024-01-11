@@ -214,8 +214,45 @@ void CodeGenerator::visit(PrintNode &p_print) {
     }
 }
 
+const char *genOpCode(Operator op) {
+    switch (op) {
+    case Operator::ADD:
+        return "add";
+    case Operator::SUB:
+        return "sub";
+    case Operator::MUL:
+        return "mul";
+    case Operator::DIV:
+        return "div";
+    case Operator::MOD:
+        return "rem";
+    case Operator::OP_LT:
+    case Operator::OP_LTEQ:
+    case Operator::OP_NEQ:
+    case Operator::OP_GTEQ:
+    case Operator::OP_GT:
+    case Operator::OP_EQ:
+        throw "not implemented";
+    case Operator::AND:
+    case Operator::OR:
+        throw "not implemented";
+    case Operator::NEG:
+        throw "not implemented";
+    case Operator::NOT:
+        throw "not implemented";
+    }
+    __builtin_unreachable();
+}
+
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
     logSource(m_output_file.get(), p_bin_op.getLocation().line);
+
+    p_bin_op.visitChildNodes(*this);
+
+    dumpInstructions(m_output_file.get(), riscvAsmPop(t0) riscvAsmPop(t1));
+    auto op = p_bin_op.getOp();
+    dumpInstructions(m_output_file.get(), "    %s t0, t1, t0\n", genOpCode(op));
+    dumpInstructions(m_output_file.get(), riscvAsmPush(t0));
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
