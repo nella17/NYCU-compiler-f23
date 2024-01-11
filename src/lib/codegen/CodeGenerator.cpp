@@ -34,8 +34,7 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     constexpr const char *const riscv_assembly_file_prologue =
         "    .file \"%s\"\n"
         "    .option nopic\n"
-        ".section    .text\n"
-        "    .align 2\n";
+        ;
     // clang-format on
     dumpInstructions(m_output_file.get(), riscv_assembly_file_prologue,
                      m_source_file_path.c_str());
@@ -48,7 +47,33 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     for_each(p_program.getFuncNodes().begin(), p_program.getFuncNodes().end(),
              visit_ast_node);
 
+    // clang-format off
+    constexpr const char *const riscv_assembly_main_prologue =
+        ".section    .text\n"
+        "    .align 2\n"
+        "    .global main\n"
+        "    .type main, @function\n"
+        "main:\n"
+        "    addi sp, sp, -12\n"
+        "    sw ra, 124(sp)\n"
+        "    sw s0, 120(sp)\n"
+        "    addi s0, sp, 128\n"
+        ;
+    // clang-format on
+    dumpInstructions(m_output_file.get(), riscv_assembly_main_prologue);
+
     const_cast<CompoundStatementNode &>(p_program.getBody()).accept(*this);
+
+    // clang-format off
+    constexpr const char *const riscv_assembly_main_epilogue =
+        "    lw ra, 124(sp)\n"
+        "    lw s0, 120(sp)\n"
+        "    addi sp, sp, 128\n"
+        "    jr ra\n"
+        "    .size main, .-main\n"
+        ;
+    // clang-format on
+    dumpInstructions(m_output_file.get(), riscv_assembly_main_epilogue);
 
     symbol_manager.popScope();
 }
