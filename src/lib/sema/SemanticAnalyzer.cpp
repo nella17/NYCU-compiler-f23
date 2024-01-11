@@ -272,7 +272,6 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
             }
         }
         p_variable_ref.setInferredType(type);
-        p_variable_ref.setEntry(entry);
     } catch (const SemanticError &error) {
         logError(error);
         p_variable_ref.setError();
@@ -286,7 +285,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
 
     try {
         auto var_ref = p_assignment.getVarRef();
-        auto entry = var_ref->getEntry();
+        auto entry = m_symbol_manager.lookup(var_ref->getNameString());
         if (var_ref->isError() or !entry)
             throw nullptr;
         if (!var_ref->getInferredType()->getDim().empty()) {
