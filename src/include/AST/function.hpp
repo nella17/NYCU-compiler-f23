@@ -8,6 +8,9 @@
 #include <memory>
 #include <vector>
 
+class SymbolTable;
+using SymbolTablePtr = std::shared_ptr<SymbolTable>;
+
 class Args {
     std::string args;
     std::vector<TypePtr> types;
@@ -38,12 +41,18 @@ class FunctionNode : public AstNode {
     TypePtr getType() const { return type; }
     ArgsPtr getArgs() const { return args; }
 
+    auto getSymbolTable() const { return symbol_table; }
+    void setSymbolTable(SymbolTablePtr p_symbol_table) {
+        symbol_table = p_symbol_table;
+    }
+
   private:
     std::string name, prototype;
     DeclNodes decls;
     ArgsPtr args;
     TypePtr type;
     CompoundStatementPtr body;
+    SymbolTablePtr symbol_table;
 };
 
 using Functions = std::vector<std::shared_ptr<FunctionNode>>;

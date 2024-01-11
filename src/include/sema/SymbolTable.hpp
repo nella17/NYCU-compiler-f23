@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AST/ConstantValue.hpp"
 #include "AST/function.hpp"
+#include "constant.hpp"
 #include "type.hpp"
 
 #include <iostream>

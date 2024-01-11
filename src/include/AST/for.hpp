@@ -8,6 +8,9 @@
 #include "visitor/AstNodeVisitor.hpp"
 #include <memory>
 
+class SymbolTable;
+using SymbolTablePtr = std::shared_ptr<SymbolTable>;
+
 class ForNode : public AstNode {
   public:
     ForNode(const uint32_t line,
@@ -24,9 +27,15 @@ class ForNode : public AstNode {
     int getBegin() const { return std::get<int>(begin->getValue()); }
     int getEnd() const { return std::get<int>(end->getValue()); }
 
+    auto getSymbolTable() const { return symbol_table; }
+    void setSymbolTable(SymbolTablePtr p_symbol_table) {
+        symbol_table = p_symbol_table;
+    }
+
   private:
     DeclNodePtr decl;
     AssignmentPtr init;
     ConstantNodePtr begin, end;
     CompoundStatementPtr body;
+    SymbolTablePtr symbol_table;
 };

@@ -14,6 +14,7 @@ void SemanticAnalyzer::visit(ProgramNode &p_program) {
     symbolmanager.addSymbol(p_program.getNameString(), SymbolKind::kProgram,
                             p_program.getType());
     p_program.visitChildNodes(*this);
+    p_program.setSymbolTable(symbolmanager.currentScope());
 
     retTypes.pop_back();
     contexts.pop_back();
@@ -70,6 +71,7 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
     retTypes.emplace_back(p_function.getType());
 
     p_function.visitChildNodes(*this);
+    p_function.setSymbolTable(symbolmanager.currentScope());
 
     retTypes.pop_back();
     contexts.pop_back();
@@ -82,6 +84,8 @@ void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     contexts.emplace_back(ContextKind::kCompound);
 
     p_compound_statement.visitChildNodes(*this);
+    if (!inFunction())
+        p_compound_statement.setSymbolTable(symbolmanager.currentScope());
 
     contexts.pop_back();
     if (!inFunction())
@@ -382,6 +386,8 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
     } catch (const SemanticError &error) {
         logError(error);
     }
+
+    p_for.setSymbolTable(symbolmanager.currentScope());
 
     contexts.pop_back();
     symbolmanager.popScope();
