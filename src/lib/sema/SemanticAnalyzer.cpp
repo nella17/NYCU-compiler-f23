@@ -104,7 +104,7 @@ void SemanticAnalyzer::visit(PrintNode &p_print) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
 
@@ -171,7 +171,7 @@ void SemanticAnalyzer::visit(BinaryOperatorNode &p_bin_op) {
     } catch (const SemanticError &error) {
         logError(error);
         p_bin_op.setError();
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
         p_bin_op.setError();
     }
 }
@@ -193,7 +193,7 @@ void SemanticAnalyzer::visit(UnaryOperatorNode &p_un_op) {
     } catch (const SemanticError &error) {
         logError(error);
         p_un_op.setError();
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
         p_un_op.setError();
     }
 }
@@ -231,7 +231,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     } catch (const SemanticError &error) {
         logError(error);
         p_func_invocation.setError();
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
         p_func_invocation.setError();
     }
 }
@@ -276,7 +276,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     } catch (const SemanticError &error) {
         logError(error);
         p_variable_ref.setError();
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
         p_variable_ref.setError();
     }
 }
@@ -312,7 +312,7 @@ void SemanticAnalyzer::visit(AssignmentNode &p_assignment) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
 
@@ -335,7 +335,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
 
@@ -352,7 +352,7 @@ void SemanticAnalyzer::visit(IfNode &p_if) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
 
@@ -369,7 +369,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
 
@@ -409,6 +409,6 @@ void SemanticAnalyzer::visit(ReturnNode &p_return) {
         }
     } catch (const SemanticError &error) {
         logError(error);
-    } catch (nullptr_t) {
+    } catch (std::nullptr_t) {
     }
 }
