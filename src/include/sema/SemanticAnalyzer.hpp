@@ -16,7 +16,7 @@ enum class ContextKind {
 
 class SemanticAnalyzer final : public AstNodeVisitor {
   private:
-    SymbolManager symbolmanager;
+    SymbolManager symbol_manager;
     std::vector<ContextKind> contexts{};
     bool has_error = false;
     std::vector<TypePtr> retTypes;

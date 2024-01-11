@@ -7,18 +7,18 @@ void SemanticAnalyzer::logError(const SemanticError &error) {
 }
 
 void SemanticAnalyzer::visit(ProgramNode &p_program) {
-    symbolmanager.pushGlobalScope();
+    symbol_manager.pushGlobalScope();
     contexts.emplace_back(ContextKind::kProgram);
     retTypes.emplace_back(p_program.getType());
 
-    symbolmanager.addSymbol(p_program.getNameString(), SymbolKind::kProgram,
-                            p_program.getType());
+    symbol_manager.addSymbol(p_program.getNameString(), SymbolKind::kProgram,
+                             p_program.getType());
     p_program.visitChildNodes(*this);
-    p_program.setSymbolTable(symbolmanager.currentScope());
+    p_program.setSymbolTable(symbol_manager.currentScope());
 
     retTypes.pop_back();
     contexts.pop_back();
-    symbolmanager.popScope();
+    symbol_manager.popScope();
 }
 
 void SemanticAnalyzer::visit(DeclNode &p_decl) {
@@ -36,9 +36,9 @@ SymbolKind SemanticAnalyzer::varKind(VariableNode &p_variable) const {
 }
 
 void SemanticAnalyzer::visit(VariableNode &p_variable) {
-    auto entry =
-        symbolmanager.addSymbol(p_variable.getNameString(), varKind(p_variable),
-                                p_variable.getType(), p_variable.getConstant());
+    auto entry = symbol_manager.addSymbol(
+        p_variable.getNameString(), varKind(p_variable), p_variable.getType(),
+        p_variable.getConstant());
     if (!entry) {
         logError(SymbolRedeclError(p_variable.getLocation(),
                                    p_variable.getNameString()));
@@ -58,7 +58,7 @@ void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {
-    auto entry = symbolmanager.addSymbol(
+    auto entry = symbol_manager.addSymbol(
         p_function.getNameString(), SymbolKind::kFunction, p_function.getType(),
         p_function.getArgs());
     if (!entry) {
@@ -66,30 +66,30 @@ void SemanticAnalyzer::visit(FunctionNode &p_function) {
                                    p_function.getNameString()));
     }
 
-    symbolmanager.pushScope();
+    symbol_manager.pushScope();
     contexts.emplace_back(ContextKind::kFunction);
     retTypes.emplace_back(p_function.getType());
 
     p_function.visitChildNodes(*this);
-    p_function.setSymbolTable(symbolmanager.currentScope());
+    p_function.setSymbolTable(symbol_manager.currentScope());
 
     retTypes.pop_back();
     contexts.pop_back();
-    symbolmanager.popScope();
+    symbol_manager.popScope();
 }
 
 void SemanticAnalyzer::visit(CompoundStatementNode &p_compound_statement) {
     if (!inFunction())
-        symbolmanager.pushScope();
+        symbol_manager.pushScope();
     contexts.emplace_back(ContextKind::kCompound);
 
     p_compound_statement.visitChildNodes(*this);
     if (!inFunction())
-        p_compound_statement.setSymbolTable(symbolmanager.currentScope());
+        p_compound_statement.setSymbolTable(symbol_manager.currentScope());
 
     contexts.pop_back();
     if (!inFunction())
-        symbolmanager.popScope();
+        symbol_manager.popScope();
 }
 
 void SemanticAnalyzer::visit(PrintNode &p_print) {
@@ -202,7 +202,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
     p_func_invocation.visitChildNodes(*this);
 
     try {
-        auto entry = symbolmanager.lookup(p_func_invocation.getNameString());
+        auto entry = symbol_manager.lookup(p_func_invocation.getNameString());
         if (!entry) {
             throw UndeclaredError(p_func_invocation.getLocation(),
                                   p_func_invocation.getNameString());
@@ -239,7 +239,7 @@ void SemanticAnalyzer::visit(FunctionInvocationNode &p_func_invocation) {
 void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
     p_variable_ref.visitChildNodes(*this);
 
-    auto entry = symbolmanager.lookup(p_variable_ref.getNameString());
+    auto entry = symbol_manager.lookup(p_variable_ref.getNameString());
     try {
         if (!entry) {
             throw UndeclaredError(p_variable_ref.getLocation(),
@@ -326,7 +326,7 @@ void SemanticAnalyzer::visit(ReadNode &p_read) {
         if (!var_ref->getInferredType()->isScalar()) {
             throw ReadTypeError(var_ref->getLocation());
         }
-        auto entry = symbolmanager.lookup(var_ref->getNameString());
+        auto entry = symbol_manager.lookup(var_ref->getNameString());
         if (entry->isError())
             throw nullptr;
         if (entry->getKind() == SymbolKind::kConstant or
@@ -374,7 +374,7 @@ void SemanticAnalyzer::visit(WhileNode &p_while) {
 }
 
 void SemanticAnalyzer::visit(ForNode &p_for) {
-    symbolmanager.pushScope();
+    symbol_manager.pushScope();
     contexts.emplace_back(ContextKind::kFor);
 
     p_for.visitChildNodes(*this);
@@ -387,10 +387,10 @@ void SemanticAnalyzer::visit(ForNode &p_for) {
         logError(error);
     }
 
-    p_for.setSymbolTable(symbolmanager.currentScope());
+    p_for.setSymbolTable(symbol_manager.currentScope());
 
     contexts.pop_back();
-    symbolmanager.popScope();
+    symbol_manager.popScope();
 }
 
 void SemanticAnalyzer::visit(ReturnNode &p_return) {
