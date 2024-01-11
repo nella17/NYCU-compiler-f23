@@ -16,25 +16,26 @@ enum class ContextKind {
 
 class SemanticAnalyzer final : public AstNodeVisitor {
   private:
-    SymbolManager symbol_manager;
-    std::vector<ContextKind> contexts{};
-    bool has_error = false;
-    std::vector<TypePtr> retTypes;
+    SymbolManager m_symbol_manager;
+    std::vector<ContextKind> m_contexts{};
+    bool m_has_error = false;
+    std::vector<TypePtr> m_ret_types;
 
     bool inFunction() const {
-        return !contexts.empty() and contexts.back() == ContextKind::kFunction;
+        return !m_contexts.empty() and
+               m_contexts.back() == ContextKind::kFunction;
     }
     bool inFor() const {
-        return !contexts.empty() and contexts.back() == ContextKind::kFor;
+        return !m_contexts.empty() and m_contexts.back() == ContextKind::kFor;
     }
     SymbolKind varKind(VariableNode &) const;
     void logError(const SemanticError &);
 
   public:
     ~SemanticAnalyzer() = default;
-    SemanticAnalyzer(bool opt_dmp) : symbol_manager(opt_dmp) {}
+    SemanticAnalyzer(bool opt_dmp) : m_symbol_manager(opt_dmp) {}
 
-    bool hasError() const { return has_error; }
+    bool hasError() const { return m_has_error; }
 
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;

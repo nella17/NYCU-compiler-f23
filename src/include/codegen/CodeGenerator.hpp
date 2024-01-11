@@ -9,7 +9,7 @@
 
 class CodeGenerator final : public AstNodeVisitor {
   private:
-    SymbolManager symbol_manager;
+    SymbolManager m_symbol_manager;
     std::string m_source_file_path;
     std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
 

@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 CodeGenerator::CodeGenerator(const std::string &source_file_path,
                              const std::string &save_path)
-    : symbol_manager(false), m_source_file_path(source_file_path) {
+    : m_symbol_manager(false), m_source_file_path(source_file_path) {
     // FIXME: assume that the source file is always xxxx.p
     fs::path real_path = save_path.empty() ? std::string{"."} : save_path;
     fs::path source_path = source_file_path;
@@ -35,7 +35,7 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     dumpInstructions(m_output_file.get(), riscv_assembly_file_prologue,
                      m_source_file_path.c_str());
 
-    symbol_manager.pushScope(p_program.getSymbolTable());
+    m_symbol_manager.pushScope(p_program.getSymbolTable());
 
     auto visit_ast_node = [&](auto &ast_node) { ast_node->accept(*this); };
     for_each(p_program.getDeclNodes().begin(), p_program.getDeclNodes().end(),
@@ -50,7 +50,7 @@ void CodeGenerator::visit(ProgramNode &p_program) {
         "    .global main\n"
         "    .type main, @function\n"
         "main:\n"
-        "    addi sp, sp, -12\n"
+        "    addi sp, sp, -128\n"
         "    sw ra, 124(sp)\n"
         "    sw s0, 120(sp)\n"
         "    addi s0, sp, 128\n"
@@ -71,7 +71,7 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     // clang-format on
     dumpInstructions(m_output_file.get(), riscv_assembly_main_epilogue);
 
-    symbol_manager.popScope();
+    m_symbol_manager.popScope();
 }
 
 void CodeGenerator::visit(DeclNode &p_decl) {}
@@ -81,19 +81,19 @@ void CodeGenerator::visit(VariableNode &p_variable) {}
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {}
 
 void CodeGenerator::visit(FunctionNode &p_function) {
-    symbol_manager.pushScope(p_function.getSymbolTable());
+    m_symbol_manager.pushScope(p_function.getSymbolTable());
 
     p_function.visitChildNodes(*this);
 
-    symbol_manager.popScope();
+    m_symbol_manager.popScope();
 }
 
 void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
-    symbol_manager.pushScope(p_compound_statement.getSymbolTable());
+    m_symbol_manager.pushScope(p_compound_statement.getSymbolTable());
 
     p_compound_statement.visitChildNodes(*this);
 
-    symbol_manager.popScope();
+    m_symbol_manager.popScope();
 }
 
 void CodeGenerator::visit(PrintNode &p_print) {}
@@ -115,11 +115,11 @@ void CodeGenerator::visit(IfNode &p_if) {}
 void CodeGenerator::visit(WhileNode &p_while) {}
 
 void CodeGenerator::visit(ForNode &p_for) {
-    symbol_manager.pushScope(p_for.getSymbolTable());
+    m_symbol_manager.pushScope(p_for.getSymbolTable());
 
     p_for.visitChildNodes(*this);
 
-    symbol_manager.popScope();
+    m_symbol_manager.popScope();
 }
 
 void CodeGenerator::visit(ReturnNode &p_return) {}
