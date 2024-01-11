@@ -1,5 +1,4 @@
-#ifndef CODEGEN_CODE_GENERATOR_H
-#define CODEGEN_CODE_GENERATOR_H
+#pragma once
 
 #include "sema/SymbolTable.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -37,5 +36,3 @@ class CodeGenerator final : public AstNodeVisitor {
     void visit(ForNode &p_for) override;
     void visit(ReturnNode &p_return) override;
 };
-
-#endif
