@@ -25,6 +25,11 @@ class ConstantValue {
     auto getValue() const { return value; }
     auto getType() const { return type; }
 
+    auto getIntValue() const { return std::get<int>(value); }
+    auto getRealValue() const { return std::get<float>(value); }
+    auto getStringValue() const { return std::get<std::string>(value); }
+    auto getBooleanValue() const { return std::get<bool>(value); }
+
   private:
     Value value;
     std::string value_str;

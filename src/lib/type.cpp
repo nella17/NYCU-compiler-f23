@@ -67,6 +67,27 @@ std::string Type::getNameString() {
     return name;
 }
 
+int Type::getAlign() const {
+    switch (value) {
+    case Value::Integer: {
+        return 4;
+    }
+    default:
+        throw "not implemented";
+    }
+}
+int Type::getSize() const {
+    if (!dim.empty())
+        throw "not implemented";
+    switch (value) {
+    case Value::Integer: {
+        return 4;
+    }
+    default:
+        throw "not implemented";
+    }
+}
+
 bool operator<=(TypePtr Ltype, TypePtr Rtype) {
     if (Ltype->isInteger() and Rtype->isInteger())
         return true;

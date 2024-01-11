@@ -25,7 +25,11 @@ class VariableReferenceNode : public ExpressionNode {
     std::string getNameString() const { return name; }
     const Expressions &getExprs() const { return exprs; }
 
+    void setAddrUsage() { addr_usage = true; }
+    bool isValueUsage() const { return !addr_usage; }
+
   private:
+    bool addr_usage = false;
     std::string name;
     Expressions exprs;
 };

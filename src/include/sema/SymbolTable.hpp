@@ -41,6 +41,10 @@ class SymbolEntry {
         : name(p_name), kind(p_kind), level(p_level), type(p_type),
           attr(p_attr), error(false) {}
     SymbolKind getKind() const { return kind; }
+    int getLevel() const { return level; }
+    bool isGlobal() const { return level == 0; }
+    void setOffset(size_t p_offset) { offset = p_offset; }
+    int getOffset() const { return offset; }
     TypePtr getType() const { return type; }
     bool isError() const { return error; }
     void setError() { error = true; }
@@ -52,7 +56,7 @@ class SymbolEntry {
   private:
     std::string name;
     SymbolKind kind;
-    int level;
+    int level, offset = 0;
     TypePtr type;
     AttrT attr;
     bool error;

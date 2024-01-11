@@ -38,6 +38,9 @@ class Type {
     bool isScalar() const { return dim.empty() and value != Value::Void; }
     const auto &getDim() const { return dim; }
 
+    int getAlign() const;
+    int getSize() const;
+
   private:
     Type(Value);
     void ensureName();
