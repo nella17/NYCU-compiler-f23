@@ -42,6 +42,27 @@ void logSource(FILE *p_out_file, uint32_t nxt) {
     }
 }
 
+// clang-format off
+constexpr const char *const riscv_assembly_func_prologue =
+    ".section    .text\n"
+    "    .align 2\n"
+    "    .global %1$s\n"
+    "    .type %1$s, @function\n"
+    "%1$s:\n"
+    "    addi sp, sp, -128\n"
+    "    sw ra, 124(sp)\n"
+    "    sw s0, 120(sp)\n"
+    "    addi s0, sp, 128\n"
+    ;
+constexpr const char *const riscv_assembly_func_epilogue =
+    "    lw ra, 124(sp)\n"
+    "    lw s0, 120(sp)\n"
+    "    addi sp, sp, 128\n"
+    "    jr ra\n"
+    "    .size %1$s, .-%1$s\n"
+    ;
+// clang-format on
+
 void CodeGenerator::visit(ProgramNode &p_program) {
     logSource(m_output_file.get(), p_program.getLocation().line);
 
@@ -63,34 +84,12 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     for_each(p_program.getFuncNodes().begin(), p_program.getFuncNodes().end(),
              visit_ast_node);
 
-    // clang-format off
-    constexpr const char *const riscv_assembly_main_prologue =
-        ".section    .text\n"
-        "    .align 2\n"
-        "    .global main\n"
-        "    .type main, @function\n"
-        "main:\n"
-        "    addi sp, sp, -128\n"
-        "    sw ra, 124(sp)\n"
-        "    sw s0, 120(sp)\n"
-        "    addi s0, sp, 128\n"
-        ;
-    // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_main_prologue);
+    dumpInstructions(m_output_file.get(), riscv_assembly_func_prologue, "main");
     m_stack_manager.push(128);
 
     const_cast<CompoundStatementNode &>(p_program.getBody()).accept(*this);
 
-    // clang-format off
-    constexpr const char *const riscv_assembly_main_epilogue =
-        "    lw ra, 124(sp)\n"
-        "    lw s0, 120(sp)\n"
-        "    addi sp, sp, 128\n"
-        "    jr ra\n"
-        "    .size main, .-main\n"
-        ;
-    // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_main_epilogue);
+    dumpInstructions(m_output_file.get(), riscv_assembly_func_epilogue, "main");
     m_stack_manager.pop();
 
     m_symbol_manager.popScope();
@@ -114,23 +113,21 @@ void CodeGenerator::visit(VariableNode &p_variable) {
     if (entry->isGlobal()) {
         // clang-format off
         constexpr const char *const riscv_assembly_global_int =
-            "    .global %s\n"
-            "    .section %s\n"
-            "    .align %d\n"
-            "    .type %s, @object\n"
-            "    .size %s, %d\n"
-            "%s:\n"
-            "    .word %d\n"
+            "    .global %1$s\n"
+            "    .section %2$s\n"
+            "    .align %3$d\n"
+            "    .type %1$s, @object\n"
+            "    .size %1$s, %4$d\n"
+            "%1$s:\n"
+            "    .word %5$d\n"
             ;
         // clang-format on
         const char *section = constant ? ".rodata" : ".bss";
-        auto name_str = name.c_str();
         switch (type->value) {
         case Type::Value::Integer: {
             int value = constant ? constant->getIntValue() : 0;
             dumpInstructions(m_output_file.get(), riscv_assembly_global_int,
-                             name_str, section, align, name_str, name_str, size,
-                             name_str, value);
+                             name.c_str(), section, align, size, value);
             break;
         }
         default:
