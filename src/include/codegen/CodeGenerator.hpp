@@ -1,6 +1,7 @@
 #ifndef CODEGEN_CODE_GENERATOR_H
 #define CODEGEN_CODE_GENERATOR_H
 
+#include "sema/SymbolTable.hpp"
 #include "visitor/AstNodeVisitor.hpp"
 
 #include <cstdio>
@@ -9,6 +10,7 @@
 
 class CodeGenerator final : public AstNodeVisitor {
   private:
+    SymbolManager symbol_manager;
     std::string m_source_file_path;
     std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
 
