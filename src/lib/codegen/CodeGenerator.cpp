@@ -5,25 +5,20 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
+#include <filesystem>
+namespace fs = std::filesystem;
 
-CodeGenerator::CodeGenerator(const std::string &source_file_name,
+CodeGenerator::CodeGenerator(const std::string &source_file_path,
                              const std::string &save_path)
-    : m_source_file_path(source_file_name) {
+    : m_source_file_path(source_file_path) {
     // FIXME: assume that the source file is always xxxx.p
-    const auto &real_path = save_path.empty() ? std::string{"."} : save_path;
-    auto slash_pos = source_file_name.rfind("/");
-    auto dot_pos = source_file_name.rfind(".");
-
-    if (slash_pos != std::string::npos) {
-        ++slash_pos;
-    } else {
-        slash_pos = 0;
-    }
-    auto output_file_path{
-        real_path + "/" +
-        source_file_name.substr(slash_pos, dot_pos - slash_pos) + ".S"};
-    m_output_file.reset(fopen(output_file_path.c_str(), "w"));
-    assert(m_output_file.get() && "Failed to open output file");
+    fs::path real_path = save_path.empty() ? std::string{"."} : save_path;
+    fs::path source_path = source_file_path;
+    source_path.replace_extension(".S");
+    fs::path output_file_path = real_path / source_path.filename();
+    auto file = fopen(output_file_path.c_str(), "w");
+    assert(file && "Failed to open output file");
+    m_output_file.reset(file);
 }
 
 static void dumpInstructions(FILE *p_out_file, const char *format, ...) {
