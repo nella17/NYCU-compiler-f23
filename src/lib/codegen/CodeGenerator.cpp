@@ -21,12 +21,8 @@ CodeGenerator::CodeGenerator(const std::string &source_file_path,
     m_output_file.reset(file);
 }
 
-static void dumpInstructions(FILE *p_out_file, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    vfprintf(p_out_file, format, args);
-    va_end(args);
-}
+#define dumpInstructions(p_out_file, format, ...)                              \
+    fprintf(p_out_file, format __VA_OPT__(, ) __VA_ARGS__)
 
 void CodeGenerator::visit(ProgramNode &p_program) {
     // Generate RISC-V instructions for program header
