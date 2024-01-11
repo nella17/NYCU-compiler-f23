@@ -1,4 +1,6 @@
 #include "codegen/CodeGenerator.hpp"
+
+#include "sema/error.hpp"
 #include "visitor/AstNodeInclude.hpp"
 
 #include <algorithm>
@@ -31,7 +33,18 @@ CodeGenerator::CodeGenerator(const std::string &source_file_path,
     "    lw " #reg ", 0(sp)\n"                                                 \
     "    addi sp, sp, 4\n"
 
+uint32_t curline = 1;
+void logSource(FILE *p_out_file, uint32_t nxt) {
+    while (curline <= nxt) {
+        dumpInstructions(p_out_file, " # %u: %s \n", curline,
+                         getSource(curline).c_str());
+        curline++;
+    }
+}
+
 void CodeGenerator::visit(ProgramNode &p_program) {
+    logSource(m_output_file.get(), p_program.getLocation().line);
+
     // Generate RISC-V instructions for program header
     // clang-format off
     constexpr const char *const riscv_assembly_file_prologue =
@@ -57,7 +70,6 @@ void CodeGenerator::visit(ProgramNode &p_program) {
         "    .global main\n"
         "    .type main, @function\n"
         "main:\n"
-        "  # prelogue \n"
         "    addi sp, sp, -128\n"
         "    sw ra, 124(sp)\n"
         "    sw s0, 120(sp)\n"
@@ -71,7 +83,6 @@ void CodeGenerator::visit(ProgramNode &p_program) {
 
     // clang-format off
     constexpr const char *const riscv_assembly_main_epilogue =
-        "  # epilogue \n"
         "    lw ra, 124(sp)\n"
         "    lw s0, 120(sp)\n"
         "    addi sp, sp, 128\n"
@@ -85,9 +96,15 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     m_symbol_manager.popScope();
 }
 
-void CodeGenerator::visit(DeclNode &p_decl) { p_decl.visitChildNodes(*this); }
+void CodeGenerator::visit(DeclNode &p_decl) {
+    logSource(m_output_file.get(), p_decl.getLocation().line);
+
+    p_decl.visitChildNodes(*this);
+}
 
 void CodeGenerator::visit(VariableNode &p_variable) {
+    logSource(m_output_file.get(), p_variable.getLocation().line);
+
     auto name = p_variable.getNameString();
     auto type = p_variable.getType();
     auto constant = p_variable.getConstant();
@@ -124,7 +141,6 @@ void CodeGenerator::visit(VariableNode &p_variable) {
         entry->setOffset(offset);
         if (constant) {
             p_variable.visitChildNodes(*this);
-            dumpInstructions(m_output_file.get(), " # variable \n");
             dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
             // clang-format off
             constexpr const char *const riscv_assembly_local_constant =
@@ -138,9 +154,10 @@ void CodeGenerator::visit(VariableNode &p_variable) {
 }
 
 void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
+    logSource(m_output_file.get(), p_constant_value.getLocation().line);
+
     auto type = p_constant_value.getType();
     auto constant = p_constant_value.getConstant();
-    dumpInstructions(m_output_file.get(), " # constant \n");
     switch (type->value) {
     case Type::Value::Integer: {
         // clang-format off
@@ -159,6 +176,8 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
+    logSource(m_output_file.get(), p_function.getLocation().line);
+
     m_symbol_manager.pushScope(p_function.getSymbolTable());
 
     p_function.visitChildNodes(*this);
@@ -167,6 +186,8 @@ void CodeGenerator::visit(FunctionNode &p_function) {
 }
 
 void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
+    logSource(m_output_file.get(), p_compound_statement.getLocation().line);
+
     m_symbol_manager.pushScope(p_compound_statement.getSymbolTable());
 
     p_compound_statement.visitChildNodes(*this);
@@ -175,6 +196,8 @@ void CodeGenerator::visit(CompoundStatementNode &p_compound_statement) {
 }
 
 void CodeGenerator::visit(PrintNode &p_print) {
+    logSource(m_output_file.get(), p_print.getLocation().line);
+
     p_print.visitChildNodes(*this);
     // clang-format off
     constexpr const char *const riscv_assembly_call_print =
@@ -191,14 +214,21 @@ void CodeGenerator::visit(PrintNode &p_print) {
     }
 }
 
-void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {}
+void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
+    logSource(m_output_file.get(), p_bin_op.getLocation().line);
+}
 
-void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {}
+void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
+    logSource(m_output_file.get(), p_un_op.getLocation().line);
+}
 
-void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {}
+void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
+    logSource(m_output_file.get(), p_func_invocation.getLocation().line);
+}
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
-    dumpInstructions(m_output_file.get(), " # var ref \n");
+    logSource(m_output_file.get(), p_variable_ref.getLocation().line);
+
     auto name = p_variable_ref.getNameString();
     auto entry = m_symbol_manager.lookup(name);
 
@@ -233,9 +263,10 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
 }
 
 void CodeGenerator::visit(AssignmentNode &p_assignment) {
+    logSource(m_output_file.get(), p_assignment.getLocation().line);
+
     p_assignment.visitChildNodes(*this);
 
-    dumpInstructions(m_output_file.get(), " # assign \n");
     // clang-format off
     constexpr const char *const riscv_assembly_assign =
         riscvAsmPop(t0)
@@ -246,13 +277,21 @@ void CodeGenerator::visit(AssignmentNode &p_assignment) {
     dumpInstructions(m_output_file.get(), riscv_assembly_assign);
 }
 
-void CodeGenerator::visit(ReadNode &p_read) {}
+void CodeGenerator::visit(ReadNode &p_read) {
+    logSource(m_output_file.get(), p_read.getLocation().line);
+}
 
-void CodeGenerator::visit(IfNode &p_if) {}
+void CodeGenerator::visit(IfNode &p_if) {
+    logSource(m_output_file.get(), p_if.getLocation().line);
+}
 
-void CodeGenerator::visit(WhileNode &p_while) {}
+void CodeGenerator::visit(WhileNode &p_while) {
+    logSource(m_output_file.get(), p_while.getLocation().line);
+}
 
 void CodeGenerator::visit(ForNode &p_for) {
+    logSource(m_output_file.get(), p_for.getLocation().line);
+
     m_symbol_manager.pushScope(p_for.getSymbolTable());
 
     p_for.visitChildNodes(*this);
@@ -260,4 +299,6 @@ void CodeGenerator::visit(ForNode &p_for) {
     m_symbol_manager.popScope();
 }
 
-void CodeGenerator::visit(ReturnNode &p_return) {}
+void CodeGenerator::visit(ReturnNode &p_return) {
+    logSource(m_output_file.get(), p_return.getLocation().line);
+}

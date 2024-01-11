@@ -12,6 +12,8 @@
 extern uint32_t lines_idx[MAX_LINE];
 extern FILE *yyin;
 
+std::string getSource(uint32_t line);
+
 class SemanticError : public std::exception {
   protected:
     const std::string reason;
