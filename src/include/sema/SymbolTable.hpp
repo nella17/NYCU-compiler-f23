@@ -12,8 +12,6 @@
 #include <variant>
 #include <vector>
 
-extern uint32_t opt_dmp; /* declared in scanner.l */
-
 enum class SymbolKind {
     kProgram,
     kFunction,
@@ -81,8 +79,14 @@ using SymbolTablePtr = std::shared_ptr<SymbolTable>;
 std::ostream &operator<<(std::ostream &, const SymbolTablePtr &);
 
 class SymbolManager {
+  private:
+    const bool opt_dmp;
+    int level = 0;
+    std::unordered_map<std::string, SymbolEntrys> entries{};
+    std::vector<SymbolTablePtr> tables{};
+
   public:
-    SymbolManager() : level(0), entries{}, tables{} {}
+    SymbolManager(bool p_opt_dmp) : opt_dmp(p_opt_dmp) {}
     SymbolTablePtr currentScope() { return tables.back(); }
     SymbolEntryPtr addSymbol(std::string,
                              SymbolKind,
@@ -95,8 +99,4 @@ class SymbolManager {
     void pushScope(SymbolTablePtr = nullptr);
     void popScope();
     // other methods
-  private:
-    int level;
-    std::unordered_map<std::string, SymbolEntrys> entries;
-    std::vector<SymbolTablePtr> tables;
 };

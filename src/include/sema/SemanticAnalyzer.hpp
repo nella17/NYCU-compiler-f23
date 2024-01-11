@@ -32,7 +32,7 @@ class SemanticAnalyzer final : public AstNodeVisitor {
 
   public:
     ~SemanticAnalyzer() = default;
-    SemanticAnalyzer() = default;
+    SemanticAnalyzer(bool opt_dmp) : symbol_manager(opt_dmp) {}
 
     bool hasError() const { return has_error; }
 
