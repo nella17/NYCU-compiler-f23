@@ -74,6 +74,7 @@ const char *genOpCode(Operator op) {
         return "bne";
     case Operator::AND:
     case Operator::OR:
+        throw std::invalid_argument("not implemented");
     case Operator::NEG:
     case Operator::NOT:
         throw std::invalid_argument("not implemented");
@@ -389,6 +390,19 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     logSource(m_output_file.get(), p_un_op.getLocation().line);
+
+    p_un_op.visitChildNodes(*this);
+    dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
+    auto op = p_un_op.getOp();
+    switch (op) {
+    case Operator::NEG:
+        dumpInstructions(m_output_file.get(), "    neg t0, t0\n");
+        break;
+    case Operator::NOT:
+    default:
+        throw std::invalid_argument("not implemented");
+    }
+    pusht0();
 }
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
