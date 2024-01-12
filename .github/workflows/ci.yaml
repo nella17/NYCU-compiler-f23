@@ -13,4 +13,4 @@ jobs:
         uses: actions/checkout@v4
       - name: Run Test
         # Not to use "make autograde" because it's for grading purpose and the recipe ignores errors.
-        run: ARGS="make test" make activate
+        run: ARGS="make -j test" make activate
