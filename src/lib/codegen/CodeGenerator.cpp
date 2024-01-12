@@ -271,20 +271,22 @@ void CodeGenerator::visit(VariableNode &p_variable) {
         }
         case SymbolKind::kParameter: {
             // clang-format off
-            constexpr const char *const riscv_assembly_local_arg_reg =
+            constexpr const char *const riscv_assembly_arg_reg =
                 "    sw a%d, %d(s0)\n"
                 ;
-            constexpr const char *const riscv_assembly_local_arg_stack =
-                riscvAsmPop(t0)
+            constexpr const char *const riscv_assembly_arg_stack =
+                "    lw t0, %d(s0)\n"
                 "    sw t0, %d(s0)\n"
                 ;
             // clang-format on
             if (m_parameter_cnt < 8) {
-                dumpInstructions(m_output_file.get(),
-                                 riscv_assembly_local_arg_reg, m_parameter_cnt,
+                dumpInstructions(m_output_file.get(), riscv_assembly_arg_reg,
+                                 m_parameter_cnt,
                                  m_stack_manager.offset(offset));
             } else {
-                // TODO
+                dumpInstructions(m_output_file.get(), riscv_assembly_arg_stack,
+                                 4 * (m_parameter_cnt - 8),
+                                 m_stack_manager.offset(offset));
             }
             m_parameter_cnt++;
             break;
@@ -394,29 +396,30 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
     logSource(m_output_file.get(), p_func_invocation.getLocation().line);
 
-    p_func_invocation.visitChildNodes(*this);
     // clang-format off
     constexpr const char *const riscv_assembly_swap =
         "    lw t0, %1$d(sp)\n"
         "    lw t1, %2$d(sp)\n"
         "    sw t0, %2$d(sp)\n"
-        "    sw t1, %1$d(sp)\n"
-        ;
+        "    sw t1, %1$d(sp)\n";
     constexpr const char *const riscv_assembly_pop_arg = riscvAsmPop(a%d);
     constexpr const char *const riscv_assembly_call_func =
         "    call %s\n"
-        riscvAsmPush(a0)
-        ;
+        "    addi sp, sp, %d\n"
+        riscvAsmPush(a0);
     // clang-format on
     int size = p_func_invocation.getExprs().size();
-    // swap args on stack
+
+    p_func_invocation.visitChildNodes(*this);
     for (int l = 0, r = size - 1; l < r; l++, r--)
         dumpInstructions(m_output_file.get(), riscv_assembly_swap, 4 * l,
                          4 * r);
-    for (int i = 0; i < std::min(size, 8); i++)
-        dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg, i);
+    for (int i = 0; i < size; i++)
+        if (i < 8)
+            dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg, i);
     dumpInstructions(m_output_file.get(), riscv_assembly_call_func,
-                     p_func_invocation.getNameCString());
+                     p_func_invocation.getNameCString(),
+                     std::max(0, 4 * (size - 8)));
 }
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
