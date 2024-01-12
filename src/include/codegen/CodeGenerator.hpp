@@ -20,7 +20,7 @@
 
 class CodeGenerator final : public AstNodeVisitor {
   private:
-    SymbolManager m_symbol_manager;
+    SymbolManager &m_symbol_manager;
     StackManager m_stack_manager;
     std::string m_source_file_path;
     std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
@@ -39,7 +39,8 @@ class CodeGenerator final : public AstNodeVisitor {
   public:
     ~CodeGenerator() = default;
     CodeGenerator(const std::string &source_file_name,
-                  const std::string &save_path);
+                  const std::string &save_path,
+                  SymbolManager &p_symbol_manager);
 
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;

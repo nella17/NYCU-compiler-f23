@@ -36,6 +36,7 @@ class SemanticAnalyzer final : public AstNodeVisitor {
     SemanticAnalyzer(bool opt_dmp) : m_symbol_manager(opt_dmp) {}
 
     bool hasError() const { return m_has_error; }
+    SymbolManager &getSymbolManager() { return m_symbol_manager; }
 
     void visit(ProgramNode &p_program) override;
     void visit(DeclNode &p_decl) override;

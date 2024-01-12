@@ -11,8 +11,10 @@
 namespace fs = std::filesystem;
 
 CodeGenerator::CodeGenerator(const std::string &source_file_path,
-                             const std::string &save_path)
-    : m_symbol_manager(false), m_source_file_path(source_file_path) {
+                             const std::string &save_path,
+                             SymbolManager &p_symbol_manager)
+    : m_symbol_manager(p_symbol_manager), m_source_file_path(source_file_path) {
+    m_symbol_manager.dumpOff();
     // FIXME: assume that the source file is always xxxx.p
     fs::path real_path = save_path.empty() ? std::string{"."} : save_path;
     fs::path source_path = source_file_path;
@@ -196,6 +198,22 @@ void CodeGenerator::visit(ProgramNode &p_program) {
     dumpInstructions(m_output_file.get(), riscv_assembly_file_prologue,
                      m_source_file_path.c_str());
 
+    // clang-format off
+    constexpr const char *const riscv_assembly_string_literal =
+        "    .section .rodata\n"
+        "    .align 2\n"
+        "%s:\n"
+        "    .string \"%s\"\n"
+        ;
+    // clang-format on
+    for (auto constant : m_symbol_manager.getConstants())
+        if (constant->getType()->isString()) {
+            auto label = genLabel();
+            constant->setLabel(label);
+            dumpInstructions(m_output_file.get(), riscv_assembly_string_literal,
+                             label.c_str(), constant->getStringValue().c_str());
+        }
+
     m_symbol_manager.pushScope(p_program.getSymbolTable());
 
     auto visit_ast_node = [&](auto &ast_node) { ast_node->accept(*this); };
@@ -312,6 +330,17 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
                          constant->getIntValue());
         break;
     }
+    case Type::Value::String: {
+        // clang-format off
+        constexpr const char *const riscv_assembly_constant_string =
+            "    lui t1, %%hi(%1$s)\n"
+            "    addi t0, t1, %%lo(%1$s)\n"
+            ;
+        // clang-format on
+        dumpInstructions(m_output_file.get(), riscv_assembly_constant_string,
+                         constant->getLabel().c_str());
+        break;
+    }
     default:
         throw std::invalid_argument("not implemented");
     }
@@ -353,16 +382,24 @@ void CodeGenerator::visit(PrintNode &p_print) {
     // clang-format off
     constexpr const char *const riscv_assembly_call_print =
         riscvAsmPop(a0)
-        "    call printInt\n"
+        "    call %s\n"
         ;
     // clang-format on
+    const char *func = nullptr;
     switch (p_print.getExpr()->getInferredType()->value) {
     case Type::Value::Integer:
-        dumpInstructions(m_output_file.get(), riscv_assembly_call_print);
+        func = "printInt";
+        break;
+    case Type::Value::Real:
+        func = "printReal";
+        break;
+    case Type::Value::String:
+        func = "printString";
         break;
     default:
         throw std::invalid_argument("not implemented");
     }
+    dumpInstructions(m_output_file.get(), riscv_assembly_call_print, func);
 }
 
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
@@ -404,8 +441,10 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
         "    sw t1, %1$d(sp)\n";
     constexpr const char *const riscv_assembly_pop_arg = riscvAsmPop(a%d);
     constexpr const char *const riscv_assembly_call_func =
-        "    call %s\n"
-        "    addi sp, sp, %d\n"
+        "    call %s\n";
+    constexpr const char *const riscv_assembly_mov_sp =
+        "    addi sp, sp, %d\n";
+    constexpr const char *const riscv_assembly_push_a0 =
         riscvAsmPush(a0);
     // clang-format on
     int size = p_func_invocation.getExprs().size();
@@ -418,8 +457,12 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
         if (i < 8)
             dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg, i);
     dumpInstructions(m_output_file.get(), riscv_assembly_call_func,
-                     p_func_invocation.getNameCString(),
-                     std::max(0, 4 * (size - 8)));
+                     p_func_invocation.getNameCString());
+    if (size > 8)
+        dumpInstructions(m_output_file.get(), riscv_assembly_mov_sp,
+                         4 * (size - 8));
+    if (not p_func_invocation.getInferredType()->isVoid())
+        dumpInstructions(m_output_file.get(), riscv_assembly_push_a0);
 }
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {

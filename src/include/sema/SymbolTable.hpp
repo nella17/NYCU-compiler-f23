@@ -84,10 +84,11 @@ std::ostream &operator<<(std::ostream &, const SymbolTablePtr &);
 
 class SymbolManager {
   private:
-    const bool opt_dmp;
+    bool opt_dmp;
     int level = 0;
     std::unordered_map<std::string, SymbolEntrys> entries{};
     std::vector<SymbolTablePtr> tables{};
+    std::vector<ConstantPtr> constants{};
 
   public:
     SymbolManager(bool p_opt_dmp) : opt_dmp(p_opt_dmp) {}
@@ -102,5 +103,9 @@ class SymbolManager {
     void pushGlobalScope();
     void pushScope(SymbolTablePtr = nullptr);
     void popScope();
-    // other methods
+    void dumpOff() { opt_dmp = false; }
+    void pushConstant(ConstantPtr p_constant) {
+        constants.emplace_back(p_constant);
+    }
+    const auto &getConstants() const { return constants; }
 };

@@ -55,6 +55,8 @@ void SemanticAnalyzer::visit(VariableNode &p_variable) {
 
 void SemanticAnalyzer::visit(ConstantValueNode &p_constant_value) {
     p_constant_value.setInferredType(p_constant_value.getType());
+    if (p_constant_value.getType()->isString())
+        m_symbol_manager.pushConstant(p_constant_value.getConstant());
 }
 
 void SemanticAnalyzer::visit(FunctionNode &p_function) {

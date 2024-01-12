@@ -15,7 +15,9 @@ class ConstantValue {
         : value(p_real), value_str(std::to_string(p_real)),
           type(Type::makeReal()) {}
     ConstantValue(char *const p_str)
-        : value(p_str), value_str(p_str), type(Type::makeString()) {}
+        : value(p_str), value_str(p_str), type(Type::makeString()) {
+        free(p_str);
+    }
     ConstantValue(bool p_bool)
         : value(p_bool), value_str(p_bool ? "true" : "false"),
           type(Type::makeBoolean()) {}
@@ -30,10 +32,14 @@ class ConstantValue {
     auto getStringValue() const { return std::get<std::string>(value); }
     auto getBooleanValue() const { return std::get<bool>(value); }
 
+    void setLabel(std::string p_label) { label = p_label; }
+    auto getLabel() const { return label; }
+
   private:
     Value value;
     std::string value_str;
     TypePtr type;
+    std::string label;
 };
 
 using ConstantPtr = std::shared_ptr<ConstantValue>;
