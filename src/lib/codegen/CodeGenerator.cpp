@@ -255,12 +255,24 @@ const char *genOpCode(Operator op) {
         return "div";
     case Operator::MOD:
         return "rem";
+    // < to >=
     case Operator::OP_LT:
+        return "bgt";
+    // <= to >
     case Operator::OP_LTEQ:
+        return "bge";
+    // != to ==
     case Operator::OP_NEQ:
+        return "beq";
+    // >= to <
     case Operator::OP_GTEQ:
+        return "blt";
+    // > to <=
     case Operator::OP_GT:
+        return "ble";
+    // == to !=
     case Operator::OP_EQ:
+        return "bne";
     case Operator::AND:
     case Operator::OR:
     case Operator::NEG:
@@ -275,9 +287,9 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
 
     p_bin_op.visitChildNodes(*this);
 
-    dumpInstructions(m_output_file.get(), riscvAsmPop(t0) riscvAsmPop(t1));
+    dumpInstructions(m_output_file.get(), riscvAsmPop(t1) riscvAsmPop(t0));
     auto op = p_bin_op.getOp();
-    dumpInstructions(m_output_file.get(), "    %s t0, t1, t0\n", genOpCode(op));
+    dumpInstructions(m_output_file.get(), "    %s t0, t0, t1\n", genOpCode(op));
     dumpInstructions(m_output_file.get(), riscvAsmPush(t0));
 }
 
@@ -368,8 +380,59 @@ void CodeGenerator::visit(ReadNode &p_read) {
     logSource(m_output_file.get(), p_read.getLocation().line);
 }
 
+bool opRequireLabel(Operator op) {
+    switch (op) {
+    case Operator::OP_LT:
+    case Operator::OP_LTEQ:
+    case Operator::OP_NEQ:
+    case Operator::OP_GTEQ:
+    case Operator::OP_GT:
+    case Operator::OP_EQ:
+        return true;
+    default:
+        return false;
+    }
+    __builtin_unreachable();
+}
+
 void CodeGenerator::visit(IfNode &p_if) {
     logSource(m_output_file.get(), p_if.getLocation().line);
+
+    // TODO: handle expr not BinaryOperatorNode or op not require label
+    auto bin_op = std::dynamic_pointer_cast<BinaryOperatorNode>(p_if.getExpr());
+    if (!bin_op)
+        throw std::invalid_argument("IfNode accept BinaryOperatorNode only");
+    auto op = bin_op->getOp();
+    if (!opRequireLabel(op))
+        throw std::invalid_argument("IfNode require compare expr");
+    bin_op->visitChildNodes(*this);
+
+    // clang-format off
+    constexpr const char *const riscv_assembly_if =
+        riscvAsmPop(t1)
+        riscvAsmPop(t0)
+        "    %s t0, t1, %s\n"
+        ;
+    constexpr const char *const riscv_assembly_else =
+        "    j %s\n"
+        "%s:\n";
+    constexpr const char *const riscv_assembly_if_end =
+        "%s:\n";
+    // clang-format on
+
+    auto end_label = genLabel();
+    dumpInstructions(m_output_file.get(), riscv_assembly_if, genOpCode(op),
+                     end_label.c_str());
+    p_if.getTrueBody()->accept(*this);
+    if (p_if.getFalseBody()) {
+        auto false_label = end_label;
+        end_label = genLabel();
+        dumpInstructions(m_output_file.get(), riscv_assembly_else,
+                         end_label.c_str(), false_label.c_str());
+        p_if.getFalseBody()->accept(*this);
+    }
+    dumpInstructions(m_output_file.get(), riscv_assembly_if_end,
+                     end_label.c_str());
 }
 
 void CodeGenerator::visit(WhileNode &p_while) {
@@ -379,9 +442,22 @@ void CodeGenerator::visit(WhileNode &p_while) {
 void CodeGenerator::visit(ForNode &p_for) {
     logSource(m_output_file.get(), p_for.getLocation().line);
 
+    // clang-format off
+    constexpr const char *const riscv_assembly_for_prologue =
+        "    addi sp, sp, -128\n";
+    constexpr const char *const riscv_assembly_for_epilogue =
+        "    addi sp, sp, 128\n";
+    // clang-format on
+
     m_symbol_manager.pushScope(p_for.getSymbolTable());
 
+    dumpInstructions(m_output_file.get(), riscv_assembly_for_prologue);
+    m_stack_manager.push(128);
+
     p_for.visitChildNodes(*this);
+
+    dumpInstructions(m_output_file.get(), riscv_assembly_for_epilogue);
+    m_stack_manager.pop();
 
     m_symbol_manager.popScope();
 }

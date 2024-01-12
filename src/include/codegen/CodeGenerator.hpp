@@ -14,7 +14,9 @@ class CodeGenerator final : public AstNodeVisitor {
     StackManager m_stack_manager;
     std::string m_source_file_path;
     std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
-    int m_parameter_cnt;
+    int m_parameter_cnt, m_label_cnt = 0;
+
+    std::string genLabel() { return ".L" + std::to_string(m_label_cnt++); }
 
   public:
     ~CodeGenerator() = default;

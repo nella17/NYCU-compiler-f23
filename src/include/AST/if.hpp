@@ -19,6 +19,8 @@ class IfNode : public AstNode {
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
 
     auto getExpr() const { return expr; }
+    auto getTrueBody() const { return true_body; }
+    auto getFalseBody() const { return false_body; }
 
   private:
     ExpressionPtr expr;
