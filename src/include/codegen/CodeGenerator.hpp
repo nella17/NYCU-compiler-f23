@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/operator.hpp"
 #include "codegen/stack.hpp"
 #include "sema/SymbolTable.hpp"
 #include "visitor/AstNodeVisitor.hpp"
@@ -17,6 +18,13 @@ class CodeGenerator final : public AstNodeVisitor {
     int m_parameter_cnt, m_label_cnt = 0;
 
     std::string genLabel() { return ".L" + std::to_string(m_label_cnt++); }
+    void branchLabel(ExpressionPtr expr, std::string label);
+    void branchLabel(Operator op, std::string label);
+    void dumpLabel(std::string label);
+    void jumpLabel(std::string label);
+    void dumpSymbol(std::string name);
+    void loadValue(bool copy = true);
+    void pusht0();
 
   public:
     ~CodeGenerator() = default;

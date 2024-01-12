@@ -333,7 +333,6 @@ compound_statement:
 
 assignment:
     variable_reference ASSIGN expr SEMICOLON {
-        $1->setAddrUsage();
         $$ = new AssignmentNode(
             @2.first_line, @2.first_column,
             $1, $3
@@ -350,7 +349,6 @@ print_statement:
 ;
 read_statement:
     KWread variable_reference SEMICOLON {
-        $2->setAddrUsage();
         $$ = new ReadNode(
             @1.first_line, @1.first_column,
             $2
