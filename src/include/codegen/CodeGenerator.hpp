@@ -27,8 +27,7 @@ class CodeGenerator final : public AstNodeVisitor {
     int m_parameter_cnt, m_label_cnt = 0;
 
     std::string genLabel() { return ".L" + std::to_string(m_label_cnt++); }
-    void branchLabel(ExpressionPtr expr, std::string label);
-    void branchLabel(Operator op, std::string label);
+    void branchLabel(std::string label, bool pop = true);
     void dumpLabel(std::string label);
     void jumpLabel(std::string label);
     void dumpSymbol(std::string name);

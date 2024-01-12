@@ -37,37 +37,36 @@ void logSource(FILE *p_out_file, uint32_t nxt) {
 const char *genOpCode(Operator op) {
     switch (op) {
     case Operator::ADD:
-        return "add";
+        return "    add t0, t0, t1\n";
     case Operator::SUB:
-        return "sub";
+        return "    sub t0, t0, t1\n";
     case Operator::MUL:
-        return "mul";
+        return "    mul t0, t0, t1\n";
     case Operator::DIV:
-        return "div";
+        return "    div t0, t0, t1\n";
     case Operator::MOD:
-        return "rem";
-    // < to >=
+        return "    rem t0, t0, t1\n";
     case Operator::OP_LT:
-        return "bge";
-    // <= to >
+        return "    slt t0, t0, t1\n";
     case Operator::OP_LTEQ:
-        return "bgt";
-    // != to ==
+        return "    sgt t0, t0, t1\n"
+               "    xori t0, t0, 1\n";
     case Operator::OP_NEQ:
-        return "beq";
-    // >= to <
+        return "    sub t0, t0, t1\n"
+               "    snez t0, t0\n";
     case Operator::OP_GTEQ:
-        return "blt";
-    // > to <=
+        return "    slt t0, t0, t1\n"
+               "    xori t0, t0, 1\n";
     case Operator::OP_GT:
-        return "ble";
-    // == to !=
+        return "    sgt t0, t0, t1\n";
     case Operator::OP_EQ:
-        return "bne";
+        return "    sub t0, t0, t1\n"
+               "    seqz t0, t0\n";
     case Operator::AND:
     case Operator::OR:
         throw std::invalid_argument("not implemented");
     case Operator::NEG:
+        return "    neg t0, t0\n";
     case Operator::NOT:
         throw std::invalid_argument("not implemented");
     }
@@ -121,32 +120,14 @@ void CodeGenerator::loadValue(bool copy) {
         dumpInstructions(m_output_file.get(), riscv_assembly_copy);
 }
 
-void CodeGenerator::branchLabel(ExpressionPtr expr, std::string label) {
-    // TODO: handle expr not BinaryOperatorNode or op not require label
-    auto bin_op = std::dynamic_pointer_cast<BinaryOperatorNode>(expr);
-    if (!bin_op)
-        throw std::invalid_argument("IfNode accept BinaryOperatorNode only");
-    auto op = bin_op->getOp();
-    if (!opRequireLabel(op))
-        throw std::invalid_argument("IfNode require compare expr");
-    bin_op->visitChildNodes(*this);
-
-    // clang-format off
-    constexpr const char *const riscv_assembly_pop =
-        riscvAsmPop(t1)
-        riscvAsmPop(t0);
-    // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_pop);
-    branchLabel(op, label);
-}
-
-void CodeGenerator::branchLabel(Operator op, std::string label) {
+void CodeGenerator::branchLabel(std::string label, bool pop) {
     // clang-format off
     constexpr const char *const riscv_assembly_branch =
-        "    %s t0, t1, %s\n";
+        "    beqz t0, %s\n";
     // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_branch, genOpCode(op),
-                     label.c_str());
+    if (pop)
+        dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
+    dumpInstructions(m_output_file.get(), riscv_assembly_branch, label.c_str());
 }
 
 void CodeGenerator::dumpLabel(std::string label) {
@@ -409,7 +390,7 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
 
     dumpInstructions(m_output_file.get(), riscvAsmPop(t1) riscvAsmPop(t0));
     auto op = p_bin_op.getOp();
-    dumpInstructions(m_output_file.get(), "    %s t0, t0, t1\n", genOpCode(op));
+    dumpInstructions(m_output_file.get(), "%s", genOpCode(op));
     pusht0();
 }
 
@@ -419,14 +400,7 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     p_un_op.visitChildNodes(*this);
     dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
     auto op = p_un_op.getOp();
-    switch (op) {
-    case Operator::NEG:
-        dumpInstructions(m_output_file.get(), "    neg t0, t0\n");
-        break;
-    case Operator::NOT:
-    default:
-        throw std::invalid_argument("not implemented");
-    }
+    dumpInstructions(m_output_file.get(), "%s", genOpCode(op));
     pusht0();
 }
 
@@ -517,7 +491,8 @@ void CodeGenerator::visit(IfNode &p_if) {
     logSource(m_output_file.get(), p_if.getLocation().line);
 
     auto end_label = genLabel();
-    branchLabel(p_if.getExpr(), end_label);
+    p_if.getExpr()->accept(*this);
+    branchLabel(end_label);
     p_if.getTrueBody()->accept(*this);
     if (p_if.getFalseBody()) {
         auto false_label = end_label;
@@ -535,7 +510,8 @@ void CodeGenerator::visit(WhileNode &p_while) {
     auto begin_label = genLabel(), end_label = genLabel();
 
     dumpLabel(begin_label);
-    branchLabel(p_while.getExpr(), end_label);
+    p_while.getExpr()->accept(*this);
+    branchLabel(end_label);
     p_while.visitBodyChildNodes(*this);
     jumpLabel(begin_label);
     dumpLabel(end_label);
@@ -550,19 +526,19 @@ void CodeGenerator::visit(ForNode &p_for) {
     auto begin_label = genLabel(), end_label = genLabel();
     auto name = p_for.getLoopVarRef()->getNameString();
     // clang-format off
-    constexpr const char *const riscv_assembly_load =
+    constexpr const char *const riscv_assembly_cond =
         "    li t1, %d\n"
-        ;
+        "    slt t0, t0, t1\n";
     constexpr const char *const riscv_assembly_for_inc =
         "    addi t1, t1, 1\n"
-        "    sw t1, 0(t0)\n" ;
+        "    sw t1, 0(t0)\n";
     // clang-format on
 
     dumpLabel(begin_label);
     dumpSymbol(name);
     loadValue();
-    dumpInstructions(m_output_file.get(), riscv_assembly_load, p_for.getEnd());
-    branchLabel(Operator::OP_LT, end_label);
+    dumpInstructions(m_output_file.get(), riscv_assembly_cond, p_for.getEnd());
+    branchLabel(end_label, false);
     p_for.visitBodyChildNodes(*this);
     dumpSymbol(name);
     loadValue(false);
