@@ -34,10 +34,14 @@ void logSource(FILE *p_out_file, uint32_t nxt) {
     }
 }
 
-const char *genOpCode(Operator op) {
+const char *genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     switch (op) {
     case Operator::ADD:
-        return "    add t0, t0, t1\n";
+        if (Ltype->isInteger() and Rtype->isInteger())
+            return "    add t0, t0, t1\n";
+        // TODO conversion
+        if (Ltype->capReal() and Rtype->capReal())
+            return "    fadd.s ft0, ft0, ft1\n";
     case Operator::SUB:
         return "    sub t0, t0, t1\n";
     case Operator::MUL:
@@ -95,6 +99,7 @@ void CodeGenerator::dumpSymbol(std::string name) {
 }
 
 void CodeGenerator::dumpSymbol(SymbolEntryPtr entry) {
+    dumpInstructions(m_output_file.get(), " # %s\n", entry->getName().c_str());
     // clang-format off
     constexpr const char *const riscv_assembly_var_ref_global =
         "    la t0, %s\n";
@@ -110,16 +115,20 @@ void CodeGenerator::dumpSymbol(SymbolEntryPtr entry) {
     }
 }
 
-void CodeGenerator::loadValue(bool copy) {
+void CodeGenerator::loadInt(const char *target) {
     // clang-format off
-    constexpr const char *const riscv_assembly_load_value =
-        "    lw t1, 0(t0)\n";
-    constexpr const char *const riscv_assembly_copy =
-        "    mv t0, t1\n";
+    constexpr const char *const riscv_assembly_load_int =
+        "    lw %s, 0(t0)\n";
     // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_load_value);
-    if (copy)
-        dumpInstructions(m_output_file.get(), riscv_assembly_copy);
+    dumpInstructions(m_output_file.get(), riscv_assembly_load_int, target);
+}
+
+void CodeGenerator::loadReal(const char *target) {
+    // clang-format off
+    constexpr const char *const riscv_assembly_load_real =
+        "    flw %s, 0(t0)\n";
+    // clang-format on
+    dumpInstructions(m_output_file.get(), riscv_assembly_load_real, target);
 }
 
 void CodeGenerator::branchLabel(std::string label, bool pop) {
@@ -289,14 +298,22 @@ void CodeGenerator::visit(VariableNode &p_variable) {
             // clang-format off
             constexpr const char *const riscv_assembly_arg_reg =
                 "    sw a%d, %d(s0)\n";
+            constexpr const char *const riscv_assembly_arg_reg_f =
+                "    fsw fa%d, %d(s0)\n";
             constexpr const char *const riscv_assembly_arg_stack =
                 "    lw t0, %d(s0)\n"
                 "    sw t0, %d(s0)\n";
             // clang-format on
             if (m_parameter_cnt < 8) {
-                dumpInstructions(m_output_file.get(), riscv_assembly_arg_reg,
-                                 m_parameter_cnt,
-                                 m_stack_manager.offset(offset));
+                if (type->isReal()) {
+                    dumpInstructions(m_output_file.get(),
+                                     riscv_assembly_arg_reg_f, m_parameter_cnt,
+                                     m_stack_manager.offset(offset));
+                } else {
+                    dumpInstructions(m_output_file.get(),
+                                     riscv_assembly_arg_reg, m_parameter_cnt,
+                                     m_stack_manager.offset(offset));
+                }
             } else {
                 dumpInstructions(m_output_file.get(), riscv_assembly_arg_stack,
                                  4 * (m_parameter_cnt - 8),
@@ -403,6 +420,7 @@ void CodeGenerator::visit(PrintNode &p_print) {
         riscvAsmPopF(fa0)
         "    call %s\n";
     // clang-format on
+    dumpInstructions(m_output_file.get(), " # call print\n");
     switch (p_print.getExpr()->getInferredType()->value) {
     case Type::Value::Integer:
         dumpInstructions(m_output_file.get(), riscv_assembly_call_print,
@@ -426,19 +444,34 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
 
     p_bin_op.visitChildNodes(*this);
 
-    dumpInstructions(m_output_file.get(), riscvAsmPop(t1) riscvAsmPop(t0));
+    auto left = p_bin_op.getLeft(), right = p_bin_op.getRight();
+    auto Ltype = left->getInferredType(), Rtype = right->getInferredType();
     auto op = p_bin_op.getOp();
-    dumpInstructions(m_output_file.get(), "%s", genOpCode(op));
-    pusht0();
+
+    dumpInstructions(m_output_file.get(), " # %s\n", to_cstring(op));
+    if (p_bin_op.getInferredType()->isReal())
+        dumpInstructions(m_output_file.get(),
+                         riscvAsmPopF(ft1) riscvAsmPopF(ft0));
+    else
+        dumpInstructions(m_output_file.get(), riscvAsmPop(t1) riscvAsmPop(t0));
+    dumpInstructions(m_output_file.get(), "%s", genOpCode(op, Ltype, Rtype));
+    if (p_bin_op.getInferredType()->isReal())
+        pushft0();
+    else
+        pusht0();
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     logSource(m_output_file.get(), p_un_op.getLocation().line);
 
     p_un_op.visitChildNodes(*this);
-    popt0();
+    auto expr = p_un_op.getExpr();
+    auto type = expr->getInferredType();
     auto op = p_un_op.getOp();
-    dumpInstructions(m_output_file.get(), "%s", genOpCode(op));
+
+    dumpInstructions(m_output_file.get(), " # %s\n", to_cstring(op));
+    popt0();
+    dumpInstructions(m_output_file.get(), "%s", genOpCode(op, type));
     pusht0();
 }
 
@@ -452,28 +485,46 @@ void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
         "    sw t0, %2$d(sp)\n"
         "    sw t1, %1$d(sp)\n";
     constexpr const char *const riscv_assembly_pop_arg = riscvAsmPop(a%d);
+    constexpr const char *const riscv_assembly_pop_arg_f = riscvAsmPopF(fa%d);
     constexpr const char *const riscv_assembly_call_func =
         "    call %s\n";
     constexpr const char *const riscv_assembly_mov_sp =
         "    addi sp, sp, %d\n";
     constexpr const char *const riscv_assembly_push_a0 =
         riscvAsmPush(a0);
+    constexpr const char *const riscv_assembly_push_fa0 =
+        riscvAsmPushF(fa0);
     // clang-format on
-    int size = p_func_invocation.getExprs().size();
+    auto name = p_func_invocation.getNameString();
+    auto entry = m_symbol_manager.lookup(name);
+    auto types = entry->getArgs()->getTypes();
+    auto ret_type = p_func_invocation.getInferredType();
+    int size = types.size();
 
     p_func_invocation.visitChildNodes(*this);
+    dumpInstructions(m_output_file.get(), " # call %s\n", name.c_str());
     for (int l = 0, r = size - 1; l < r; l++, r--)
         dumpInstructions(m_output_file.get(), riscv_assembly_swap, 4 * l,
                          4 * r);
     for (int i = 0; i < size; i++)
-        if (i < 8)
-            dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg, i);
+        if (i < 8) {
+            if (types[i]->isReal()) {
+                // TODO: convert int to real
+                dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg_f,
+                                 i);
+            } else {
+                dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg,
+                                 i);
+            }
+        }
     dumpInstructions(m_output_file.get(), riscv_assembly_call_func,
                      p_func_invocation.getNameCString());
     if (size > 8)
         dumpInstructions(m_output_file.get(), riscv_assembly_mov_sp,
                          4 * (size - 8));
-    if (not p_func_invocation.getInferredType()->isVoid())
+    if (ret_type->isReal())
+        dumpInstructions(m_output_file.get(), riscv_assembly_push_fa0);
+    else if (not ret_type->isVoid())
         dumpInstructions(m_output_file.get(), riscv_assembly_push_a0);
 }
 
@@ -484,7 +535,7 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     auto entry = m_symbol_manager.lookup(name);
     dumpSymbol(entry);
     if (entry->isPointer())
-        loadValue();
+        loadInt("t0");
     pusht0();
 
     // clang-format off
@@ -507,9 +558,15 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     }
 
     if (p_variable_ref.isValueUsage() and type->isNotArray()) {
+        dumpInstructions(m_output_file.get(), " # load value\n");
         popt0();
-        loadValue();
-        pusht0();
+        if (type->isReal()) {
+            loadReal("ft0");
+            pushft0();
+        } else {
+            loadInt("t0");
+            pusht0();
+        }
     }
 }
 
@@ -523,8 +580,16 @@ void CodeGenerator::visit(AssignmentNode &p_assignment) {
         riscvAsmPop(t0)
         riscvAsmPop(t1)
         "    sw t0, 0(t1)\n";
+    constexpr const char *const riscv_assembly_assign_f =
+        riscvAsmPopF(ft0)
+        riscvAsmPop(t1)
+        "    fsw ft0, 0(t1)\n";
     // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_assign);
+    dumpInstructions(m_output_file.get(), " # assign\n");
+    if (p_assignment.getVarRef()->getInferredType()->isReal())
+        dumpInstructions(m_output_file.get(), riscv_assembly_assign_f);
+    else
+        dumpInstructions(m_output_file.get(), riscv_assembly_assign);
 }
 
 void CodeGenerator::visit(ReadNode &p_read) {
@@ -596,12 +661,12 @@ void CodeGenerator::visit(ForNode &p_for) {
 
     dumpLabel(begin_label);
     dumpSymbol(name);
-    loadValue();
+    loadInt("t0");
     dumpInstructions(m_output_file.get(), riscv_assembly_cond, p_for.getEnd());
     branchLabel(end_label, false);
     p_for.visitBodyChildNodes(*this);
     dumpSymbol(name);
-    loadValue(false);
+    loadInt("t1");
     dumpInstructions(m_output_file.get(), riscv_assembly_for_inc);
     jumpLabel(begin_label);
     dumpLabel(end_label);
@@ -615,8 +680,12 @@ void CodeGenerator::visit(ReturnNode &p_return) {
     p_return.visitChildNodes(*this);
     // clang-format off
     constexpr const char *const riscv_assembly_return =
-        riscvAsmPop(a0)
-        ;
+        riscvAsmPop(a0);
+    constexpr const char *const riscv_assembly_return_f =
+        riscvAsmPopF(fa0);
     // clang-format on
-    dumpInstructions(m_output_file.get(), riscv_assembly_return);
+    if (p_return.getExpr()->getInferredType()->isReal())
+        dumpInstructions(m_output_file.get(), riscv_assembly_return_f);
+    else
+        dumpInstructions(m_output_file.get(), riscv_assembly_return);
 }

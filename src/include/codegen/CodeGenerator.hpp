@@ -38,9 +38,14 @@ class CodeGenerator final : public AstNodeVisitor {
     void jumpLabel(std::string label);
     void dumpSymbol(std::string name);
     void dumpSymbol(SymbolEntryPtr entry);
-    void loadValue(bool copy = true);
+    void loadInt(const char *);
+    void loadReal(const char *);
     void pusht0() { dumpInstructions(m_output_file.get(), riscvAsmPush(t0)); }
     void popt0() { dumpInstructions(m_output_file.get(), riscvAsmPop(t0)); }
+    void pushft0() {
+        dumpInstructions(m_output_file.get(), riscvAsmPushF(ft0));
+    }
+    void popft0() { dumpInstructions(m_output_file.get(), riscvAsmPopF(ft0)); }
     void breakpoint() { dumpInstructions(m_output_file.get(), " ebreak\n"); }
 
   public:
