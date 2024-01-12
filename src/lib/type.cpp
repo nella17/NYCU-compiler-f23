@@ -70,8 +70,8 @@ std::string Type::getNameString() {
 int Type::getAlign() const {
     switch (value) {
     case Value::Integer:
-        return 4;
     case Value::String:
+    case Value::Boolean:
         return 2;
     default:
         throw std::invalid_argument("not implemented");
@@ -82,8 +82,8 @@ int Type::getSize() const {
         throw std::invalid_argument("not implemented");
     switch (value) {
     case Value::Integer:
-        return 4;
     case Value::String:
+    case Value::Boolean:
         return 4;
     default:
         throw std::invalid_argument("not implemented");

@@ -63,12 +63,13 @@ const char *genOpCode(Operator op) {
         return "    sub t0, t0, t1\n"
                "    seqz t0, t0\n";
     case Operator::AND:
+        return "    and t0, t0, t1\n";
     case Operator::OR:
-        throw std::invalid_argument("not implemented");
+        return "    or t0, t0, t1\n";
     case Operator::NEG:
         return "    neg t0, t0\n";
     case Operator::NOT:
-        throw std::invalid_argument("not implemented");
+        return "    xori t0, t0, 1\n";
     }
     __builtin_unreachable();
 }
@@ -304,8 +305,7 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
     case Type::Value::Integer: {
         // clang-format off
         constexpr const char *const riscv_assembly_constant_int =
-            "    li t0, %d\n"
-            ;
+            "    li t0, %d\n";
         // clang-format on
         dumpInstructions(m_output_file.get(), riscv_assembly_constant_int,
                          constant->getIntValue());
@@ -315,11 +315,19 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
         // clang-format off
         constexpr const char *const riscv_assembly_constant_string =
             "    lui t1, %%hi(%1$s)\n"
-            "    addi t0, t1, %%lo(%1$s)\n"
-            ;
+            "    addi t0, t1, %%lo(%1$s)\n";
         // clang-format on
         dumpInstructions(m_output_file.get(), riscv_assembly_constant_string,
                          constant->getLabel().c_str());
+        break;
+    }
+    case Type::Value::Boolean: {
+        // clang-format off
+        constexpr const char *const riscv_assembly_constant_boolean =
+            "    li t0, %d\n";
+        // clang-format on
+        dumpInstructions(m_output_file.get(), riscv_assembly_constant_boolean,
+                         constant->getBooleanValue());
         break;
     }
     default:
