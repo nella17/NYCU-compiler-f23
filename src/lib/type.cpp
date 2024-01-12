@@ -73,18 +73,18 @@ int Type::getAlign() const {
         return 4;
     }
     default:
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     }
 }
 int Type::getSize() const {
     if (!dim.empty())
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     switch (value) {
     case Value::Integer: {
         return 4;
     }
     default:
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     }
 }
 

@@ -131,7 +131,7 @@ void CodeGenerator::visit(VariableNode &p_variable) {
             break;
         }
         default:
-            throw "not implemented";
+            throw std::invalid_argument("not implemented");
         }
     } else {
         auto offset = m_stack_manager.add(size);
@@ -191,7 +191,7 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
         break;
     }
     default:
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     }
     dumpInstructions(m_output_file.get(), riscvAsmPush(t0));
 }
@@ -239,7 +239,7 @@ void CodeGenerator::visit(PrintNode &p_print) {
         dumpInstructions(m_output_file.get(), riscv_assembly_call_print);
         break;
     default:
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     }
 }
 
@@ -261,14 +261,11 @@ const char *genOpCode(Operator op) {
     case Operator::OP_GTEQ:
     case Operator::OP_GT:
     case Operator::OP_EQ:
-        throw "not implemented";
     case Operator::AND:
     case Operator::OR:
-        throw "not implemented";
     case Operator::NEG:
-        throw "not implemented";
     case Operator::NOT:
-        throw "not implemented";
+        throw std::invalid_argument("not implemented");
     }
     __builtin_unreachable();
 }
