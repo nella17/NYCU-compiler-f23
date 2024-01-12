@@ -9,6 +9,15 @@
 #include <memory>
 #include <string>
 
+#define dumpInstructions(p_out_file, format, ...)                              \
+    fprintf(p_out_file, format __VA_OPT__(, ) __VA_ARGS__)
+#define riscvAsmPush(reg)                                                      \
+    "    addi sp, sp, -4\n"                                                    \
+    "    sw " #reg ", 0(sp)\n"
+#define riscvAsmPop(reg)                                                       \
+    "    lw " #reg ", 0(sp)\n"                                                 \
+    "    addi sp, sp, 4\n"
+
 class CodeGenerator final : public AstNodeVisitor {
   private:
     SymbolManager m_symbol_manager;
@@ -24,7 +33,8 @@ class CodeGenerator final : public AstNodeVisitor {
     void jumpLabel(std::string label);
     void dumpSymbol(std::string name);
     void loadValue(bool copy = true);
-    void pusht0();
+    void pusht0() { dumpInstructions(m_output_file.get(), riscvAsmPush(t0)); }
+    void breakpoint() { dumpInstructions(m_output_file.get(), " ebreak\n"); }
 
   public:
     ~CodeGenerator() = default;

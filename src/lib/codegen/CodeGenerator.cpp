@@ -23,16 +23,6 @@ CodeGenerator::CodeGenerator(const std::string &source_file_path,
     m_output_file.reset(file);
 }
 
-#define dumpInstructions(p_out_file, format, ...)                              \
-    fprintf(p_out_file, format __VA_OPT__(, ) __VA_ARGS__)
-
-#define riscvAsmPush(reg)                                                      \
-    "    addi sp, sp, -4\n"                                                    \
-    "    sw " #reg ", 0(sp)\n"
-#define riscvAsmPop(reg)                                                       \
-    "    lw " #reg ", 0(sp)\n"                                                 \
-    "    addi sp, sp, 4\n"
-
 uint32_t curline = 1;
 void logSource(FILE *p_out_file, uint32_t nxt) {
     while (curline <= nxt) {
@@ -127,10 +117,6 @@ void CodeGenerator::loadValue(bool copy) {
     dumpInstructions(m_output_file.get(), riscv_assembly_load_value);
     if (copy)
         dumpInstructions(m_output_file.get(), riscv_assembly_copy);
-}
-
-void CodeGenerator::pusht0() {
-    dumpInstructions(m_output_file.get(), riscvAsmPush(t0));
 }
 
 void CodeGenerator::branchLabel(ExpressionPtr expr, std::string label) {
