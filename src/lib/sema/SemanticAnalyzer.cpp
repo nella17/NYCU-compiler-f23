@@ -260,7 +260,7 @@ void SemanticAnalyzer::visit(VariableReferenceNode &p_variable_ref) {
             throw NonVariableError(p_variable_ref.getLocation(),
                                    p_variable_ref.getNameString());
         }
-        auto type = std::make_shared<Type>(*entry->getType());
+        auto type = entry->getType()->copy();
         for (auto expr : p_variable_ref.getExprs()) {
             if (expr->isError() or !expr->getInferredType())
                 throw nullptr;

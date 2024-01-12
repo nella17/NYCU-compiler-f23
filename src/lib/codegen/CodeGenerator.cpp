@@ -91,18 +91,19 @@ bool opRequireLabel(Operator op) {
 
 void CodeGenerator::dumpSymbol(std::string name) {
     auto entry = m_symbol_manager.lookup(name);
+    return dumpSymbol(entry);
+}
 
+void CodeGenerator::dumpSymbol(SymbolEntryPtr entry) {
     // clang-format off
     constexpr const char *const riscv_assembly_var_ref_global =
-        "    la t0, %s\n"
-        ;
+        "    la t0, %s\n";
     constexpr const char *const riscv_assembly_var_ref_local =
-        "    addi t0, s0, %d\n"
-        ;
+        "    addi t0, s0, %d\n";
     // clang-format on
     if (entry->isGlobal()) {
         dumpInstructions(m_output_file.get(), riscv_assembly_var_ref_global,
-                         name.c_str());
+                         entry->getName().c_str());
     } else {
         dumpInstructions(m_output_file.get(), riscv_assembly_var_ref_local,
                          m_stack_manager.offset(entry));
@@ -127,7 +128,7 @@ void CodeGenerator::branchLabel(std::string label, bool pop) {
         "    beqz t0, %s\n";
     // clang-format on
     if (pop)
-        dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
+        popt0();
     dumpInstructions(m_output_file.get(), riscv_assembly_branch, label.c_str());
 }
 
@@ -262,8 +263,7 @@ void CodeGenerator::visit(VariableNode &p_variable) {
             // clang-format off
             constexpr const char *const riscv_assembly_local_constant =
                 riscvAsmPop(t0)
-                "    sw t0, %d(s0)\n"
-                ;
+                "    sw t0, %d(s0)\n";
             // clang-format on
             dumpInstructions(m_output_file.get(), riscv_assembly_local_constant,
                              m_stack_manager.offset(offset));
@@ -272,12 +272,10 @@ void CodeGenerator::visit(VariableNode &p_variable) {
         case SymbolKind::kParameter: {
             // clang-format off
             constexpr const char *const riscv_assembly_arg_reg =
-                "    sw a%d, %d(s0)\n"
-                ;
+                "    sw a%d, %d(s0)\n";
             constexpr const char *const riscv_assembly_arg_stack =
                 "    lw t0, %d(s0)\n"
-                "    sw t0, %d(s0)\n"
-                ;
+                "    sw t0, %d(s0)\n";
             // clang-format on
             if (m_parameter_cnt < 8) {
                 dumpInstructions(m_output_file.get(), riscv_assembly_arg_reg,
@@ -371,8 +369,7 @@ void CodeGenerator::visit(PrintNode &p_print) {
     // clang-format off
     constexpr const char *const riscv_assembly_call_print =
         riscvAsmPop(a0)
-        "    call %s\n"
-        ;
+        "    call %s\n";
     // clang-format on
     const char *func = nullptr;
     switch (p_print.getExpr()->getInferredType()->value) {
@@ -406,7 +403,7 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     logSource(m_output_file.get(), p_un_op.getLocation().line);
 
     p_un_op.visitChildNodes(*this);
-    dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
+    popt0();
     auto op = p_un_op.getOp();
     dumpInstructions(m_output_file.get(), "%s", genOpCode(op));
     pusht0();
@@ -451,13 +448,36 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     logSource(m_output_file.get(), p_variable_ref.getLocation().line);
 
     auto name = p_variable_ref.getNameString();
-    dumpSymbol(name);
-
-    // TODO: array exprs
-    if (p_variable_ref.isValueUsage())
+    auto entry = m_symbol_manager.lookup(name);
+    dumpSymbol(entry);
+    if (entry->isPointer())
         loadValue();
-
     pusht0();
+
+    // clang-format off
+    constexpr const char *const riscv_assembly_array =
+        riscvAsmPop(t1)
+        riscvAsmPop(t0)
+        "    li t2, %d\n"
+        "    mul t1, t1, t2\n"
+        "    add t0, t0, t1\n"
+        riscvAsmPush(t0);
+    // clang-format on
+    auto type = entry->getType()->copy();
+    for (auto expr : p_variable_ref.getExprs()) {
+        expr->accept(*this);
+        type->popDim();
+        dumpInstructions(m_output_file.get(), " # %s\n",
+                         type->getNameString().c_str());
+        dumpInstructions(m_output_file.get(), riscv_assembly_array,
+                         type->getSize());
+    }
+
+    if (p_variable_ref.isValueUsage() and type->isNotArray()) {
+        popt0();
+        loadValue();
+        pusht0();
+    }
 }
 
 void CodeGenerator::visit(AssignmentNode &p_assignment) {
@@ -469,8 +489,7 @@ void CodeGenerator::visit(AssignmentNode &p_assignment) {
     constexpr const char *const riscv_assembly_assign =
         riscvAsmPop(t0)
         riscvAsmPop(t1)
-        "    sw t0, 0(t1)\n"
-        ;
+        "    sw t0, 0(t1)\n";
     // clang-format on
     dumpInstructions(m_output_file.get(), riscv_assembly_assign);
 }

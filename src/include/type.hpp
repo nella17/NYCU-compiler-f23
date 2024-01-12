@@ -29,17 +29,22 @@ class Type {
     void addDim(int);
     void popDim();
     bool checkDim();
+    bool isArray() const { return !dim.empty(); }
+    bool isNotArray() const { return dim.empty(); }
     bool isVoid() const { return value == Value::Void; }
-    bool isInteger() const { return dim.empty() and value == Value::Integer; }
-    bool isReal() const { return dim.empty() and value == Value::Real; }
+    bool isInteger() const { return isNotArray() and value == Value::Integer; }
+    bool isReal() const { return isNotArray() and value == Value::Real; }
     bool capReal() const { return isReal() or isInteger(); }
-    bool isString() const { return dim.empty() and value == Value::String; }
-    bool isBool() const { return dim.empty() and value == Value::Boolean; }
-    bool isScalar() const { return dim.empty() and value != Value::Void; }
+    bool isString() const { return isNotArray() and value == Value::String; }
+    bool isBool() const { return isNotArray() and value == Value::Boolean; }
+    bool isScalar() const { return isNotArray() and value != Value::Void; }
     const auto &getDim() const { return dim; }
 
     int getAlign() const;
     int getSize() const;
+    int getCount() const;
+
+    auto copy() const { return std::make_shared<Type>(*this); }
 
   private:
     Type(Value);

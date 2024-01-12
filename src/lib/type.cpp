@@ -78,16 +78,19 @@ int Type::getAlign() const {
     }
 }
 int Type::getSize() const {
-    if (!dim.empty())
-        throw std::invalid_argument("not implemented");
+    int size, count = 1;
+    for (auto x : dim)
+        count *= x;
     switch (value) {
     case Value::Integer:
     case Value::String:
     case Value::Boolean:
-        return 4;
+        size = 4;
+        break;
     default:
         throw std::invalid_argument("not implemented");
     }
+    return size * count;
 }
 
 bool operator<=(TypePtr Ltype, TypePtr Rtype) {

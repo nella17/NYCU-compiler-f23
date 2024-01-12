@@ -40,6 +40,7 @@ class SymbolEntry {
                 AttrT p_attr = nullptr)
         : name(p_name), kind(p_kind), level(p_level), type(p_type),
           attr(p_attr), error(false) {}
+    auto getName() const { return name; }
     SymbolKind getKind() const { return kind; }
     int getLevel() const { return level; }
     bool isGlobal() const { return level == 0; }
@@ -51,6 +52,15 @@ class SymbolEntry {
     ArgsPtr getArgs() const {
         auto args = std::get_if<ArgsPtr>(&attr);
         return args ? *args : nullptr;
+    }
+
+    bool isPointer() const {
+        return kind == SymbolKind::kParameter and type->isArray();
+    }
+    int getSize() const {
+        if (isPointer())
+            return 4;
+        return type->getSize();
     }
 
   private:
