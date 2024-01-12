@@ -136,16 +136,40 @@ void CodeGenerator::visit(VariableNode &p_variable) {
     } else {
         auto offset = m_stack_manager.add(size);
         entry->setOffset(offset);
-        if (constant) {
+        switch (entry->getKind()) {
+        case SymbolKind::kConstant: {
             p_variable.visitChildNodes(*this);
-            dumpInstructions(m_output_file.get(), riscvAsmPop(t0));
             // clang-format off
             constexpr const char *const riscv_assembly_local_constant =
+                riscvAsmPop(t0)
                 "    sw t0, %d(s0)\n"
                 ;
             // clang-format on
             dumpInstructions(m_output_file.get(), riscv_assembly_local_constant,
                              m_stack_manager.offset(offset));
+            break;
+        }
+        case SymbolKind::kParameter: {
+            // clang-format off
+            constexpr const char *const riscv_assembly_local_arg_reg =
+                "    sw a%d, %d(s0)\n"
+                ;
+            constexpr const char *const riscv_assembly_local_arg_stack =
+                riscvAsmPop(t0)
+                "    sw t0, %d(s0)\n"
+                ;
+            // clang-format on
+            if (m_parameter_cnt < 8) {
+                dumpInstructions(m_output_file.get(),
+                                 riscv_assembly_local_arg_reg, m_parameter_cnt,
+                                 m_stack_manager.offset(offset));
+            } else {
+                // TODO
+            }
+            m_parameter_cnt++;
+            break;
+        }
+        default:;
         }
     }
 }
@@ -177,7 +201,15 @@ void CodeGenerator::visit(FunctionNode &p_function) {
 
     m_symbol_manager.pushScope(p_function.getSymbolTable());
 
+    dumpInstructions(m_output_file.get(), riscv_assembly_func_prologue,
+                     p_function.getNameCString());
+    m_stack_manager.push(128);
+
+    m_parameter_cnt = 0;
     p_function.visitChildNodes(*this);
+    dumpInstructions(m_output_file.get(), riscv_assembly_func_epilogue,
+                     p_function.getNameCString());
+    m_stack_manager.pop();
 
     m_symbol_manager.popScope();
 }
@@ -258,6 +290,30 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
     logSource(m_output_file.get(), p_func_invocation.getLocation().line);
+
+    p_func_invocation.visitChildNodes(*this);
+    // clang-format off
+    constexpr const char *const riscv_assembly_swap =
+        "    lw t0, %1$d(sp)\n"
+        "    lw t1, %2$d(sp)\n"
+        "    sw t0, %2$d(sp)\n"
+        "    sw t1, %1$d(sp)\n"
+        ;
+    constexpr const char *const riscv_assembly_pop_arg = riscvAsmPop(a%d);
+    constexpr const char *const riscv_assembly_call_func =
+        "    call %s\n"
+        riscvAsmPush(a0)
+        ;
+    // clang-format on
+    int size = p_func_invocation.getExprs().size();
+    // swap args on stack
+    for (int l = 0, r = size - 1; l < r; l++, r--)
+        dumpInstructions(m_output_file.get(), riscv_assembly_swap, 4 * l,
+                         4 * r);
+    for (int i = 0; i < std::min(size, 8); i++)
+        dumpInstructions(m_output_file.get(), riscv_assembly_pop_arg, i);
+    dumpInstructions(m_output_file.get(), riscv_assembly_call_func,
+                     p_func_invocation.getNameCString());
 }
 
 void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
@@ -335,4 +391,12 @@ void CodeGenerator::visit(ForNode &p_for) {
 
 void CodeGenerator::visit(ReturnNode &p_return) {
     logSource(m_output_file.get(), p_return.getLocation().line);
+
+    p_return.visitChildNodes(*this);
+    // clang-format off
+    constexpr const char *const riscv_assembly_return =
+        riscvAsmPop(a0)
+        ;
+    // clang-format on
+    dumpInstructions(m_output_file.get(), riscv_assembly_return);
 }

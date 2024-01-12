@@ -14,6 +14,7 @@ class CodeGenerator final : public AstNodeVisitor {
     StackManager m_stack_manager;
     std::string m_source_file_path;
     std::unique_ptr<FILE, decltype(&fclose)> m_output_file{nullptr, &fclose};
+    int m_parameter_cnt;
 
   public:
     ~CodeGenerator() = default;
