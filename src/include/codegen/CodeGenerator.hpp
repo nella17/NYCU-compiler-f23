@@ -17,6 +17,12 @@
 #define riscvAsmPop(reg)                                                       \
     "    lw " #reg ", 0(sp)\n"                                                 \
     "    addi sp, sp, 4\n"
+#define riscvAsmPushF(reg)                                                     \
+    "    addi sp, sp, -4\n"                                                    \
+    "    fsw " #reg ", 0(sp)\n"
+#define riscvAsmPopF(reg)                                                      \
+    "    flw " #reg ", 0(sp)\n"                                                \
+    "    addi sp, sp, 4\n"
 
 class CodeGenerator final : public AstNodeVisitor {
   private:

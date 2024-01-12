@@ -70,6 +70,7 @@ std::string Type::getNameString() {
 int Type::getAlign() const {
     switch (value) {
     case Value::Integer:
+    case Value::Real:
     case Value::String:
     case Value::Boolean:
         return 2;
@@ -77,12 +78,14 @@ int Type::getAlign() const {
         throw std::invalid_argument("not implemented");
     }
 }
+
 int Type::getSize() const {
     int size, count = 1;
     for (auto x : dim)
         count *= x;
     switch (value) {
     case Value::Integer:
+    case Value::Real:
     case Value::String:
     case Value::Boolean:
         size = 4;

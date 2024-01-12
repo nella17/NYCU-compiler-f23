@@ -182,20 +182,36 @@ void CodeGenerator::visit(ProgramNode &p_program) {
                      m_source_file_path.c_str());
 
     // clang-format off
+    constexpr const char *const riscv_assembly_real_literal =
+        "    .section .rodata\n"
+        "    .align 2\n"
+        "%s:\n"
+        "    .float %f\n";
     constexpr const char *const riscv_assembly_string_literal =
         "    .section .rodata\n"
         "    .align 2\n"
         "%s:\n"
-        "    .string \"%s\"\n"
-        ;
+        "    .string \"%s\"\n";
     // clang-format on
-    for (auto constant : m_symbol_manager.getConstants())
-        if (constant->getType()->isString()) {
+    for (auto constant : m_symbol_manager.getConstants()) {
+        switch (constant->getType()->value) {
+        case Type::Value::Real: {
+            auto label = genLabel();
+            constant->setLabel(label);
+            dumpInstructions(m_output_file.get(), riscv_assembly_real_literal,
+                             label.c_str(), constant->getRealValue());
+            break;
+        }
+        case Type::Value::String: {
             auto label = genLabel();
             constant->setLabel(label);
             dumpInstructions(m_output_file.get(), riscv_assembly_string_literal,
                              label.c_str(), constant->getStringValue().c_str());
+            break;
         }
+        default:;
+        }
+    }
 
     m_symbol_manager.pushScope(p_program.getSymbolTable());
 
@@ -303,17 +319,30 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
     case Type::Value::Integer: {
         // clang-format off
         constexpr const char *const riscv_assembly_constant_int =
-            "    li t0, %d\n";
+            "    li t0, %d\n"
+            riscvAsmPush(t0);
         // clang-format on
         dumpInstructions(m_output_file.get(), riscv_assembly_constant_int,
                          constant->getIntValue());
+        break;
+    }
+    case Type::Value::Real: {
+        // clang-format off
+        constexpr const char *const riscv_assembly_constant_real =
+            "    lui t0, %%hi(%1$s)\n"
+            "    flw ft0, %%lo(%1$s)(t0)\n"
+            riscvAsmPushF(ft0);
+        // clang-format on
+        dumpInstructions(m_output_file.get(), riscv_assembly_constant_real,
+                         constant->getLabel().c_str());
         break;
     }
     case Type::Value::String: {
         // clang-format off
         constexpr const char *const riscv_assembly_constant_string =
             "    lui t1, %%hi(%1$s)\n"
-            "    addi t0, t1, %%lo(%1$s)\n";
+            "    addi t0, t1, %%lo(%1$s)\n"
+            riscvAsmPush(t0);
         // clang-format on
         dumpInstructions(m_output_file.get(), riscv_assembly_constant_string,
                          constant->getLabel().c_str());
@@ -322,7 +351,8 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
     case Type::Value::Boolean: {
         // clang-format off
         constexpr const char *const riscv_assembly_constant_boolean =
-            "    li t0, %d\n";
+            "    li t0, %d\n"
+            riscvAsmPush(t0);
         // clang-format on
         dumpInstructions(m_output_file.get(), riscv_assembly_constant_boolean,
                          constant->getBooleanValue());
@@ -331,7 +361,6 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
     default:
         throw std::invalid_argument("not implemented");
     }
-    pusht0();
 }
 
 void CodeGenerator::visit(FunctionNode &p_function) {
@@ -370,22 +399,26 @@ void CodeGenerator::visit(PrintNode &p_print) {
     constexpr const char *const riscv_assembly_call_print =
         riscvAsmPop(a0)
         "    call %s\n";
+    constexpr const char *const riscv_assembly_call_print_f =
+        riscvAsmPopF(fa0)
+        "    call %s\n";
     // clang-format on
-    const char *func = nullptr;
     switch (p_print.getExpr()->getInferredType()->value) {
     case Type::Value::Integer:
-        func = "printInt";
+        dumpInstructions(m_output_file.get(), riscv_assembly_call_print,
+                         "printInt");
         break;
     case Type::Value::Real:
-        func = "printReal";
+        dumpInstructions(m_output_file.get(), riscv_assembly_call_print_f,
+                         "printReal");
         break;
     case Type::Value::String:
-        func = "printString";
+        dumpInstructions(m_output_file.get(), riscv_assembly_call_print,
+                         "printString");
         break;
     default:
         throw std::invalid_argument("not implemented");
     }
-    dumpInstructions(m_output_file.get(), riscv_assembly_call_print, func);
 }
 
 void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
