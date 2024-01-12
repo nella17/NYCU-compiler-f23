@@ -485,27 +485,44 @@ void CodeGenerator::visit(IfNode &p_if) {
 
 void CodeGenerator::visit(WhileNode &p_while) {
     logSource(m_output_file.get(), p_while.getLocation().line);
+
+    auto begin_label = genLabel(), end_label = genLabel();
+
+    dumpLabel(begin_label);
+    branchLabel(p_while.getExpr(), end_label);
+    p_while.visitBodyChildNodes(*this);
+    jumpLabel(begin_label);
+    dumpLabel(end_label);
 }
 
 void CodeGenerator::visit(ForNode &p_for) {
     logSource(m_output_file.get(), p_for.getLocation().line);
 
-    // clang-format off
-    constexpr const char *const riscv_assembly_for_prologue =
-        "    addi sp, sp, -128\n";
-    constexpr const char *const riscv_assembly_for_epilogue =
-        "    addi sp, sp, 128\n";
-    // clang-format on
-
     m_symbol_manager.pushScope(p_for.getSymbolTable());
 
-    dumpInstructions(m_output_file.get(), riscv_assembly_for_prologue);
-    m_stack_manager.push(128);
+    p_for.visitHeadChildNodes(*this);
+    auto begin_label = genLabel(), end_label = genLabel();
+    auto name = p_for.getLoopVarRef()->getNameString();
+    // clang-format off
+    constexpr const char *const riscv_assembly_load =
+        "    li t1, %d\n"
+        ;
+    constexpr const char *const riscv_assembly_for_inc =
+        "    addi t1, t1, 1\n"
+        "    sw t1, 0(t0)\n" ;
+    // clang-format on
 
-    p_for.visitChildNodes(*this);
-
-    dumpInstructions(m_output_file.get(), riscv_assembly_for_epilogue);
-    m_stack_manager.pop();
+    dumpLabel(begin_label);
+    dumpSymbol(name);
+    loadValue();
+    dumpInstructions(m_output_file.get(), riscv_assembly_load, p_for.getEnd());
+    branchLabel(Operator::OP_LT, end_label);
+    p_for.visitBodyChildNodes(*this);
+    dumpSymbol(name);
+    loadValue(false);
+    dumpInstructions(m_output_file.get(), riscv_assembly_for_inc);
+    jumpLabel(begin_label);
+    dumpLabel(end_label);
 
     m_symbol_manager.popScope();
 }

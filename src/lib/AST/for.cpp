@@ -16,3 +16,12 @@ void ForNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     end->accept(p_visitor);
     body->accept(p_visitor);
 }
+
+void ForNode::visitHeadChildNodes(AstNodeVisitor &p_visitor) {
+    decl->accept(p_visitor);
+    init->accept(p_visitor);
+}
+
+void ForNode::visitBodyChildNodes(AstNodeVisitor &p_visitor) {
+    body->accept(p_visitor);
+}

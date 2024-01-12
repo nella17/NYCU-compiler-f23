@@ -18,9 +18,8 @@ class StackManager {
     }
 
     int offset(int p_off) { return m_accu.back() - p_off; }
-    int offset(int p_off, int p_level) {
-        return m_accu.at(p_level - 1) - p_off;
-    }
+    // TODO
+    int offset(int p_off, int p_level) { return m_accu.back() - p_off; }
     int offset(SymbolEntryPtr entry) {
         return offset(entry->getOffset(), entry->getLevel());
     }

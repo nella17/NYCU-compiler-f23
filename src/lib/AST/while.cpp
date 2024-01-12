@@ -10,3 +10,7 @@ void WhileNode::visitChildNodes(AstNodeVisitor &p_visitor) {
     expr->accept(p_visitor);
     body->accept(p_visitor);
 }
+
+void WhileNode::visitBodyChildNodes(AstNodeVisitor &p_visitor) {
+    body->accept(p_visitor);
+}

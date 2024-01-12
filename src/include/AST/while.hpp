@@ -16,6 +16,7 @@ class WhileNode : public AstNode {
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
+    void visitBodyChildNodes(AstNodeVisitor &p_visitor);
 
     auto getExpr() const { return expr; }
 

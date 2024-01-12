@@ -23,7 +23,10 @@ class ForNode : public AstNode {
 
     void accept(AstNodeVisitor &p_visitor) override { p_visitor.visit(*this); }
     void visitChildNodes(AstNodeVisitor &p_visitor) override;
+    void visitHeadChildNodes(AstNodeVisitor &p_visitor);
+    void visitBodyChildNodes(AstNodeVisitor &p_visitor);
 
+    auto getLoopVarRef() const { return init->getVarRef(); }
     int getBegin() const { return std::get<int>(begin->getValue()); }
     int getEnd() const { return std::get<int>(end->getValue()); }
 
