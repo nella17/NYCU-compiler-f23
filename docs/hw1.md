@@ -97,6 +97,7 @@ The seemingly unusual comments in the code are known as [psdueocomment](#pseudoc
 
 <details>
   <summary>Click to expand! <br>
+
   Note that the detailed output format will be explained in the [What Should Your Scanner Do](#what-should-your-scanner-do) section, so you can skip the example output here.</summary>
 
 ```
