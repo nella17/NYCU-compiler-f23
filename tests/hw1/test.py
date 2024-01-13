@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 
-import subprocess
 import os
-import sys
-import json
+import subprocess
 from argparse import ArgumentParser
 
+
 class Grader:
-    
+
     basic_case_dir = "./basic_cases"
     basic_cases = {
         1 : "1_keywords1",
@@ -45,7 +44,7 @@ class Grader:
         17: "17_error_4",
         18: "18_error_5"
     }
-    advance_case_scores = [0, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 
+    advance_case_scores = [0, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2,
                            3, 3, 3, 2, 2, 2, 2, 2]
 
     diff_result = ""
@@ -123,7 +122,7 @@ class Grader:
             self.diff_result += "{}\n".format(self.advance_cases[case_id])
           self.diff_result += "{}\n".format(output)
 
-        return retcode == 0    
+        return retcode == 0
 
     def run(self):
         print("---\tCase\t\tPoints")
