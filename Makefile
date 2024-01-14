@@ -13,7 +13,7 @@ project:
 project-clean:
 	${MAKE} clean -C src/
 
-test:
+test: project
 	${MAKE} -C test/
 test-clean:
 	${MAKE} clean -C test/
