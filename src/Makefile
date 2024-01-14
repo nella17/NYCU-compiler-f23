@@ -11,7 +11,7 @@ endif
 all: $(SCANNER)
 
 $(SCANNER): $(SCANNER).c
-	$(CC) $(CCFLAGS) $< -o $(SCANNER) $(LIBS)
+	$(CC) $(CFLAGS) $< -o $(SCANNER) $(LIBS)
 
 $(SCANNER).c: %.c: %.l
 	$(LEX) -o $@ $<
