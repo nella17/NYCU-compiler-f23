@@ -250,7 +250,7 @@ Note that:
 
 - `yyparse()` needs to use `yylex()` to obtain a token from the input source file. Therefore, you have to modify the lex source file to make the scanner pass token information to `yyparse()`. For example, when the scanner recognizes an identifier, the action should be like:
 
-    ([A-Za-z])([A-Za-z0-9])*		{ tokenString("id", yytext); return ID; }
+    ([A-Za-z])([A-Za-z0-9])*		{ LIST_LITERAL("id", yytext); return ID; }
     /* Note that the symbol `ID` is defined by the yacc parser */
 
 - Here is a general form of context-free grammar to describe grammar rule of `zero or more something` (e.g., a function signature contains zero or more formal arguments):
