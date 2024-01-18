@@ -1,63 +1,57 @@
-# XXX: We were supposed to support gcc/g++11 using Ubuntu 22.04.
-# However, the old image references a branch/tag of the riscv-gnu-toolchain repository that no longer exists:
-# git clone -b rvv-0.7.x --recursive https://github.com/riscv/riscv-gnu-toolchain.
-# We cannot simply rebuild the image with the base image of Ubuntu 22.04,
-# and upgrading it slightly to rvv-0.8 breaks the test cases.
-# To still provide the support, gcc-11 and g++-11 are installed manually and linked to /usr/bin/gcc and /usr/bin/g++.
+ARG BASE_VERSION=22.04
 
-FROM ubuntu:18.04 AS riscv-builder
+FROM ubuntu:${BASE_VERSION} AS riscv-builder
 
-ENV RISCV /risc-v
+ENV RISCV="/risc-v"
 
-RUN apt-get update
+RUN apt-get update \
+    && apt-get install -y \
+    autoconf automake autotools-dev curl python3 python3-pip libmpc-dev libmpfr-dev \
+    libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc \
+    zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev device-tree-compiler
 
-RUN apt-get install -y \
-    git autoconf automake autotools-dev curl \
-    libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk \
-    build-essential  device-tree-compiler bison flex \
-    texinfo gperf libtool patchutils bc zlib1g-dev \
-    device-tree-compiler pkg-config libexpat-dev
+RUN <<EOF
+    set -eux
+    mkdir -p $RISCV
+    cd /opt
+    # NOTE: Has been moved to riscv-collab, but its URL of submodules are hardcoded.
+    # Updating the link would break the submodule, so we retained the old link.
+    git clone -b rvv-0.8 --recurse-submodules --shallow-submodules --depth=1 https://github.com/riscv/riscv-gnu-toolchain
+    cd riscv-gnu-toolchain
+    ./configure --prefix=$RISCV --with-arch=rv32gc --with-abi=ilp32d
+    make -j$(nproc)
+    make clean
+EOF
 
-RUN mkdir -p $RISCV && cd ~ && \
-    git clone -b rvv-0.7.x --recursive https://github.com/riscv/riscv-gnu-toolchain && \
-    cd riscv-gnu-toolchain && ./configure --prefix=$RISCV --with-arch=rv32gc --with-abi=ilp32d && \
-    make -j "$(nproc)" && make clean
+ENV PATH="$RISCV/bin:$PATH"
 
-ENV PATH="/risc-v/bin:${PATH}"
+RUN <<EOF
+    set -eux
+    cd /opt
+    git clone --depth=1 https://github.com/riscv-software-src/riscv-pk.git
+    cd riscv-pk
+    mkdir build && cd build
+    ../configure --prefix=$RISCV --host=riscv32-unknown-elf
+    make -j$(nproc)
+    make -j$(nproc) install
+    make clean
+EOF
 
-RUN cd ~ && git clone https://github.com/riscv/riscv-pk.git && \
-    cd riscv-pk && mkdir build && cd build && \
-    ../configure --prefix=$RISCV --host=riscv32-unknown-elf && \
-    make -j "$(nproc)" && make install -j "$(nproc)" && make clean
-
-RUN cd ~ && git clone https://github.com/riscv/riscv-isa-sim.git && \
-    cd riscv-isa-sim && mkdir build && cd build && \
-    ../configure --prefix=$RISCV && make -j "$(nproc)" && make install -j "$(nproc)" && make clean
-
+RUN <<EOF
+    set -eux
+    cd /opt
+    # NOTE: Newer versions seem to poll the stdin, leading to unexpected errors.
+    git clone -b v1.1.0 --depth=1 https://github.com/riscv-software-src/riscv-isa-sim.git
+    cd riscv-isa-sim
+    mkdir build && cd build
+    ../configure --prefix=$RISCV
+    make -j$(nproc)
+    make -j$(nproc) install
+    make clean
+EOF
 
 # final image
-FROM ubuntu:18.04
-
-ENV RISCVBIN /risc-v/bin
-ENV RISCV /risc-v
-COPY --from=riscv-builder /risc-v/bin/riscv32-unknown-elf-gcc /risc-v/bin/spike /risc-v/bin/   
-COPY --from=riscv-builder /risc-v/lib/ /risc-v/lib/ 
-COPY --from=riscv-builder /risc-v/libexec/ /risc-v/libexec/
-COPY --from=riscv-builder /risc-v/riscv32-unknown-elf/ /risc-v/riscv32-unknown-elf/
-# COPY --from=riscv-builder /risc-v/ /risc-v/
-
-ENV PATH="/risc-v/bin:${PATH}"
-
-RUN apt-get update && apt-get install -y \
-    gosu \
-    bison flex \
-    device-tree-compiler \
-    python3 python3-pip \
-    dfu-util
-
-RUN pip3 install platformio
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
+FROM ubuntu:${BASE_VERSION}
 
 RUN apt-get update \
     && apt-get --no-install-recommends install -y \
@@ -67,18 +61,20 @@ RUN apt-get update \
     gdb \
     flex libfl-dev \
     bison libbison-dev \
+    device-tree-compiler \
     # will be installed at /usr/local/lib/python3.10/dist-packages
     && pip3 install colorama \
-    # now we are to replace the old gcc/g++ version 7 with version 11
-    && apt-get remove -y gcc g++ \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test \
-    && apt-get update \
-    # NOTE: using update-alternatives may be a better way
-    && apt-get install -y gcc-11 g++-11 \
-    && ln -s $(which gcc-11) /usr/bin/gcc \
-    && ln -s $(which g++-11) /usr/bin/g++ \
     && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
+    dfu-util \
+    # will be installed at /usr/local/lib/python3.10/dist-packages
+    && pip3 install platformio \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
 # optional packages
 ARG CONTAINER_USERNAME=student
@@ -94,6 +90,10 @@ ENV STATUS_DOCKER_ACTIVATED DOCKER_ACTIVATED
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENV RISCV="/risc-v"
+COPY --link --from=riscv-builder /risc-v/ /risc-v/
+ENV PATH="$RISCV/bin:$PATH"
 
 CMD ["/bin/bash"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
