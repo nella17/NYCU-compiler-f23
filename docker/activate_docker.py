@@ -37,15 +37,16 @@ parser.add_argument( '-t','--test-src-fld',
 parser.add_argument( '-u','--username',default="student",)
 parser.add_argument( '--hostname', default=f'{COURSE_NAME}')
 parser.add_argument( '--homedir', type=Path, default='/home/student')
+parser.add_argument( '--binddir', type=Path, default='/home/student/hw')
 parser.add_argument( '-i','--imagename', default='compiler-s20-env')
 parser.add_argument( 'command', default=[], nargs=argparse.REMAINDER, help="command to run in docker")
-
 
 args = parser.parse_args()
 test_src_fld = args.test_src_fld[0]
 DOCKER_USER_NAME = args.username
 DOCKER_HOST_NAME = args.hostname
 DOCKER_IMG_NAME = args.imagename
+binddir = args.binddir
 dk_home = args.homedir
 
 DOCKER_CMD = args.command
@@ -67,7 +68,7 @@ recursive_docker_msg='''
    ;;;;;
  ..;;;;;..  You are already inside our docker environment, see?
   ':::::'
-    ':`                              - SSLAB @NCTUCS
+    ':`                              - SSLAB @NYCUCS
 '''
 
 def main():
@@ -87,12 +88,14 @@ def main():
         '--rm',
         '--hostname', DOCKER_HOST_NAME,
         '--cap-add=SYS_PTRACE',
-        '-e', f'LOCAL_USER_ID={os.getuid()}',
-        '-e', f'LOCAL_USER_GID={os.getgid()}',
-        '-v', f'{os.getcwd()}:/home/{DOCKER_USER_NAME}',
+        '-u', f'{os.getuid()}:{os.getgid()}',
+        '-e', f'HOME={dk_home}',
+        '-e', f'USER={DOCKER_USER_NAME}',
+        '-v', f'{os.getcwd()}:{binddir}',
+        '-w', f'{binddir}',
 
         # bash history file
-        '-v', f'{dirpath}/.history/docker_bash_history:/{dk_home}/.bash_history',
+        '-v', f'{bash_his}:/{dk_home}/.bash_history',
     ]
     if test_src_fld:
         docker_options.extend(['-v', f'{test_src_fld.resolve()}:{dk_home}/test'])
