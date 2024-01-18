@@ -66,12 +66,13 @@ RUN apt-get update \
     && pip3 install colorama \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update \
-    && apt-get --no-install-recommends install -y \
-    dfu-util \
-    # will be installed at /usr/local/lib/python3.10/dist-packages
-    && pip3 install platformio \
-    && rm -rf /var/lib/apt/lists/*
+# FIXME: https://registry.platformio.org/tools/platformio/toolchain-gd32v permission denied
+# RUN apt-get update \
+#     && apt-get --no-install-recommends install -y \
+#     dfu-util \
+#     # will be installed at /usr/local/lib/python3.10/dist-packages
+#     && pip3 install platformio \
+#     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
