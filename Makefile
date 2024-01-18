@@ -2,8 +2,8 @@ all: project
 
 .PHONY: restore project test clean
 
-IMAGE_NAME = compiler-s20-hw2
-DOCKERHUB_HOST_ACCOUNT=ianre657
+IMAGE_NAME = compiler-f23-hw2
+DOCKERHUB_HOST_ACCOUNT = laiyt
 IMAGE_FULLNAME = ${DOCKERHUB_HOST_ACCOUNT}/${IMAGE_NAME}:latest
 
 
@@ -27,6 +27,7 @@ docker-pull:
 # This results in the error being treated as a compilation error, preventing the `diff` of the
 # outputs from being taken, leading to incorrect content in the diff section of the report.
 # To address this, `--ignore-errors` is added to Make to allow it to succeed even if the testing process fails.
+
 autograde: clean
 	${MAKE} project && ${MAKE} --ignore-errors test
 
@@ -43,13 +44,11 @@ autograde: clean
 
 .PHONY: docker-build docker-push activate
 
-# Do not named user and group the same, this would cause error in entrypoint.sh
-#	because we create the group before user exist which allowing name-crash in useradd command
 CONTAINER_USERNAME = student
-CONTAINER_GROUPNAME = studentg
 
 HOST_NAME = compiler-course
 HOMEDIR = /home/$(CONTAINER_USERNAME)
+BINDDIR = $(HOMEDIR)/hw
 
 # ===================== end Docker args
 
@@ -59,15 +58,12 @@ docker-push: docker-build
 docker-build:
 	${MAKE} \
 		IMAGE_NAME=${IMAGE_NAME} \
-		CONTAINER_USERNAME=${CONTAINER_USERNAME}\
-		CONTAINER_GROUPNAME=${CONTAINER_GROUPNAME}\
-		CONTAINER_HOMEDIR=${HOMEDIR}\
-		HOMEDIR=${HOMEDIR} \
 		-C docker
 
 activate:
 	python3 docker/activate_docker.py \
 		--username ${CONTAINER_USERNAME} \
 		--homedir ${HOMEDIR} \
+		--binddir ${BINDDIR} \
 		--imagename ${IMAGE_FULLNAME} \
 		--hostname ${HOST_NAME} ${ARGS}
