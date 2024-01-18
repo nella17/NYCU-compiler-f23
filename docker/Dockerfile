@@ -1,8 +1,9 @@
+ARG RISCV="/risc-v"
 ARG BASE_VERSION=22.04
 
 FROM ubuntu:${BASE_VERSION} AS riscv-builder
 
-ENV RISCV="/risc-v"
+ARG RISCV
 
 RUN apt-get update \
     && apt-get install -y \
@@ -53,9 +54,11 @@ EOF
 # final image
 FROM ubuntu:${BASE_VERSION}
 
+ARG RISCV
+
 RUN apt-get update \
     && apt-get --no-install-recommends install -y \
-    gosu \
+    sudo \
     python3 python3-pip python3-setuptools python3-wheel \
     build-essential make \
     gdb \
@@ -77,24 +80,13 @@ RUN apt-get update \
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# optional packages
-ARG CONTAINER_USERNAME=student
-ARG CONTAINER_GROUPNAME=studentg
-ARG CONTAINER_HOMEDIR=/home/student
-
-ENV DOCKER_USERNAME_PASSIN ${CONTAINER_USERNAME}
-ENV DOCKER_GROUPNAME_PASSIN ${CONTAINER_GROUPNAME}
-ENV DOCKER_HOMEDIR_PASSIN ${CONTAINER_HOMEDIR}
-
 # flag to prevent student to recursively enter docker environment
 ENV STATUS_DOCKER_ACTIVATED DOCKER_ACTIVATED
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i \
+    -e 's@\\u@$(whoami 2>/dev/null || echo ${USER-I have no name!})@' \
+    -e "s@groups@groups 2>/dev/null@" \
+    /etc/bash.bashrc
 
-ENV RISCV="/risc-v"
-COPY --link --from=riscv-builder /risc-v/ /risc-v/
+COPY --link --from=riscv-builder "${RISCV}" "${RISCV}"
 ENV PATH="$RISCV/bin:$PATH"
-
-CMD ["/bin/bash"]
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
