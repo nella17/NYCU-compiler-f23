@@ -5,7 +5,6 @@ FROM ubuntu:18.04
 # Combine all three RUNs into 1 in deloyment
 RUN apt-get update
 RUN apt-get --no-install-recommends install -y \
-    sudo \
     python3 python3-pip python3-setuptools python3-wheel\
     gcc \
     build-essential make \
