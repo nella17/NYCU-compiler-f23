@@ -7,6 +7,7 @@
 ---
 
 **Table of Contents**
+
 - [Project Assignment 3 - Constructing Abstract Syntax Trees](#project-assignment-3---constructing-abstract-syntax-trees)
   - [Overview](#overview)
   - [Assignment Description](#assignment-description)
@@ -46,6 +47,7 @@ This assignment will allow later assignments to analyze the program more easily 
 The purpose of this assignment is to get you acquainted with AST. In particular, it will give you familiarity with data structures, types, and code organization you will need to implement AST construction; moreover, you will have a bit grasp of visitor pattern. It's your call to develop this assignment in either `C` or `C++`. However, C++ is recommended because you can make use of the containers defined in the C++ Standard Template Library (STL).
 
 > [!warning]
+>
 > - Debugging C++ code is a bit tricky. Please make sure you have basic understanding of C++ object oriented, otherwise using C may be a better option.
 > - In this assignment, we will use `flex` and `bison`, powerful alternatives of lex and yacc respectively, to compile your codes. Make sure you use the right tools if you won't develop your assignment with the Makefile we provided.
 
@@ -240,16 +242,16 @@ First, we need to define the data structure of each node in the AST. We have to 
 Take `ProgramNode`, `PrintNode` and `ConstantValueNode` for example:
 
 - `ProgramNode`
-	- Location
-	- Name
-	- Return type
-	- ...
+  - Location
+  - Name
+  - Return type
+  - ...
 - `PrintNode`
-    - Location
-    - Target (an expression node)
+  - Location
+  - Target (an expression node)
 - `ConstantValueNode`
-	- Location
-	- Constant value
+  - Location
+  - Constant value
 
 > Specific requirements for each kind of node can be found in [AST-guideline.md](./ast_guideline.md).
 
@@ -408,6 +410,7 @@ Program:
 As for the remaining members of the `ProgramNode` and other nodes, they are left for you to design and implement.
 
 > [!warning]
+>
 > - You may need to find a way to convey the type of `P` language in some nodes. **DO NOT** use string for it. It might be a really simple and straightforward approach in this assignment, but it will be really annoying to deal with it when you need to extract some information from it.
 >
 > Here is a suggestion: Use an `enum` and a list of integer for the scalar part (data type e.g., `int`) and the structured part of type (dimensions of an array) respectively.
@@ -575,7 +578,7 @@ The data type of `yylloc` is `YYLTYPE`. We set the `yylloc` each time a token is
 
 **3. Actions for Getting Locations**
 
-You can get the location (set by `YY_USER_ACTION`) using `@n`, which means the location of the *nth* component of the right-hand side of a production rule.
+You can get the location (set by `YY_USER_ACTION`) using `@n`, which means the location of the _nth_ component of the right-hand side of a production rule.
 
 Here is an example of getting locations:
 
@@ -626,6 +629,7 @@ In short, like the rules of including headers or adding forward declarations bef
 We provide [the description of project assignment 4](./hw4/README.md) along with this assignment. This allows you to get a preview of upcoming requirements, enabling you to make informed design decisions and potentially reducing the need for future rework.
 
 ### Hints for visitor pattern
+
 ### [Click me !!](./hint.md)
 
 ## What Should Your Parser Do?
@@ -693,25 +697,25 @@ program <line: 2, col: 1> test void
 
 - `README.md`
 - /src
-	- Makefile
-	- Makefile-vp - If you choose to use visitor pattern, then you should change the name of src/Makefile-vp to src/Makefile. Otherwise, just remain the same.
-	- `scanner.l`
-	- `parser.y`
-	- /include
-		- /AST
-			- Headers of AST nodes
-			- AstDumper.hpp - for dumping AST in visitor pattern version
-		- /visitor
-			- AstNodeVisitor.hpp - base class for AST visitor
-	- /lib
-		- /AST
-			- Definitions of AST nodes
-			- AstDumper.cpp - for dumping AST in visitor pattern version
-		- /visitor
-			- AstNodeVisitor.cpp
-	- Other modules you may add
+  - Makefile
+  - Makefile-vp - If you choose to use visitor pattern, then you should change the name of src/Makefile-vp to src/Makefile. Otherwise, just remain the same.
+  - `scanner.l`
+  - `parser.y`
+  - /include
+    - /AST
+      - Headers of AST nodes
+      - AstDumper.hpp - for dumping AST in visitor pattern version
+    - /visitor
+      - AstNodeVisitor.hpp - base class for AST visitor
+  - /lib
+    - /AST
+      - Definitions of AST nodes
+      - AstDumper.cpp - for dumping AST in visitor pattern version
+    - /visitor
+      - AstNodeVisitor.cpp
+  - Other modules you may add
 - /report
-	- `README.md`
+  - `README.md`
 
 In this assignment, you have to do the following tasks:
 
@@ -725,18 +729,19 @@ If you want to preview your report in GitHub style markdown before pushing to Gi
 Total of 105 points, with 10 point available bonus points.
 (115 pts is the maximum grade you could get in this assignment)
 
-+ Passing all test cases (95 pts)
-+ Report (10 pts) \
+- Passing all test cases (95 pts)
+- Report (10 pts) \
   0: empty \
   3: bad \
   5: normal \
   7: good \
   10: excellent
-+ bonus
-  + using `Visitor Pattern` to dump your AST (6 pts)
-  + describe how visitor pattern works in your project (4 pts)
+- bonus
+  - using `Visitor Pattern` to dump your AST (6 pts)
+  - describe how visitor pattern works in your project (4 pts)
 
 Be careful, you will get a **50-percent** deduction if you pass **any of** our test cases without constructing an AST.
+
 > 分數直接砍半哦，歹路毋通行 :heart:
 
 ## Build and Execute

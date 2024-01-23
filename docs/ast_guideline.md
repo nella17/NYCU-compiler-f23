@@ -5,6 +5,7 @@ We will give you the guidelines to construct an AST. You should define your own 
 Notice that the following guidelines intend to give you a sense of what an AST node looks like. Each guideline lists the fields that an AST node should have and shows the output format of the AST node. You may extend the fields of a node if necessary.
 
 **Table of Contents**
+
 - [Abstract Syntactic Definitions](#abstract-syntactic-definitions)
   - [Program Node](#program-node)
   - [Declaration Node](#declaration-node)
@@ -32,15 +33,15 @@ Notice that the following guidelines intend to give you a sense of what an AST n
 A program node should have the following information:
 
 - Location
-	- Line and column numbers of the program name
+  - Line and column numbers of the program name
 - Name
 - Return type
 - Global variable and constant declarations
-	- A list of declaration nodes (zero or more)
+  - A list of declaration nodes (zero or more)
 - Function declarations
-	- A list of function nodes (zero or more)
+  - A list of function nodes (zero or more)
 - Body
-	- A compound statement node
+  - A compound statement node
 
 **Output Format**
 
@@ -63,10 +64,10 @@ program <line: 1, col: 1> test void
 A declaration node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `var`
-	- Line and column numbers of parameter name (declaration of parameter in function)
+  - Line and column numbers of keyword `var`
+  - Line and column numbers of parameter name (declaration of parameter in function)
 - Variables
-	- A list of variable nodes
+  - A list of variable nodes
 
 There is at least one variable node in a declaration node.
 
@@ -90,11 +91,11 @@ declaration <line: 10, col: 1>
 A variable node should have the following information:
 
 - Location
-	- Line and column numbers of the variable name
+  - Line and column numbers of the variable name
 - Name
 - Type
 - Constant value (zero or one)
-	- A constant value node
+  - A constant value node
 
 A variable node represents a normal variable or a constant variable.
 
@@ -123,7 +124,7 @@ variable <line: 7, col: 5> a2 real [2][3]
 A constant value node should have the following information:
 
 - Location
-	- Line and column numbers of the constant value
+  - Line and column numbers of the constant value
 - Constant value
 
 **Output Format**
@@ -147,13 +148,13 @@ constant <line: 10, col: 10> 10
 A function node should have the following information:
 
 - Location
-	- Line and column numbers of the function name
+  - Line and column numbers of the function name
 - Name
 - Parameters
-	- A list of declaration nodes (zero or more)
+  - A list of declaration nodes (zero or more)
 - Return type
 - Body
-	- An optional compound statement node
+  - An optional compound statement node
 
 **Output Format**
 
@@ -181,11 +182,11 @@ function declaration <line: 26, col: 1> func5 void (integer, string)
 A compound statement node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `begin`
+  - Line and column numbers of keyword `begin`
 - Local variable and constant declarations
-	- A list of declaration nodes (zero or more)
+  - A list of declaration nodes (zero or more)
 - Statements
-	- A list of statement nodes (zero or more)
+  - A list of statement nodes (zero or more)
 
 **Output Format**
 
@@ -211,9 +212,9 @@ compound statement <line: 8, col: 1>
 A print node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `print`
+  - Line and column numbers of keyword `print`
 - Target
-	- An expression node
+  - An expression node
 
 **Output Format**
 
@@ -234,12 +235,12 @@ print statement <line: 24, col: 5>
 A binary operator node should have the following information:
 
 - Location
-	- Line and column numbers of the operator
+  - Line and column numbers of the operator
 - Operator
 - Left operand
-	- An expression node
+  - An expression node
 - Right operand
-	- An expression node
+  - An expression node
 
 **Output Format**
 
@@ -262,10 +263,10 @@ binary operator <line: 19, col: 14> <>
 A unary operator node should have the following information:
 
 - Location
-	- Line and column numbers of the operator
+  - Line and column numbers of the operator
 - Operator
 - Operand
-	- An expression node
+  - An expression node
 
 **Output Format**
 
@@ -286,10 +287,10 @@ unary operator <line: 20, col: 11> not
 A function invocation node should have the following information:
 
 - Location
-	- Line and column numbers of the function name
+  - Line and column numbers of the function name
 - Name
 - Arguments
-	- A list of expression nodes (zero or more)
+  - A list of expression nodes (zero or more)
 
 **Output Format**
 
@@ -311,10 +312,10 @@ function invocation <line: 17, col: 3> call
 A variable reference node should have the following information:
 
 - Location
-	- Line and column numbers of the variable name
+  - Line and column numbers of the variable name
 - Name
 - Indices
-	- A list of expression nodes
+  - A list of expression nodes
 
 **Output Format**
 
@@ -336,11 +337,11 @@ variable reference <line: 17, col: 5> d
 An assignment node should have the following information:
 
 - Location
-	- Line and column numbers of ':='
+  - Line and column numbers of ':='
 - Lvalue
-	- A variable reference node
+  - A variable reference node
 - Expression
-	- An expression node:
+  - An expression node:
 
 **Output Format**
 
@@ -363,9 +364,9 @@ assignment statement <line: 15, col: 7>
 A read node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `read`
+  - Line and column numbers of keyword `read`
 - Target
-	- A variable reference node
+  - A variable reference node
 
 **Output Format**
 
@@ -387,13 +388,13 @@ read statement <line: 27, col: 5>
 An if node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `if`
+  - Line and column numbers of keyword `if`
 - Condition
-	- An expression node
+  - An expression node
 - Body
-	- A compound statement node
+  - A compound statement node
 - Body of else
-	- An optional compound statement node
+  - An optional compound statement node
 
 **Output Format**
 
@@ -432,11 +433,11 @@ if statement <line: 12, col: 3>
 A while node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `while`
+  - Line and column numbers of keyword `while`
 - Condition
-	- An expression node
+  - An expression node
 - Body
-	- A compound statement node
+  - A compound statement node
 
 **Output Format**
 
@@ -468,16 +469,16 @@ while statement <line: 12, col: 3>
 A for node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `for`
+  - Line and column numbers of keyword `for`
 - Loop variable declaration
-	- A declaration node
+  - A declaration node
 - Initial statement
-	- An assignment node
-	- The expression node in this assignment node will only be a constant value node.
+  - An assignment node
+  - The expression node in this assignment node will only be a constant value node.
 - Condition
-	- A constant value node
+  - A constant value node
 - Body
-	- A compound statement node
+  - A compound statement node
 
 **Output Format**
 
@@ -509,9 +510,9 @@ for statement <line: 11, col: 3>
 A return node should have the following information:
 
 - Location
-	- Line and column numbers of keyword `return`
+  - Line and column numbers of keyword `return`
 - Return value
-	- An expression node
+  - An expression node
 
 **Output Format**
 

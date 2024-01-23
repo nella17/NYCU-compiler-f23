@@ -1,9 +1,9 @@
 # hw3 report
 
-|||
-|-:|:-|
-|Name|yourname|
-|ID|your student id|
+|      |                 |
+| ---: | :-------------- |
+| Name | yourname        |
+|   ID | your student id |
 
 ## How much time did you spend on this project
 
