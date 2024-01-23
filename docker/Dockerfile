@@ -58,7 +58,6 @@ ARG RISCV
 
 RUN apt-get update \
     && apt-get --no-install-recommends install -y \
-    sudo \
     python3 python3-pip python3-setuptools python3-wheel \
     build-essential make \
     gdb \
