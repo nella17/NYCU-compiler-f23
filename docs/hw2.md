@@ -510,6 +510,7 @@ The order of precedence is among the following classes of the operators, in decr
 >
 > - The token "**-**" can be either the binary subtraction operator, or the unary negation operator.
 > - The associativity is left, and parentheses may be used to group subexpressions, influencing the precedence.
+> - Operator precedence will be checked in Assignment III, as this assignment employs empty actions for grammar rules, and mismatches in rule matching don't necessarily disrupt syntax matching. Consequently, there's no observable behavior to check whether the operations are parsed in the correct precedence.
 > - Semantic checking will be handled in the Assignment IV. In this assignment, you don't need to check semantic errors like `a := 3 + true;`. Just take care of syntactic errors.
 
 ## Implementation Notes
