@@ -81,7 +81,11 @@ program <line: 4, col: 1> PrintBinUnConstantInvocation void
             constant <line: 31, col: 17> 8
         constant <line: 31, col: 22> 4
     print statement <line: 32, col: 5>
-      function invocation <line: 32, col: 11> func
+      binary operator <line: 32, col: 18> +
+        constant <line: 32, col: 11> 12300.000000
+        constant <line: 32, col: 20> 17
+    print statement <line: 33, col: 5>
+      function invocation <line: 33, col: 11> func
 
 |--------------------------------|
 |  There is no syntactic error!  |

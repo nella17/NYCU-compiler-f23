@@ -29,6 +29,7 @@ begin
     print 1 + 8 * 4;
     print (1 + 8) * 4;
     print -(1 + 8) * 4;
+    print 1.23E4 + 021;
     print func();
 end
 end
