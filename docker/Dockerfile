@@ -9,7 +9,7 @@ RUN apt-get update \
     bison libbison-dev \
     && rm -rf /var/lib/apt/lists/* \
     # will be installed at /usr/local/lib/python3.10/dist-packages
-    && pip3 install colorama
+    && pip3 install --no-cache-dir colorama
 
 # flag to prevent student to recursively enter docker environment
 ENV STATUS_DOCKER_ACTIVATED DOCKER_ACTIVATED
