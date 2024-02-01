@@ -186,6 +186,13 @@ A _variable_declaration_ has the following form:
 
 - **var** _[identifier_list](#identifier-list)_ **:** _[type](#types)_ **;**
 
+Examples:
+
+```pascal
+var i, j: integer;
+var b: boolean;
+```
+
 <div align="right">
     <b><a href="#table-of-contents">↥</a></b>
 </div>
@@ -198,6 +205,14 @@ A _constant_declaration_ has the following form:
 - **var** _[identifier_list](#identifier-list)_ **:** [ **-** ] _[real_literal](#real-literal)_ **;**
 - **var** _[identifier_list](#identifier-list)_ **:** _[string_literal](#string-literal)_ **;**
 - **var** _[identifier_list](#identifier-list)_ **:** _[boolean_literal](#boolean-literal)_ **;**
+
+Examples:
+
+```pascal
+var c, d: 3;
+var s: "Hello";
+var pi: 3.14159;
+```
 
 > [!note]
 > The _[literal_constant](#literal-constant)_ cannot be applied here because it does not contain an optional negative sign.
@@ -315,6 +330,20 @@ A _conditional_statement_ has the following forms:
    _compound_statement_ \
    **end** **if**
 
+Here is an example of printing the sign of the number `n`:
+
+```pascal
+if n >= 0 then
+    begin
+        print "+";
+    end
+else
+    begin
+        print "-";
+    end
+end if
+```
+
 <div align="right">
     <b><a href="#table-of-contents">↥</a></b>
 </div>
@@ -343,6 +372,16 @@ Or a _for_statement_:
    _compound_statement_ \
    **end** **do**
 
+For example, the following `for` loop prints `1 2 3`:
+
+```pascal
+for i := 1 to 4 do  // the end is excluded
+begin
+    print i;
+end
+end do
+```
+
 <div align="right">
     <b><a href="#table-of-contents">↥</a></b>
 </div>
@@ -370,6 +409,19 @@ A _compound_statement_ consists of a block of variable and constant declarations
    **end**
 
 All _declarations_ have to appear before the _statements_. Since the _compound_statement_ itself is a _statement_, it can appear recursively.
+
+Here is an example of a nested _compound_statement_:
+
+```pascal
+begin
+    var radius: 3;  // a constant declaration
+    var area: real; // a variable declaration
+    begin
+        area := calculateCircleArea(3);  // an assignment with a function call
+    end
+    print area;  // a print statement
+end
+```
 
 <div align="right">
     <b><a href="#table-of-contents">↥</a></b>
@@ -463,6 +515,8 @@ For example, `arr[30]`, `arr[30][33]`, and `arr[1 + 2]` are all syntactically va
 A _function_call_ has the following form:
 
 - **identifier** **(** [ _[expression](#expressions)_ { **,** _expression_ } ] **)**
+
+For example, `renderScene()`, `toFahrenheit(37.5)`, and `add(1, 2)` are all syntactically valid _function_calls_.
 
 <div align="right">
     <b><a href="#table-of-contents">↥</a></b>
