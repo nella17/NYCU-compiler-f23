@@ -282,6 +282,9 @@ Flow-of-control: `while`, `do`, `if`, `then`, `else`, `for`, `to`
 - Block: `begin`, `end`
 - Statement: `print`, `read`, `return`
 
+> [!note]
+> Although `def` is listed as one of the reserved words, it is not actually used in `P` language programs.
+
 #### Identifiers
 
 An identifier is a sequence of letters and digits beginning with a letter. Identifiers are case-sensitive; that is, **gura**, **Gura**, and **GURA** are treated as different identifiers. Note that reserved words CANNOT be used as identifiers.
