@@ -1194,7 +1194,7 @@ riscv32-unknown-elf-gcc -o [output ELF file] [input RISC-V instruction file]
  - Run the `ELF` file on the simulator `spike`.
 
 ```
-spike --isa=RV32 /risc-v/riscv32-unknown-elf/bin/pk [ELF file]
+spike --isa=rv32gc /risc-v/riscv32-unknown-elf/bin/pk [ELF file]
 ```
 
 ### Test your compiler with the RISC-V development board
