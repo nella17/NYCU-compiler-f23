@@ -17,6 +17,10 @@ begin
 end
 end
 
+// the following functions are not used; only for increasing the test coverage
+multipleFormalDeclarations(a, b: integer; c: real; d, e: string);
+formalOfArrayType(a: array 2 of integer; c, d: integer): string;
+
 begin
         var a : integer;
         var b : integer;
