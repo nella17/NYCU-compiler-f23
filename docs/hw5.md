@@ -9,6 +9,7 @@ Due Date: **23:59, January 12, 2024**
 Your assignment is to generate `RISC-V instructions` for the **`P`** language based on the `AST` and `symbol table` that you have built in the previous assignments. The generated code will then be executed on a RISC-V simulator, called `Spike`.
 
 ### The description video of homework:
+
 https://drive.google.com/drive/folders/1bxhnd03dAB2DbRrAsqgB13DjRHQMJVLW
 
 ---
@@ -53,15 +54,15 @@ https://drive.google.com/drive/folders/1bxhnd03dAB2DbRrAsqgB13DjRHQMJVLW
 
 In order to keep this assignment simple, only the `integer` type is needed to be implemented and the `array` type is not considered. Your assignment is to generate `RISC-V` instructions for a `P` program that contains any of the following constructs:
 
- - Global variable or local variable declaration.
- - Global constant or local constant declaration.
- - Function declaration.
- - Assign statement.
- - Simple statement.
- - Expressions with only `+` `-` (unary and binary) `*` `/` `mod` `function invocation` included.
- - Function invocation statement.
- - Conditional statement.
- - For statement and while statement.
+- Global variable or local variable declaration.
+- Global constant or local constant declaration.
+- Function declaration.
+- Assign statement.
+- Simple statement.
+- Expressions with only `+` `-` (unary and binary) `*` `/` `mod` `function invocation` included.
+- Function invocation statement.
+- Conditional statement.
+- For statement and while statement.
 
 The generated `RISC-V` instructions should be saved in a file with the same name as the input `P` file but with a `.S` extension. In addition, the file should be stored in a directory, which is set by the flag `--save-path [save path]`. For example, the following command translates `./test.p` into `./output_riscv_code/test/test.S`.
 
@@ -75,17 +76,17 @@ The generated `RISC-V` instructions should be saved in a file with the same name
 
 ## Generating RISC-V Instructions
 
- > In the following subsections, we provide some examples of how to translate a `P` construct into RISC-V instructions. You may design your own instruction selection rules, as long as the generated code does what it should do. We recommend you read the [`RISC-V` tutorial](RISC-V-tutorial) before getting into the following subsections.
+> In the following subsections, we provide some examples of how to translate a `P` construct into RISC-V instructions. You may design your own instruction selection rules, as long as the generated code does what it should do. We recommend you read the [`RISC-V` tutorial](RISC-V-tutorial) before getting into the following subsections.
 
 For all the examples below, we use a simple computation model called [**stack machine**](https://en.wikipedia.org/wiki/Stack_machine).
 
- - When traversing to a `variable reference` node, push the **value** of the variable on the stack if it appears on the `RHS` of the `assignment` node, or push the **address** of the variable to the stack if it's on the `LHS` of the `assignment` node.
+- When traversing to a `variable reference` node, push the **value** of the variable on the stack if it appears on the `RHS` of the `assignment` node, or push the **address** of the variable to the stack if it's on the `LHS` of the `assignment` node.
 
- - When traversing to a `computation` node, (1) pop the values on the stack to some registers, and (2) then compute the result with one or more instructions, and (3) finally push the result back to the stack.
+- When traversing to a `computation` node, (1) pop the values on the stack to some registers, and (2) then compute the result with one or more instructions, and (3) finally push the result back to the stack.
 
- - When traversing to an `assignment` node, (1) pop the value and the address on the stack to some registers, and (2) then store the value to that address.
+- When traversing to an `assignment` node, (1) pop the value and the address on the stack to some registers, and (2) then store the value to that address.
 
- - For more precise steps, see [simple compilers](https://en.wikipedia.org/wiki/Stack_machine#Simple_compilers).
+- For more precise steps, see [simple compilers](https://en.wikipedia.org/wiki/Stack_machine#Simple_compilers).
 
 ---
 
@@ -111,39 +112,39 @@ The generated `RISC-V` code will have the following structure:
 
 ### Initialization
 
- - An empty `P` program
+- An empty `P` program
 
-    ```p
-    // test1.p
-    test1;
-    begin
-    end
-    end
-    ```
+  ```p
+  // test1.p
+  test1;
+  begin
+  end
+  end
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-        .file "test1.p"
-        .option nopic
-    .section    .text
-        .align 2
-        .globl main          # emit symbol 'main' to the global symbol table
-        .type main, @function
-    main:
-        # in the function prologue
-        addi sp, sp, -128    # move stack pointer to lower address to allocate a new stack
-        sw ra, 124(sp)       # save return address of the caller function in the current stack
-        sw s0, 120(sp)       # save frame pointer of the last stack in the current stack
-        addi s0, sp, 128     # move frame pointer to the bottom of the current stack
+  ```assembly
+      .file "test1.p"
+      .option nopic
+  .section    .text
+      .align 2
+      .globl main          # emit symbol 'main' to the global symbol table
+      .type main, @function
+  main:
+      # in the function prologue
+      addi sp, sp, -128    # move stack pointer to lower address to allocate a new stack
+      sw ra, 124(sp)       # save return address of the caller function in the current stack
+      sw s0, 120(sp)       # save frame pointer of the last stack in the current stack
+      addi s0, sp, 128     # move frame pointer to the bottom of the current stack
 
-        # in the function epilogue
-        lw ra, 124(sp)       # load return address saved in the current stack
-        lw s0, 120(sp)       # move frame pointer back to the bottom of the last stack
-        addi sp, sp, 128     # move stack pointer back to the top of the last stack
-        jr ra                # jump back to the caller function
-        .size main, .-main
-    ```
+      # in the function epilogue
+      lw ra, 124(sp)       # load return address saved in the current stack
+      lw s0, 120(sp)       # move frame pointer back to the bottom of the last stack
+      addi sp, sp, 128     # move stack pointer back to the top of the last stack
+      jr ra                # jump back to the caller function
+      .size main, .-main
+  ```
 
 A function `main` must be generated for the compound statement (program body) in the program node.
 
@@ -157,98 +158,99 @@ You should allocate a local memory in the function prologue and clear the local 
 
 #### Global Variables
 
- - Declaring a global variable `a`
+- Declaring a global variable `a`
 
-    ```p
-    var a: integer;
-    ```
+  ```p
+  var a: integer;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    .comm a, 4, 4    # emit object 'a' to .bss section with size = 4, align = 4
-    ```
+  ```assembly
+  .comm a, 4, 4    # emit object 'a' to .bss section with size = 4, align = 4
+  ```
 
- - Assigning a value to a global variable `a`
+- Assigning a value to a global variable `a`
 
-    ```p
-    a := 6;
-    ```
+  ```p
+  a := 6;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```
-    la t0, a         # load the address of variable 'a'
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the address to the stack
-    li t0, 6         # load value '6' to register 't0'
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw t0, 0(sp)     # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)     # pop the address from the stack
-    addi sp, sp, 4
-    sw t0, 0(t1)     # save the value to the address of 'a'
-    ```
+  ```
+  la t0, a         # load the address of variable 'a'
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the address to the stack
+  li t0, 6         # load value '6' to register 't0'
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw t0, 0(sp)     # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)     # pop the address from the stack
+  addi sp, sp, 4
+  sw t0, 0(t1)     # save the value to the address of 'a'
+  ```
 
 #### Local Variables
 
- - Declaring a local variable
-   + Each local integer variable occupies four bytes of the allocated local memory. For example, `fp-8` to `fp-12` for variable `b` and `fp-12` to `fp-16` for variable `c`. You could save this information in the `symbol table` the first time you construct it.
+- Declaring a local variable
 
- - Assigning a value to a local variable `b` stored in `fp-8` to `fp-12` and a value to a local variable `c` stored in `fp-12` to `fp-16`.
+  - Each local integer variable occupies four bytes of the allocated local memory. For example, `fp-8` to `fp-12` for variable `b` and `fp-12` to `fp-16` for variable `c`. You could save this information in the `symbol table` the first time you construct it.
 
-    ```p
-    var b, c: integer;
-    b := 5;
-    c := 6;
-    ```
+- Assigning a value to a local variable `b` stored in `fp-8` to `fp-12` and a value to a local variable `c` stored in `fp-12` to `fp-16`.
 
-    will be translated into the following `RISC-V` instructions.
+  ```p
+  var b, c: integer;
+  b := 5;
+  c := 6;
+  ```
 
-    ```assembly
-    addi t0, s0, -12
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the address to the stack
-    li t0, 5
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw t0, 0(sp)     # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)     # pop the address from the stack
-    addi sp, sp, 4
-    sw t0, 0(t1)     # b = 5
-    addi t0, s0, -16
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the address to the stack
-    li t0, 6
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw t0, 0(sp)     # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)     # pop the address from the stack
-    addi sp, sp, 4
-    sw t0, 0(t1)     # c = 6
-    ```
+  will be translated into the following `RISC-V` instructions.
+
+  ```assembly
+  addi t0, s0, -12
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the address to the stack
+  li t0, 5
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw t0, 0(sp)     # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)     # pop the address from the stack
+  addi sp, sp, 4
+  sw t0, 0(t1)     # b = 5
+  addi t0, s0, -16
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the address to the stack
+  li t0, 6
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw t0, 0(sp)     # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)     # pop the address from the stack
+  addi sp, sp, 4
+  sw t0, 0(t1)     # c = 6
+  ```
 
 #### Global Constants
 
- - Declaring a global constant `d`
+- Declaring a global constant `d`
 
-    ```p
-    var d: 5;
-    ```
+  ```p
+  var d: 5;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    .section    .rodata       # emit rodata section
-        .align 2
-        .globl d              # emit symbol 'd' to the global symbol table
-        .type d, @object
-    d:
-        .word 5
-    ```
+  ```assembly
+  .section    .rodata       # emit rodata section
+      .align 2
+      .globl d              # emit symbol 'd' to the global symbol table
+      .type d, @object
+  d:
+      .word 5
+  ```
 
 #### Local Constants
 
@@ -260,49 +262,49 @@ The same as local variables.
 
 ### Expression
 
- - Adding up local variable `b` and local variable `c`, then multiplying with global constant `d`, and finally assigning to global variable `a`
+- Adding up local variable `b` and local variable `c`, then multiplying with global constant `d`, and finally assigning to global variable `a`
 
-    ```p
-    a := (b + c) * d;
-    ```
+  ```p
+  a := (b + c) * d;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    addi sp, sp, -4
-    la t0, a          # load the address of 'a'
-    sw t0, 0(sp)      # push the address to the stack
-    lw t0, -12(s0)    # load the value of 'b'
-    addi sp, sp, -4
-    sw t0, 0(sp)      # push the value to the stack
-    lw t0, -16(s0)    # load the value of 'c'
-    addi sp, sp, -4
-    sw t0, 0(sp)      # push the value to the stack
-    lw t0, 0(sp)      # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)      # pop the value from the stack
-    addi sp, sp, 4
-    add t0, t1, t0    # b + c, always save the value in a certain register you choose
-    addi sp, sp, -4
-    sw t0, 0(sp)      # push the value to the stack
-    la t0, d          # load the address of 'd'
-    lw t1, 0(t0)      # load the 32-bit value of 'd'
-    mv t0, t1
-    addi sp, sp, -4
-    sw t0, 0(sp)      # push the value to the stack
-    lw t0, 0(sp)      # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)      # pop the value from the stack
-    addi sp, sp, 4
-    mul t0, t1, t0    # (b + c) * d, always save the value in a certain register you choose
-    addi sp, sp, -4
-    sw t0, 0(sp)      # push the value to the stack
-    lw t0, 0(sp)      # pop the value from the stack
-    addi sp, sp, 4
-    la t1, 0(sp)      # pop the address from the stack
-    addi sp, sp, 4
-    sw t0, 0(t1)      # save the value to 'a'
-    ```
+  ```assembly
+  addi sp, sp, -4
+  la t0, a          # load the address of 'a'
+  sw t0, 0(sp)      # push the address to the stack
+  lw t0, -12(s0)    # load the value of 'b'
+  addi sp, sp, -4
+  sw t0, 0(sp)      # push the value to the stack
+  lw t0, -16(s0)    # load the value of 'c'
+  addi sp, sp, -4
+  sw t0, 0(sp)      # push the value to the stack
+  lw t0, 0(sp)      # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)      # pop the value from the stack
+  addi sp, sp, 4
+  add t0, t1, t0    # b + c, always save the value in a certain register you choose
+  addi sp, sp, -4
+  sw t0, 0(sp)      # push the value to the stack
+  la t0, d          # load the address of 'd'
+  lw t1, 0(t0)      # load the 32-bit value of 'd'
+  mv t0, t1
+  addi sp, sp, -4
+  sw t0, 0(sp)      # push the value to the stack
+  lw t0, 0(sp)      # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)      # pop the value from the stack
+  addi sp, sp, 4
+  mul t0, t1, t0    # (b + c) * d, always save the value in a certain register you choose
+  addi sp, sp, -4
+  sw t0, 0(sp)      # push the value to the stack
+  lw t0, 0(sp)      # pop the value from the stack
+  addi sp, sp, 4
+  la t1, 0(sp)      # pop the address from the stack
+  addi sp, sp, 4
+  sw t0, 0(t1)      # save the value to 'a'
+  ```
 
 > The values on the registers may be polluted **after calling a function**, so you should take care of registers if you don't push the values on the registers to the stack every time and there's a function invocation in an expression. The simplest way is saving the registers on the stack in the function prologue and restoring them in the function epilogue.
 
@@ -312,100 +314,100 @@ The same as local variables.
 
 ### Function Declaration and Invocation
 
- - Declaring a function `sum`
+- Declaring a function `sum`
 
-    ```p
-    sum(a,b: integer): integer
-    begin
-        var c: integer;
-        c := a + b;
-        return c;
-    end
-    end
-    ```
+  ```p
+  sum(a,b: integer): integer
+  begin
+      var c: integer;
+      c := a + b;
+      return c;
+  end
+  end
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    .section    .text
-        .align 2
-        .globl sum
-        .type sum, @function
-    sum:
-        addi sp, sp, -128
-        sw ra, 124(sp)
-        sw s0, 120(sp)
-        addi s0, sp, 128
-        sw a0, -12(s0)    # save parameter 'a' in the local stack
-        sw a1, -16(s0)    # save parameter 'b' in the local stack
-        addi t0, s0, -20  # load the address of 'c'
-        addi sp, sp, -4
-        sw t0, 0(sp)      # push the address to the stack
-        lw t0, -12(s0)    # load the value of 'a'
-        addi sp, sp, -4
-        sw t0, 0(sp)      # push the value to the stack
-        lw t0, -16(s0)    # load the value of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)      # push the value to the stack
-        lw t0, 0(sp)      # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)      # pop the value from the stack
-        addi sp, sp, 4
-        add t0, t1, t0    # a + b, always save the value in a certain register you choose
-        addi sp, sp, -4
-        sw t0, 0(sp)      # push the value to the stack
-        lw t0, 0(sp)      # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)      # pop the address from the stack
-        addi sp, sp, 4
-        sw t0, 0(t1)      # save the value to 'c'
-        lw t0, -20(s0)
-        addi sp, sp, -4
-        sw t0, 0(sp)      # push the value to the stack
-        lw t0, 0(sp)      # pop the value from the stack
-        addi sp, sp, 4
-        mv a0, t0         # load the value of 'c' to the return value register 'a0'
-        lw ra, 124(sp)
-        lw s0, 120(sp)
-        addi sp, sp, 128
-        jr ra
-        .size sum, .-sum
-    ```
+  ```assembly
+  .section    .text
+      .align 2
+      .globl sum
+      .type sum, @function
+  sum:
+      addi sp, sp, -128
+      sw ra, 124(sp)
+      sw s0, 120(sp)
+      addi s0, sp, 128
+      sw a0, -12(s0)    # save parameter 'a' in the local stack
+      sw a1, -16(s0)    # save parameter 'b' in the local stack
+      addi t0, s0, -20  # load the address of 'c'
+      addi sp, sp, -4
+      sw t0, 0(sp)      # push the address to the stack
+      lw t0, -12(s0)    # load the value of 'a'
+      addi sp, sp, -4
+      sw t0, 0(sp)      # push the value to the stack
+      lw t0, -16(s0)    # load the value of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)      # push the value to the stack
+      lw t0, 0(sp)      # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)      # pop the value from the stack
+      addi sp, sp, 4
+      add t0, t1, t0    # a + b, always save the value in a certain register you choose
+      addi sp, sp, -4
+      sw t0, 0(sp)      # push the value to the stack
+      lw t0, 0(sp)      # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)      # pop the address from the stack
+      addi sp, sp, 4
+      sw t0, 0(t1)      # save the value to 'c'
+      lw t0, -20(s0)
+      addi sp, sp, -4
+      sw t0, 0(sp)      # push the value to the stack
+      lw t0, 0(sp)      # pop the value from the stack
+      addi sp, sp, 4
+      mv a0, t0         # load the value of 'c' to the return value register 'a0'
+      lw ra, 124(sp)
+      lw s0, 120(sp)
+      addi sp, sp, 128
+      jr ra
+      .size sum, .-sum
+  ```
 
- - Call function `sum` with local variable `b` and global constant `d`, then assign the result to global variable `a`
+- Call function `sum` with local variable `b` and global constant `d`, then assign the result to global variable `a`
 
-    ```p
-    a := sum(b, d);
-    ```
+  ```p
+  a := sum(b, d);
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    la t0, a         # load the address of 'a'
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw t0, -12(s0)   # load the value of 'b'
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    la t0, d         # load the address of 'd'
-    lw t1, 0(t0)     # load the 32-bit value of 'd'
-    mv t0, t1
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw a1, 0(sp)     # pop the value from the stack to the second argument register 'a1'
-    addi sp, sp, 4
-    lw a0, 0(sp)     # pop the value from the stack to the first argument register 'a0'
-    addi sp, sp, 4
-    jal ra, sum      # call function 'sum'
-    mv t0, a0        # always move the return value to a certain register you choose
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw t0, 0(sp)     # pop the value from the stack
-    addi sp, sp, 4
-    lw t1, 0(sp)     # pop the address from the stack
-    addi sp, sp, 4
-    sw t0, 0(t1)     # save the value to 'a'
-    ```
+  ```assembly
+  la t0, a         # load the address of 'a'
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw t0, -12(s0)   # load the value of 'b'
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  la t0, d         # load the address of 'd'
+  lw t1, 0(t0)     # load the 32-bit value of 'd'
+  mv t0, t1
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw a1, 0(sp)     # pop the value from the stack to the second argument register 'a1'
+  addi sp, sp, 4
+  lw a0, 0(sp)     # pop the value from the stack to the first argument register 'a0'
+  addi sp, sp, 4
+  jal ra, sum      # call function 'sum'
+  mv t0, a0        # always move the return value to a certain register you choose
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw t0, 0(sp)     # pop the value from the stack
+  addi sp, sp, 4
+  lw t1, 0(sp)     # pop the address from the stack
+  addi sp, sp, 4
+  sw t0, 0(t1)     # save the value to 'a'
+  ```
 
 > [!note]
 > The function argument number in the test case may be larger than **eight**, and there are only `a0`-`a7` registers. You should try to place the remain arguments in other places.
@@ -422,42 +424,42 @@ It's a little complicated to call an `IO` system call, so we provide you **print
 riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF file]
 ```
 
- - Printing a global variable `a`
+- Printing a global variable `a`
 
-    ```p
-    print a;
-    ```
+  ```p
+  print a;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    la t0, a
-    lw t1, 0(t0)     # load the value of 'a'
-    mv t0, t1
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the value to the stack
-    lw a0, 0(sp)     # pop the value from the stack to the first argument register 'a0'
-    addi sp, sp, 4
-    jal ra, printInt # call function 'printInt'
-    ```
+  ```assembly
+  la t0, a
+  lw t1, 0(t0)     # load the value of 'a'
+  mv t0, t1
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the value to the stack
+  lw a0, 0(sp)     # pop the value from the stack to the first argument register 'a0'
+  addi sp, sp, 4
+  jal ra, printInt # call function 'printInt'
+  ```
 
- - Read a value and save to a global variable `a`
+- Read a value and save to a global variable `a`
 
-    ```p
-    read a;
-    ```
+  ```p
+  read a;
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    la t0, a         # load the address of 'a'
-    addi sp, sp, -4
-    sw t0, 0(sp)     # push the address to the stack
-    jal ra, readInt  # call function 'readInt'
-    lw t0, 0(sp)     # pop the address from the stack
-    addi sp, sp, 4
-    sw a0, 0(t0)     # save the return value to 'a'
-    ```
+  ```assembly
+  la t0, a         # load the address of 'a'
+  addi sp, sp, -4
+  sw t0, 0(sp)     # push the address to the stack
+  jal ra, readInt  # call function 'readInt'
+  lw t0, 0(sp)     # pop the address from the stack
+  addi sp, sp, 4
+  sw a0, 0(t0)     # save the return value to 'a'
+  ```
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
@@ -465,55 +467,55 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 ### Conditional Statement
 
- - Branching according to `a`'s value
+- Branching according to `a`'s value
 
-    ```p
-    if ( a <= 40 ) then
-    begin
-        print a;
-    end
-    else
-    begin
-        print b;
-    end
-    end if
-    ```
+  ```p
+  if ( a <= 40 ) then
+  begin
+      print a;
+  end
+  else
+  begin
+      print b;
+  end
+  end if
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-        la t0, a
-        lw t1, 0(t0)          # load the value of 'a'
-        mv t0, t1
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        li t0, 40
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        bgt t1, t0, L2        # if a > 40, jump to L2
-    L1:
-        la t0, a
-        lw t1, 0(t0)          # load the value of 'a'
-        mv t0, t1
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
-        addi sp, sp, 4
-        jal ra, printInt      # call function 'printInt'
-        j L3                  # jump to L3
-    L2:
-        lw t0, -12(s0)        # load the value of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
-        addi sp, sp, 4
-        jal ra, printInt      # call function 'printInt'
-    L3:
-    ```
+  ```assembly
+      la t0, a
+      lw t1, 0(t0)          # load the value of 'a'
+      mv t0, t1
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      li t0, 40
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      bgt t1, t0, L2        # if a > 40, jump to L2
+  L1:
+      la t0, a
+      lw t1, 0(t0)          # load the value of 'a'
+      mv t0, t1
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
+      addi sp, sp, 4
+      jal ra, printInt      # call function 'printInt'
+      j L3                  # jump to L3
+  L2:
+      lw t0, -12(s0)        # load the value of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
+      addi sp, sp, 4
+      jal ra, printInt      # call function 'printInt'
+  L3:
+  ```
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
@@ -521,131 +523,131 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 ### For Statement and While Statement
 
- - Looping until b >= 8
+- Looping until b >= 8
 
-    ```p
-    while b < 8 do
-    begin
-        print b;
-        b := b + 1;
-    end
-    end do
-    ```
+  ```p
+  while b < 8 do
+  begin
+      print b;
+      b := b + 1;
+  end
+  end do
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-    L3:
-        lw t0, -12(s0)        # load the value of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        li t0, 8
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        bge t1, t0, L5        # if b >= 8, exit the loop
-    L4:
-        lw t0, -12(s0)        # load the value of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
-        addi sp, sp, 4
-        jal ra, printInt      # call function 'printInt'
-        addi t0, s0, -12      # load the address of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the address to the stack
-        lw t0, -12(s0)        # load the value of 'b'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        li t0, 1
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        add t0, t1, t0        # b + 1, always save the value in a certain register you choose
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the address from the stack
-        addi sp, sp, 4
-        sw t0, 0(t1)          # save the value to 'b'
-        j L3                  # jump back to loop condition
-    L5:
-    ```
+  ```assembly
+  L3:
+      lw t0, -12(s0)        # load the value of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      li t0, 8
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      bge t1, t0, L5        # if b >= 8, exit the loop
+  L4:
+      lw t0, -12(s0)        # load the value of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
+      addi sp, sp, 4
+      jal ra, printInt      # call function 'printInt'
+      addi t0, s0, -12      # load the address of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the address to the stack
+      lw t0, -12(s0)        # load the value of 'b'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      li t0, 1
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      add t0, t1, t0        # b + 1, always save the value in a certain register you choose
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the address from the stack
+      addi sp, sp, 4
+      sw t0, 0(t1)          # save the value to 'b'
+      j L3                  # jump back to loop condition
+  L5:
+  ```
 
- - Looping with loop variable `i`
+- Looping with loop variable `i`
 
-    ```p
-    for i := 10 to 13 do
-    begin
-        print i;
-    end
-    end do
-    ```
+  ```p
+  for i := 10 to 13 do
+  begin
+      print i;
+  end
+  end do
+  ```
 
-    will be translated into the following `RISC-V` instructions.
+  will be translated into the following `RISC-V` instructions.
 
-    ```assembly
-        addi t0, s0, -20
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the address of the loop variable to the stack
-        li t0, 10
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the address from the stack
-        addi sp, sp, 4
-        sw t0, 0(t1)          # save the loop variable in the local stack
-    L6:
-        lw t0, -20(s0)        # load the value of 'i'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        li t0, 13
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        bge t1, t0, L8        # if i >= 13, exit the loop
-    L7:
-        lw t0, -20(s0)        # load the value of 'i'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
-        addi sp, sp, 4
-        jal ra, printInt      # call function 'printInt'
-        addi t0, s0, -20      # load the address of 'i'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the address to the stack
-        lw t0, -20(s0)        # load the value of 'i'
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        li t0, 1
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        add t0, t1, t0        # i + 1, always save the value in a certain register you choose
-        addi sp, sp, -4
-        sw t0, 0(sp)          # push the value to the stack
-        lw t0, 0(sp)          # pop the value from the stack
-        addi sp, sp, 4
-        lw t1, 0(sp)          # pop the address from the stack
-        addi sp, sp, 4
-        sw t0, 0(t1)          # save the value to 'i'
-        j L6                  # jump back to loop condition
-    L8:
-    ```
+  ```assembly
+      addi t0, s0, -20
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the address of the loop variable to the stack
+      li t0, 10
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the address from the stack
+      addi sp, sp, 4
+      sw t0, 0(t1)          # save the loop variable in the local stack
+  L6:
+      lw t0, -20(s0)        # load the value of 'i'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      li t0, 13
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      bge t1, t0, L8        # if i >= 13, exit the loop
+  L7:
+      lw t0, -20(s0)        # load the value of 'i'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw a0, 0(sp)          # pop the value from the stack to the first argument register 'a0'
+      addi sp, sp, 4
+      jal ra, printInt      # call function 'printInt'
+      addi t0, s0, -20      # load the address of 'i'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the address to the stack
+      lw t0, -20(s0)        # load the value of 'i'
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      li t0, 1
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      add t0, t1, t0        # i + 1, always save the value in a certain register you choose
+      addi sp, sp, -4
+      sw t0, 0(sp)          # push the value to the stack
+      lw t0, 0(sp)          # pop the value from the stack
+      addi sp, sp, 4
+      lw t1, 0(sp)          # pop the address from the stack
+      addi sp, sp, 4
+      sw t0, 0(t1)          # save the value to 'i'
+      j L6                  # jump back to loop condition
+  L8:
+  ```
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
@@ -1038,50 +1040,50 @@ For simplicity, you can pass the array variables by value.
 
 There is no string concatenation in test cases, so you don't need to allocate dynamic memory for a string variable.
 
- - Defining a local string variable 'st' will be translated into the following `RISC-V` instructions.
+- Defining a local string variable 'st' will be translated into the following `RISC-V` instructions.
 
-    ```
-        .section	.rodata
-        .align	2
-    st:
-        .string	"hello"
-    ```
+  ```
+      .section	.rodata
+      .align	2
+  st:
+      .string	"hello"
+  ```
 
- - Referencing a local string variable 'st' will be translated into the following `RISC-V` instructions.
+- Referencing a local string variable 'st' will be translated into the following `RISC-V` instructions.
 
-    ```
-    lui t0, %hi(st)
-    addi a0, t0, %lo(st)
-    ```
+  ```
+  lui t0, %hi(st)
+  addi a0, t0, %lo(st)
+  ```
 
 #### Real Type
 
 You should use floating-point registers and floating-point instructions for real type code generation. Check Single-Precision Instructions in [RISC-V ISA Specification](https://riscv.org/specifications/isa-spec-pdf/).
 
- - Defining a local real type variable 'rv' will be translated into the following `RISC-V` instructions.
+- Defining a local real type variable 'rv' will be translated into the following `RISC-V` instructions.
 
-    ```
-        .section	.rodata
-        .align	2
-    rv:
-        .float	1.1
-            .
-            .
-            .
-    main:
-        lui t0, %hi(rv)
-        flw ft0, %lo(rv)(t0)
-        fsw ft0, -24(s0)
-    ```
+  ```
+      .section	.rodata
+      .align	2
+  rv:
+      .float	1.1
+          .
+          .
+          .
+  main:
+      lui t0, %hi(rv)
+      flw ft0, %lo(rv)(t0)
+      fsw ft0, -24(s0)
+  ```
 
- - Adding two real type variables will be translated into the following `RISC-V` instructions.
+- Adding two real type variables will be translated into the following `RISC-V` instructions.
 
-    ```
-    flw	ft0, -24(s0)
-    flw	ft1, -24(s0)
-    fadd.s  ft0, ft1, ft0
-    fsw	ft0, -24(s0)
-    ```
+  ```
+  flw	ft0, -24(s0)
+  flw	ft1, -24(s0)
+  fadd.s  ft0, ft1, ft0
+  fsw	ft0, -24(s0)
+  ```
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
@@ -1105,24 +1107,24 @@ riscv32-unknown-elf-gcc -c -S [input C file] -o [output assembly file]
 
 - `README.md`
 - /src
-    - Makefile
-    - `scanner.l`
-    - `parser.y`
-    - /include
-        - /AST
-        - /semantic
-        - /visitor
-        - /codegen
-            - CodeGenerator.hpp - for code generation in visitor pattern version
-    - /lib
-        - /AST
-        - /semantic
-        - /visitor
-        - /codegen
-            - CodeGenerator.cpp - for code generation in visitor pattern version
-    - Other modules you may add
+  - Makefile
+  - `scanner.l`
+  - `parser.y`
+  - /include
+    - /AST
+    - /semantic
+    - /visitor
+    - /codegen
+      - CodeGenerator.hpp - for code generation in visitor pattern version
+  - /lib
+    - /AST
+    - /semantic
+    - /visitor
+    - /codegen
+      - CodeGenerator.cpp - for code generation in visitor pattern version
+  - Other modules you may add
 - /report
-    - `README.md`
+  - `README.md`
 
 In this assignment, you have to do the following tasks:
 
@@ -1139,19 +1141,19 @@ If you want to preview your report in GitHub style markdown before pushing to Gi
 
 Total of 119 points.
 
-+ Passing all the basic cases (60 pts)
-+ Passing all the advance cases (35 pts)
-+ Report (5 pts)
-  + 0: empty
-  + 1: bad
-  + 3: normal
-  + 4: good
-  + 5: excellent
-+ Bonus (Total of 19 pts)
-  + Code generation for boolean types (4 pts)
-  + Code generation for array types (6 pts)
-  + Code generation for string types (3 pts)
-  + Code generation for real types (6 pts)
+- Passing all the basic cases (60 pts)
+- Passing all the advance cases (35 pts)
+- Report (5 pts)
+  - 0: empty
+  - 1: bad
+  - 3: normal
+  - 4: good
+  - 5: excellent
+- Bonus (Total of 19 pts)
+  - Code generation for boolean types (4 pts)
+  - Code generation for array types (6 pts)
+  - Code generation for string types (3 pts)
+  - Code generation for real types (6 pts)
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
@@ -1183,13 +1185,13 @@ Please use `student_` as the prefix of your own tests to prevent TAs from overwr
 
 The `RISC-V` simulator has been installed in the docker image. You may install it on your environment. The following commands show how to generate the executable and run the executable on the `RISC-V` simulator.
 
- - Compile the generated `RISC-V` instructions to the `Executable and Linkable Format (ELF)` file.
+- Compile the generated `RISC-V` instructions to the `Executable and Linkable Format (ELF)` file.
 
 ```
 riscv32-unknown-elf-gcc -o [output ELF file] [input RISC-V instruction file]
 ```
 
- - Run the `ELF` file on the simulator `spike`.
+- Run the `ELF` file on the simulator `spike`.
 
 ```
 spike --isa=rv32gc /risc-v/riscv32-unknown-elf/bin/pk [ELF file]
@@ -1268,10 +1270,12 @@ Found DFU: [28e9:0189] ver=1000, devnum=11, cfg=1, intf=0, path="1-1", alt=0, na
 If you encounter the error `dfu-util: Cannot open DFU device 28e9:0189`, you should add some rules for `udev`. Here's an example for Ubuntu:
 
 1. Create a file named `/etc/udev/rules.d/70-ttyusb.rules`.
-    ```conf
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
-    SUBSYSTEM=="usb_device", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
-    ```
+
+   ```conf
+   SUBSYSTEM=="usb", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
+   SUBSYSTEM=="usb_device", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
+   ```
+
 2. Restart `udev` using `sudo service udev restart`.
 3. Replug the board.
 
