@@ -4,28 +4,17 @@
 
 argument;
 
-var gv: integer;
-var gc: 2;
-
-sum(a,b,c,d,e,f,g,h,i: integer): integer
+sum11(a,b,c,d,e,f,g,h,i,j,k: integer): integer
 begin
 	var result: integer;
-	result := a + b + c + d + e + f + g + h + i;
+	result := a + b + c + d + e + f + g + h + i + j + k;
 	return result;
 end
 end
 
 begin
 
-var lv: integer;
-var lc: 2;
-
-gv := 2;
-lv := 2;
-
-gv := sum(gv, gc, lv, lc, gv, gc, lv, lc, gv);
-
-print gv;
+print sum11(1, 2, 3, 4, 5, 6, 7, 8, 8, 10, 11);
 
 end
 end
