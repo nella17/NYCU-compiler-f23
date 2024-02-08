@@ -66,7 +66,7 @@ In order to keep this assignment simple, only the `integer` type is needed to be
 
 The generated `RISC-V` instructions should be saved in a file with the same name as the input `P` file but with a `.S` extension. In addition, the file should be stored in a directory, which is set by the flag `--save-path [save path]`. For example, the following command translates `./test.p` into `./output_riscv_code/test/test.S`.
 
-```
+```sh
 ./compiler test.p --save-path ./output_riscv_code/test
 ```
 
@@ -114,7 +114,7 @@ The generated `RISC-V` code will have the following structure:
 
 - An empty `P` program
 
-  ```p
+  ```pascal
   // test1.p
   test1;
   begin
@@ -160,7 +160,7 @@ You should allocate a local memory in the function prologue and clear the local 
 
 - Declaring a global variable `a`
 
-  ```p
+  ```pascal
   var a: integer;
   ```
 
@@ -172,13 +172,13 @@ You should allocate a local memory in the function prologue and clear the local 
 
 - Assigning a value to a global variable `a`
 
-  ```p
+  ```pascal
   a := 6;
   ```
 
   will be translated into the following `RISC-V` instructions.
 
-  ```
+  ```assembly
   la t0, a         # load the address of variable 'a'
   addi sp, sp, -4
   sw t0, 0(sp)     # push the address to the stack
@@ -200,7 +200,7 @@ You should allocate a local memory in the function prologue and clear the local 
 
 - Assigning a value to a local variable `b` stored in `fp-8` to `fp-12` and a value to a local variable `c` stored in `fp-12` to `fp-16`.
 
-  ```p
+  ```pascal
   var b, c: integer;
   b := 5;
   c := 6;
@@ -237,7 +237,7 @@ You should allocate a local memory in the function prologue and clear the local 
 
 - Declaring a global constant `d`
 
-  ```p
+  ```pascal
   var d: 5;
   ```
 
@@ -264,7 +264,7 @@ The same as local variables.
 
 - Adding up local variable `b` and local variable `c`, then multiplying with global constant `d`, and finally assigning to global variable `a`
 
-  ```p
+  ```pascal
   a := (b + c) * d;
   ```
 
@@ -316,7 +316,7 @@ The same as local variables.
 
 - Declaring a function `sum`
 
-  ```p
+  ```pascal
   sum(a,b: integer): integer
   begin
       var c: integer;
@@ -376,7 +376,7 @@ The same as local variables.
 
 - Call function `sum` with local variable `b` and global constant `d`, then assign the result to global variable `a`
 
-  ```p
+  ```pascal
   a := sum(b, d);
   ```
 
@@ -420,13 +420,13 @@ The same as local variables.
 
 It's a little complicated to call an `IO` system call, so we provide you **print** functions and **read** functions in `io.c`. You can compile and link your generated code with the functions by:
 
-```
+```sh
 riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF file]
 ```
 
 - Printing a global variable `a`
 
-  ```p
+  ```pascal
   print a;
   ```
 
@@ -445,7 +445,7 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 - Read a value and save to a global variable `a`
 
-  ```p
+  ```pascal
   read a;
   ```
 
@@ -469,7 +469,7 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 - Branching according to `a`'s value
 
-  ```p
+  ```pascal
   if ( a <= 40 ) then
   begin
       print a;
@@ -525,7 +525,7 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 - Looping until b >= 8
 
-  ```p
+  ```pascal
   while b < 8 do
   begin
       print b;
@@ -583,7 +583,7 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 
 - Looping with loop variable `i`
 
-  ```p
+  ```pascal
   for i := 10 to 13 do
   begin
       print i;
@@ -658,7 +658,7 @@ riscv32-unknown-elf-gcc [generated RISC-V assembly file] io.c -o [output ELF fil
 <details>
 <summary>Click to expand!</summary>
 
-```p
+```pascal
 // test1.p
 test1;
 
@@ -1042,7 +1042,7 @@ There is no string concatenation in test cases, so you don't need to allocate dy
 
 - Defining a local string variable 'st' will be translated into the following `RISC-V` instructions.
 
-  ```
+  ```assembly
       .section	.rodata
       .align	2
   st:
@@ -1051,7 +1051,7 @@ There is no string concatenation in test cases, so you don't need to allocate dy
 
 - Referencing a local string variable 'st' will be translated into the following `RISC-V` instructions.
 
-  ```
+  ```assembly
   lui t0, %hi(st)
   addi a0, t0, %lo(st)
   ```
@@ -1062,7 +1062,7 @@ You should use floating-point registers and floating-point instructions for real
 
 - Defining a local real type variable 'rv' will be translated into the following `RISC-V` instructions.
 
-  ```
+  ```assembly
       .section	.rodata
       .align	2
   rv:
@@ -1078,7 +1078,7 @@ You should use floating-point registers and floating-point instructions for real
 
 - Adding two real type variables will be translated into the following `RISC-V` instructions.
 
-  ```
+  ```assembly
   flw	ft0, -24(s0)
   flw	ft1, -24(s0)
   fadd.s  ft0, ft1, ft0
@@ -1095,7 +1095,7 @@ You should use floating-point registers and floating-point instructions for real
 
 If you have no idea what instructions will be generated from a `P` program, you may write a corresponding `C` program and run the following command to generate `RISC-V` instructions using a `C` compiler. Check out `[output assembly file]` to see what instructions were generated.
 
-```
+```sh
 riscv32-unknown-elf-gcc -c -S [input C file] -o [output assembly file]
 ```
 
@@ -1187,13 +1187,13 @@ The `RISC-V` simulator has been installed in the docker image. You may install i
 
 - Compile the generated `RISC-V` instructions to the `Executable and Linkable Format (ELF)` file.
 
-```
+```sh
 riscv32-unknown-elf-gcc -o [output ELF file] [input RISC-V instruction file]
 ```
 
 - Run the `ELF` file on the simulator `spike`.
 
-```
+```sh
 spike --isa=rv32gc /risc-v/riscv32-unknown-elf/bin/pk [ELF file]
 ```
 
