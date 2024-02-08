@@ -1058,7 +1058,7 @@ There is no string concatenation in test cases, so you don't need to allocate dy
 
 #### Real Type
 
-You should use floating-point registers and floating-point instructions for real type code generation. Check Single-Precision Instructions in [RISC-V ISA Specification](https://riscv.org/specifications/isa-spec-pdf/).
+You should use floating-point registers and floating-point instructions for real type code generation. Check Single-Precision Instructions in [RISC-V ISA Specification](https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view?pli=1).
 
 - Defining a local real type variable 'rv' will be translated into the following `RISC-V` instructions.
 
