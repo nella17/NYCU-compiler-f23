@@ -4,6 +4,9 @@
 
 realtest2;
 
+var gv : real;
+var gc : 4.0;
+
 sum(a, b: real): real
 begin
 	var result: real;
@@ -14,20 +17,23 @@ end
 
 begin
 
-var a, b : real;
-a := 1.1;
-b := 2.2;
-print sum(a, b);
+var lv : real;
+var lc : 2.2;
+lv := 1.1;
+print sum(lv, lc);
 
-if( a > b ) then
+if( lv > lc ) then
 begin
-    print a;
+    print lv;
 end
 else
 begin
-    print b;
+    print lc;
 end
 end if
+
+gv := 2.0;
+print (gv / gc);
 
 end
 end
