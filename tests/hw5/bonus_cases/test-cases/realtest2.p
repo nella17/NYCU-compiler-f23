@@ -5,7 +5,7 @@
 realtest2;
 
 var gv : real;
-var gc : 4.0;
+var gc : 4;
 
 sum(a, b: real): real
 begin
