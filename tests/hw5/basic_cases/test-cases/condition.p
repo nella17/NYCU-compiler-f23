@@ -22,17 +22,17 @@ var lv: integer;
 gv := 1;
 lv := 3;
 
-if ( gv = 1 ) then  
+// Should execute then statement.
+if ( gv = 1 ) then
 begin
     print gv;
 end
-else
-begin
-    print lv;
-end
 end if
+// Should be executed.
+print lv;
 
-if ( sum(gv, gc) > 4 ) then  
+// Should execute else statement.
+if ( sum(gv, gc) > 4 ) then
 begin
     print gv;
 end
