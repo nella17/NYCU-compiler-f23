@@ -60,7 +60,7 @@ end do
 
 testFor(localVar);
 
-while globalVar < 10 do
+while globalVar < 9 do
 begin
     globalVar := globalVar + 1;
 end
