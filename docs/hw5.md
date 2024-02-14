@@ -1159,10 +1159,8 @@ Total of 119 points.
 
 ## Build and Execute
 
-!!**Attention**!!
-
-If you're using a Mac, and you encounter problems when executing `./activate_docker.sh`. You can try commenting out or removing line 83 in `docker/activate_docker.py`:`'--privileged -v /dev/bus/usb:/dev/bus/usb',`. We're still resolving to find a way to mount in Docker on Mac. So if you're using a Mac, please just use the emulator to test your homework.
-
+> [!important]
+> If you're on macOS, please use the emulator exclusively for testing your homework.
 
 - Get Hw5 docker image: `make docker-pull`
 - Activate docker environment: `./activate_docker.sh`
@@ -1216,7 +1214,70 @@ We provide the [`Seeed Studio Sipeed Longan Nano`](https://www.seeedstudio.com/S
 
 The `P` program which is going to be compiled by your compiler will call the functions written in `C` to test the correctness of your compiler, so all the above tests are based on the function declarations and the function invocations.
 
-We use `USB DFU` download to download the compiled executable to the development board, so you should connect your board to your computer by USB TYPE-C cable first. To enter DFU mode, holding down the `BOOT` button, then press the `RESET` button to restart the development board and then release the `BOOT` button. After all, you can simply type `make board` to test your compiler with the board. The results will show on the LCD of the board.
+We use `USB DFU` download to transfer the compiled executable to the development board. First, connect your board to your computer using a USB TYPE-C cable. To enter DFU mode:
+
+1. Hold down the `BOOT` button.
+2. Press the `RESET` button to restart the development board.
+3. Release the `BOOT` button.
+
+If you're using WSL, you need to connect the board to WSL:
+
+1. In _powershell.exe_ or _cmd.exe,_ using `usbipd list` to find the USBID for the board.
+2. Share the board with WSL using `usbipd bind -b 1-1` and `usbipd attach --busid 1-1 --wsl`.
+
+```sh
+> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-1    28e9:0189  Unknown device                                                Not shared
+
+> usbipd bind -b 1-1
+> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-1    28e9:0189  Unknown device                                                Shared
+
+> usbipd attach --busid 1-1 --wsl
+usbipd: info: Using WSL distribution 'Ubuntu' to attach; the device will be available in all WSL 2 distributions.
+usbipd: info: Using IP address 172.20.224.1 to reach the host.
+> usbipd list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-1    28e9:0189  Unknown device                                                Attached
+```
+
+For more details on this issue, please refer to the [Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb) article.
+
+Then, verify that the board is connected to Linux via `lsusb`, installed using `sudo apt-get install usbutils`.
+
+```sh
+$ lsusb
+Bus 001 Device 009: ID 28e9:0189 GDMicroelectronics GD32 DFU Bootloader (Longan Nano)
+```
+
+After connecting the board to Linux, enter the container with the additional argument `./activate_docker.sh --board`, then check USB permission using `dfu-util -l`.
+
+```sh
+student@compiler-course:~/hw$ dfu-util -l
+...
+
+Found DFU: [28e9:0189] ver=1000, devnum=11, cfg=1, intf=0, path="1-1", alt=1, name="@Option Bytes  /0x1FFFF800/01*016 g", serial="??"
+Found DFU: [28e9:0189] ver=1000, devnum=11, cfg=1, intf=0, path="1-1", alt=0, name="@Internal Flash  /0x08000000/512*002Kg", serial="??"
+```
+
+If you encounter the error `dfu-util: Cannot open DFU device 28e9:0189`, you should add some rules for `udev`. Here's an example for Ubuntu:
+
+1. Create a file named `/etc/udev/rules.d/70-ttyusb.rules`.
+    ```conf
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
+    SUBSYSTEM=="usb_device", ATTRS{idVendor}=="28e9", ATTRS{idProduct}=="0189", MODE="0666"
+    ```
+2. Restart `udev` using `sudo service udev restart`.
+3. Replug the board.
+
+For more details on this issue, please refer to the ["Cannot open DFU device 28e9:0189" · Issue #2 · riscv-mcu/gd32-dfu-utils](https://github.com/riscv-mcu/gd32-dfu-utils/issues/2#issuecomment-838090469) article.
+
+Afterwards, simply type `make board` to test your compiler with the board. The results will be displayed on the LCD of the board.
 
 <div align="right">
     <b><a href="#table-of-contents">↥ back to menu</a></b>
