@@ -95,6 +95,7 @@ def main():
         '-w', f'{binddir}',
         '--privileged',
         '-v', '/dev/bus/usb:/dev/bus/usb',
+        '-v', f'{os.getcwd()}/board/.platformio:{dk_home}/.platformio',
 
         # bash history file
         '-v', f'{bash_his}:/{dk_home}/.bash_history',

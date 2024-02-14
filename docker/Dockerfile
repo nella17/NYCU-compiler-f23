@@ -64,17 +64,10 @@ RUN apt-get update \
     flex libfl-dev \
     bison libbison-dev \
     device-tree-compiler \
+    dfu-util git \
     # will be installed at /usr/local/lib/python3.10/dist-packages
-    && pip3 install colorama \
+    && pip3 install colorama platformio \
     && rm -rf /var/lib/apt/lists/*
-
-# FIXME: https://registry.platformio.org/tools/platformio/toolchain-gd32v permission denied
-# RUN apt-get update \
-#     && apt-get --no-install-recommends install -y \
-#     dfu-util \
-#     # will be installed at /usr/local/lib/python3.10/dist-packages
-#     && pip3 install platformio \
-#     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
