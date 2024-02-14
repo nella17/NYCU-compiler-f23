@@ -257,28 +257,44 @@ void CodeGenerator::visit(VariableNode &p_variable) {
     auto align = type->getAlign();
     auto size = type->getSize();
     if (entry->isGlobal()) {
+        const char *section = constant ? ".rodata" : ".bss";
         // clang-format off
-        constexpr const char *const riscv_assembly_global_int =
+        constexpr const char *const riscv_assembly_global =
             "    .global %1$s\n"
             "    .section %2$s\n"
             "    .align %3$d\n"
             "    .type %1$s, @object\n"
             "    .size %1$s, %4$d\n"
             "%1$s:\n"
-            "    .word %5$d\n"
+            "    .word %5$s\n"
             ;
         // clang-format on
-        const char *section = constant ? ".rodata" : ".bss";
-        switch (type->value) {
-        case Type::Value::Integer: {
-            int value = constant ? constant->getIntValue() : 0;
-            dumpInstructions(m_output_file.get(), riscv_assembly_global_int,
-                             name.c_str(), section, align, size, value);
-            break;
+        std::string value = "0";
+        if (constant) {
+            switch (type->value) {
+            case Type::Value::Integer:
+                value = std::to_string(constant->getIntValue());
+                break;
+            case Type::Value::Real: {
+                union {
+                    int integer;
+                    float real;
+                } v{.real = constant->getRealValue()};
+                value = std::to_string(v.integer);
+                break;
+            }
+            case Type::Value::Boolean:
+                value = std::to_string(constant->getBooleanValue());
+                break;
+            case Type::Value::String:
+                value = constant->getLabel();
+                break;
+            default:
+                throw std::runtime_error("not implemented (global variable)");
+            }
         }
-        default:
-            throw std::runtime_error("not implemented (global variable)");
-        }
+        dumpInstructions(m_output_file.get(), riscv_assembly_global,
+                         name.c_str(), section, align, size, value.c_str());
     } else {
         auto offset = m_stack_manager.add(size);
         entry->setOffset(offset);
