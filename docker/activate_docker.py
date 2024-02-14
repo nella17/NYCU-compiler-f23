@@ -39,6 +39,7 @@ parser.add_argument( '--hostname', default=f'{COURSE_NAME}')
 parser.add_argument( '--homedir', type=Path, default='/home/student')
 parser.add_argument( '--binddir', type=Path, default='/home/student/hw')
 parser.add_argument( '-i','--imagename', default='compiler-s20-env')
+parser.add_argument( '--board', action='store_true')
 parser.add_argument( 'command', default=[], nargs=argparse.REMAINDER, help="command to run in docker")
 
 args = parser.parse_args()
@@ -48,6 +49,7 @@ DOCKER_HOST_NAME = args.hostname
 DOCKER_IMG_NAME = args.imagename
 binddir = args.binddir
 dk_home = args.homedir
+BOARD = args.board
 
 DOCKER_CMD = args.command
 
@@ -93,13 +95,17 @@ def main():
         '-e', f'USER={DOCKER_USER_NAME}',
         '-v', f'{os.getcwd()}:{binddir}',
         '-w', f'{binddir}',
-        '--privileged',
-        '-v', '/dev/bus/usb:/dev/bus/usb',
-        '-v', f'{os.getcwd()}/board/.platformio:{dk_home}/.platformio',
-
         # bash history file
         '-v', f'{bash_his}:/{dk_home}/.bash_history',
     ]
+    if BOARD:
+        platformio = dirpath / '..' / 'board' / '.platformio'
+        platformio.mkdir(exist_ok=True)
+        docker_options.extend([
+            '--privileged',
+            '-v', '/dev/bus/usb:/dev/bus/usb',
+            '-v', f'{platformio}:{dk_home}/.platformio',
+        ])
     if test_src_fld:
         docker_options.extend(['-v', f'{test_src_fld.resolve()}:{dk_home}/test'])
     if not DOCKER_CMD:

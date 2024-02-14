@@ -1,2 +1,2 @@
 #! /usr/bin/env bash
-make activate
+ARGS="$@" make activate
