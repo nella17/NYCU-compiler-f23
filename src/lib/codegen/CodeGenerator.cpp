@@ -148,21 +148,6 @@ std::string genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     __builtin_unreachable();
 }
 
-bool opRequireLabel(Operator op) {
-    switch (op) {
-    case Operator::OP_LT:
-    case Operator::OP_LTEQ:
-    case Operator::OP_NEQ:
-    case Operator::OP_GTEQ:
-    case Operator::OP_GT:
-    case Operator::OP_EQ:
-        return true;
-    default:
-        return false;
-    }
-    __builtin_unreachable();
-}
-
 void CodeGenerator::dumpSymbol(std::string name) {
     auto entry = m_symbol_manager.lookup(name);
     return dumpSymbol(entry);
