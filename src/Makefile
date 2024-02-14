@@ -2,6 +2,8 @@ CC = g++
 LEX = flex
 YACC = bison
 YACC_FLAGS = --defines=parser.h -v 
+COVERAGE_DIR = $(CURDIR)/.coverage
+GCOVFLAGS = -fprofile-arcs -ftest-coverage
 CFLAGS = -Wall -std=gnu++17 -g
 LDFLAGS =
 INCLUDE = -Iinclude
@@ -53,9 +55,28 @@ $(OBJDIR)/%.o: %.cpp
 $(EXEC): $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(INCLUDE) $(LDFLAGS)
 
+#
+# Using Gcov to collect coverage data and Lcov to generate HTML report.
+#
+
+coverage: LDFLAGS += -O0 $(GCOVFLAGS)
+coverage: $(EXEC)
+	@command -v gcov >/dev/null 2>&1 || { echo >&2 "gcov is not installed, consider installing it first"; exit 1; }
+	$(MAKE) -C ../test/
+	$(MAKE) -C ../board/ compile
+	gcov $(OBJS)
+
+coverage-report: coverage
+	@command -v lcov >/dev/null 2>&1 || { echo >&2 "lcov is not installed, consider installing it first"; exit 1; }
+	mkdir -p $(COVERAGE_DIR)
+	lcov --capture --directory $(CURDIR) --output-file $(COVERAGE_DIR)/coverage.info
+	genhtml $(COVERAGE_DIR)/coverage.info --output-directory $(COVERAGE_DIR)
+	@echo "Open $(COVERAGE_DIR)/index.html in your browser to view the coverage report."
+
 clean:
-	$(RM) $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.h) $(OBJS) $(EXEC)
+	$(RM) -r $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.h) $(OBJS) $(EXEC) \
+		$(OBJS:.o=.gcda) $(OBJS:.o=.gcno) *.gcov $(COVERAGE_DIR)
 
 -include $(DEPS)
 
-.PHONY: all clean
+.PHONY: all clean coverage coverage-report

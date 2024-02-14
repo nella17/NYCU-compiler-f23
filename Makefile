@@ -1,6 +1,6 @@
 all: project
 
-.PHONY: restore project test clean autograde
+.PHONY: restore project test clean autograde coverage-report
 
 IMAGE_NAME = compiler-f23-hw5
 DOCKERHUB_HOST_ACCOUNT = laiyt
@@ -17,6 +17,10 @@ test: project
 	${MAKE} -C test/
 test-clean:
 	${MAKE} clean -C test/
+
+coverage-report:
+	${MAKE} -C src/ clean
+	${MAKE} -C src/ coverage-report 
 
 board: project
 	${MAKE} -C board/

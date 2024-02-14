@@ -61,6 +61,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Coverage Output
+*.gcov
+*.gcno
+*.gcda
+
 
 #  ██████╗ ██████╗  ██████╗ 
 # ██╔════╝ ██╔══██╗ ██╔══██╗
