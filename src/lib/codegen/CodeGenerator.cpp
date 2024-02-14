@@ -57,6 +57,10 @@ std::string genOpCode(const char *int_op,
     throw std::runtime_error("unreachable (genOpCode)");
 }
 
+std::string SUB(TypePtr Ltype, TypePtr Rtype) {
+    return genOpCode("sub", "fsub.s", Ltype, Rtype);
+}
+
 std::string SLT(TypePtr Ltype, TypePtr Rtype) {
     if (Ltype->isInteger() and Rtype->isInteger())
         return pad + "slt t0, t0, t1\n";
@@ -86,6 +90,22 @@ std::string SGT(TypePtr Ltype, TypePtr Rtype) {
     }
     throw std::runtime_error("unreachable (SGT)");
 }
+
+std::string SEQ(TypePtr Ltype, TypePtr Rtype) {
+    if (Ltype->isInteger() and Rtype->isInteger())
+        return SUB(Ltype, Rtype) + pad + "seqz t0, t0\n";
+    if (Ltype->capReal() and Rtype->capReal()) {
+        std::string code = "";
+        if (Ltype->isInteger())
+            code += convertIntToReal(0);
+        if (Rtype->isInteger())
+            code += convertIntToReal(1);
+        code += pad + "feq.s t0, ft0, ft1\n";
+        return code;
+    }
+    throw std::runtime_error("unreachable (SEQ)");
+}
+
 const char XORI[] = "    xori t0, t0, 1\n";
 
 std::string genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
@@ -93,7 +113,7 @@ std::string genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     case Operator::ADD:
         return genOpCode("add", "fadd.s", Ltype, Rtype);
     case Operator::SUB:
-        return genOpCode("sub", "fsub.s", Ltype, Rtype);
+        return SUB(Ltype, Rtype);
     case Operator::MUL:
         return genOpCode("mul", "fmul.s", Ltype, Rtype);
     case Operator::DIV:
@@ -105,15 +125,13 @@ std::string genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     case Operator::OP_LTEQ:
         return SGT(Ltype, Rtype) + XORI;
     case Operator::OP_NEQ:
-        return "    sub t0, t0, t1\n"
-               "    snez t0, t0\n";
+        return SEQ(Ltype, Rtype) + XORI;
     case Operator::OP_GTEQ:
         return SLT(Ltype, Rtype) + XORI;
     case Operator::OP_GT:
         return SGT(Ltype, Rtype);
     case Operator::OP_EQ:
-        return "    sub t0, t0, t1\n"
-               "    seqz t0, t0\n";
+        return SEQ(Ltype, Rtype);
     case Operator::AND:
         return "    and t0, t0, t1\n";
     case Operator::OR:
