@@ -383,6 +383,9 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
 void CodeGenerator::visit(FunctionNode &p_function) {
     logSource(m_output_file.get(), p_function.getLocation().line);
 
+    if (!p_function.getBody())
+        return;
+
     m_symbol_manager.pushScope(p_function.getSymbolTable());
 
     dumpInstructions(m_output_file.get(), riscv_assembly_func_prologue,

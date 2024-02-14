@@ -40,6 +40,7 @@ class FunctionNode : public AstNode {
     const char *getPrototypeCString() const { return prototype.c_str(); }
     TypePtr getType() const { return type; }
     ArgsPtr getArgs() const { return args; }
+    auto getBody() const { return body; }
 
     auto getSymbolTable() const { return symbol_table; }
     void setSymbolTable(SymbolTablePtr p_symbol_table) {
