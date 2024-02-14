@@ -277,7 +277,7 @@ void CodeGenerator::visit(VariableNode &p_variable) {
             break;
         }
         default:
-            throw std::invalid_argument("not implemented");
+            throw std::runtime_error("not implemented (global variable)");
         }
     } else {
         auto offset = m_stack_manager.add(size);
@@ -376,7 +376,7 @@ void CodeGenerator::visit(ConstantValueNode &p_constant_value) {
         break;
     }
     default:
-        throw std::invalid_argument("not implemented");
+        throw std::runtime_error("not implemented (constant)");
     }
 }
 
@@ -438,7 +438,7 @@ void CodeGenerator::visit(PrintNode &p_print) {
                          "printString");
         break;
     default:
-        throw std::invalid_argument("not implemented");
+        throw std::runtime_error("not implemented (print)");
     }
 }
 
@@ -611,7 +611,7 @@ void CodeGenerator::visit(ReadNode &p_read) {
         dumpInstructions(m_output_file.get(), riscv_assembly_call_print);
         break;
     default:
-        throw std::invalid_argument("not implemented");
+        throw std::runtime_error("not implemented (read)");
     }
 }
 
