@@ -85,12 +85,14 @@ class Grader:
         try:
             proc = subprocess.Popen(
                 clist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout_bytes, stderr_bytes = proc.communicate()
         except Exception as e:
             print(colorama.Fore.RED + "Call of '%s' failed: %s" %
                   (" ".join(clist), e))
             exit(1)
 
         proc.wait()
+        print(stdout_bytes.decode(), stderr_bytes.decode(), end='')
 
     def compile_riscv_code(self, case_type, case_id):
         if case_type == "basic":
@@ -112,12 +114,14 @@ class Grader:
         try:
             proc = subprocess.Popen(
                 clist, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout_bytes, stderr_bytes = proc.communicate()
         except Exception as e:
             print(colorama.Fore.RED + "Call of '%s' failed: %s" %
                   (" ".join(clist), e))
             exit(1)
 
         proc.wait()
+        print(stdout_bytes.decode(), stderr_bytes.decode(), end='')
 
     def run_riscv_code(self, case_type, case_id):
         if case_type == "basic":
