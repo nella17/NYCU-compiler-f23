@@ -40,13 +40,13 @@ class CodeGenerator final : public AstNodeVisitor {
     void dumpSymbol(SymbolEntryPtr entry);
     void loadInt(const char *);
     void loadReal(const char *);
-    void pusht0() { dumpInstructions(m_output_file.get(), riscvAsmPush(t0)); }
-    void popt0() { dumpInstructions(m_output_file.get(), riscvAsmPop(t0)); }
-    void pushft0() {
-        dumpInstructions(m_output_file.get(), riscvAsmPushF(ft0));
-    }
-    void popft0() { dumpInstructions(m_output_file.get(), riscvAsmPopF(ft0)); }
+    // clang-format off
+    void pusht(int x) { dumpInstructions(m_output_file.get(), riscvAsmPush(t%d), x); }
+    void popt(int x) { dumpInstructions(m_output_file.get(), riscvAsmPop(t%d), x); }
+    void pushft(int x) { dumpInstructions(m_output_file.get(), riscvAsmPushF(ft%d), x); }
+    void popft(int x) { dumpInstructions(m_output_file.get(), riscvAsmPopF(ft%d), x); }
     void breakpoint() { dumpInstructions(m_output_file.get(), " ebreak\n"); }
+    // clang-format on
 
   public:
     ~CodeGenerator() = default;

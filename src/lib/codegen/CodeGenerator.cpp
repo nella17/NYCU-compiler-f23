@@ -34,35 +34,83 @@ void logSource(FILE *p_out_file, uint32_t nxt) {
     }
 }
 
-const char *genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
+std::string pad = "    ";
+std::string convertIntToReal(int reg) {
+    return pad + "fcvt.s.w " + "ft" + std::to_string(reg) + ", t" +
+           std::to_string(reg) + "\n";
+}
+std::string genOpCode(const char *int_op,
+                      const char *real_op,
+                      TypePtr Ltype,
+                      TypePtr Rtype) {
+    if (Ltype->isInteger() and Rtype->isInteger())
+        return pad + int_op + " t0, t0, t1\n";
+    if (Ltype->capReal() and Rtype->capReal()) {
+        std::string code = "";
+        if (Ltype->isInteger())
+            code += convertIntToReal(0);
+        if (Rtype->isInteger())
+            code += convertIntToReal(1);
+        code += pad + real_op + " ft0, ft0, ft1\n";
+        return code;
+    }
+    throw std::runtime_error("unreachable (genOpCode)");
+}
+
+std::string SLT(TypePtr Ltype, TypePtr Rtype) {
+    if (Ltype->isInteger() and Rtype->isInteger())
+        return pad + "slt t0, t0, t1\n";
+    if (Ltype->capReal() and Rtype->capReal()) {
+        std::string code = "";
+        if (Ltype->isInteger())
+            code += convertIntToReal(0);
+        if (Rtype->isInteger())
+            code += convertIntToReal(1);
+        code += pad + "flt.s ft0, ft0, ft1\n";
+        return code;
+    }
+    throw std::runtime_error("unreachable (SLT)");
+}
+
+std::string SGT(TypePtr Ltype, TypePtr Rtype) {
+    if (Ltype->isInteger() and Rtype->isInteger())
+        return pad + "sgt t0, t0, t1\n";
+    if (Ltype->capReal() and Rtype->capReal()) {
+        std::string code = "";
+        if (Ltype->isInteger())
+            code += convertIntToReal(0);
+        if (Rtype->isInteger())
+            code += convertIntToReal(1);
+        code += pad + "fgt.s t0, ft0, ft1\n";
+        return code;
+    }
+    throw std::runtime_error("unreachable (SGT)");
+}
+const char XORI[] = "    xori t0, t0, 1\n";
+
+std::string genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     switch (op) {
     case Operator::ADD:
-        if (Ltype->isInteger() and Rtype->isInteger())
-            return "    add t0, t0, t1\n";
-        // TODO conversion
-        if (Ltype->capReal() and Rtype->capReal())
-            return "    fadd.s ft0, ft0, ft1\n";
+        return genOpCode("add", "fadd.s", Ltype, Rtype);
     case Operator::SUB:
-        return "    sub t0, t0, t1\n";
+        return genOpCode("sub", "fsub.s", Ltype, Rtype);
     case Operator::MUL:
-        return "    mul t0, t0, t1\n";
+        return genOpCode("mul", "fmul.s", Ltype, Rtype);
     case Operator::DIV:
-        return "    div t0, t0, t1\n";
+        return genOpCode("div", "fdiv.s", Ltype, Rtype);
     case Operator::MOD:
         return "    rem t0, t0, t1\n";
     case Operator::OP_LT:
-        return "    slt t0, t0, t1\n";
+        return SLT(Ltype, Rtype);
     case Operator::OP_LTEQ:
-        return "    sgt t0, t0, t1\n"
-               "    xori t0, t0, 1\n";
+        return SGT(Ltype, Rtype) + XORI;
     case Operator::OP_NEQ:
         return "    sub t0, t0, t1\n"
                "    snez t0, t0\n";
     case Operator::OP_GTEQ:
-        return "    slt t0, t0, t1\n"
-               "    xori t0, t0, 1\n";
+        return SLT(Ltype, Rtype) + XORI;
     case Operator::OP_GT:
-        return "    sgt t0, t0, t1\n";
+        return SGT(Ltype, Rtype);
     case Operator::OP_EQ:
         return "    sub t0, t0, t1\n"
                "    seqz t0, t0\n";
@@ -71,7 +119,11 @@ const char *genOpCode(Operator op, TypePtr Ltype, TypePtr Rtype = nullptr) {
     case Operator::OR:
         return "    or t0, t0, t1\n";
     case Operator::NEG:
-        return "    neg t0, t0\n";
+        if (Ltype->isInteger())
+            return "    neg t0, t0\n";
+        if (Ltype->isReal())
+            return "    fneg.s ft0, ft0\n";
+        throw std::runtime_error("unreachable (genOpCode::NEG)");
     case Operator::NOT:
         return "    xori t0, t0, 1\n";
     }
@@ -137,7 +189,7 @@ void CodeGenerator::branchLabel(std::string label, bool pop) {
         "    beqz t0, %s\n";
     // clang-format on
     if (pop)
-        popt0();
+        popt(0);
     dumpInstructions(m_output_file.get(), riscv_assembly_branch, label.c_str());
 }
 
@@ -468,16 +520,11 @@ void CodeGenerator::visit(BinaryOperatorNode &p_bin_op) {
     auto op = p_bin_op.getOp();
 
     dumpInstructions(m_output_file.get(), " # %s\n", to_cstring(op));
-    if (p_bin_op.getInferredType()->isReal())
-        dumpInstructions(m_output_file.get(),
-                         riscvAsmPopF(ft1) riscvAsmPopF(ft0));
-    else
-        dumpInstructions(m_output_file.get(), riscvAsmPop(t1) riscvAsmPop(t0));
-    dumpInstructions(m_output_file.get(), "%s", genOpCode(op, Ltype, Rtype));
-    if (p_bin_op.getInferredType()->isReal())
-        pushft0();
-    else
-        pusht0();
+    Rtype->isReal() ? popft(1) : popt(1);
+    Ltype->isReal() ? popft(0) : popt(0);
+    dumpInstructions(m_output_file.get(), "%s",
+                     genOpCode(op, Ltype, Rtype).c_str());
+    p_bin_op.getInferredType()->isReal() ? pushft(0) : pusht(0);
 }
 
 void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
@@ -489,9 +536,9 @@ void CodeGenerator::visit(UnaryOperatorNode &p_un_op) {
     auto op = p_un_op.getOp();
 
     dumpInstructions(m_output_file.get(), " # %s\n", to_cstring(op));
-    popt0();
-    dumpInstructions(m_output_file.get(), "%s", genOpCode(op, type));
-    pusht0();
+    type->isReal() ? popft(0) : popt(0);
+    dumpInstructions(m_output_file.get(), "%s", genOpCode(op, type).c_str());
+    p_un_op.getInferredType()->isReal() ? pushft(0) : pusht(0);
 }
 
 void CodeGenerator::visit(FunctionInvocationNode &p_func_invocation) {
@@ -555,7 +602,7 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
     dumpSymbol(entry);
     if (entry->isPointer())
         loadInt("t0");
-    pusht0();
+    pusht(0);
 
     // clang-format off
     constexpr const char *const riscv_assembly_array =
@@ -578,13 +625,13 @@ void CodeGenerator::visit(VariableReferenceNode &p_variable_ref) {
 
     if (p_variable_ref.isValueUsage() and type->isNotArray()) {
         dumpInstructions(m_output_file.get(), " # load value\n");
-        popt0();
+        popt(0);
         if (type->isReal()) {
             loadReal("ft0");
-            pushft0();
+            pushft(0);
         } else {
             loadInt("t0");
-            pusht0();
+            pusht(0);
         }
     }
 }
