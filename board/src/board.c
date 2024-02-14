@@ -1,10 +1,11 @@
 #include "lcd/lcd.h"
+#include <stdio.h>
 #include <string.h>
 
-#define PASS_ALL 511
+#define TOTAL_TEST 9
 
 int pass = 0;
-char test_name[9][40] =
+char test_name[TOTAL_TEST][40] =
 {   
     "local variable",
     "global variable",
@@ -62,7 +63,12 @@ void showResult()
 {
     LCD_Clear(WHITE);
 
-    if (pass == PASS_ALL)
+    int fail_cnt = 0;
+    for (int i = 0; i < TOTAL_TEST; ++i)
+        if (((pass >> i) & 1) == 0)
+            fail_cnt++;
+
+    if (fail_cnt == 0)
     {
         LCD_ShowString(10,  0, (u8 *)("Compiler hw5 pass!"), RED);
         delay_1ms(200);
@@ -76,43 +82,37 @@ void showResult()
     }
     else 
     {
-        while (1)
-        {
-            int pass_tmp = pass;
-            for (int i = 0; i < 9; ++i)
-            {
-                LCD_Clear(WHITE);
+        char buf[25];
+        snprintf(buf, sizeof(buf), "%d/%d test fail!", fail_cnt, TOTAL_TEST);
 
-                if (!(pass_tmp & 1))
-                {
+        while (1) {
+            for (int i = 0; i < TOTAL_TEST; ++i) {
+                if (((pass >> i) & 1) == 0) {
+                    LCD_Clear(WHITE);
+
                     LCD_ShowString(10, 10, (u8 *)test_name[i], RED);
-                    LCD_ShowString(10, 60, (u8 *)("test fail!"), RED);
+                    LCD_ShowString(10, 60, (u8 *)buf, RED);
                     
                     delay_1ms(800);
                 }
-                pass_tmp = pass_tmp >> 1;
             }
         }  
     }
 }
 
-void test(int answer, int pass_in, char* name)
+void test(int answer, int pass_in, int index)
 {
     LCD_Clear(WHITE);
 
+    LCD_ShowString(10,  10, (u8 *)test_name[index], BLUE);
     if(answer == pass_in)
     {
-        LCD_ShowString(10,  10, (u8 *)name, BLUE);
         LCD_ShowString(10,  60, (u8 *)("test successful!"), BLUE);
-
-        pass = (pass << 1) | 1;
+        pass |= 1 << index;
     }
     else 
     {
-        LCD_ShowString(10,  10, (u8 *)name, RED);
         LCD_ShowString(10,  60, (u8 *)("test fail!"), RED);
-        
-        pass = pass << 1;    
     }    
 
     delay_1ms(2000);
@@ -120,45 +120,45 @@ void test(int answer, int pass_in, char* name)
 
 void testLocal(int pass_in)
 {
-    test(1, pass_in, test_name[0]);
+    test(1, pass_in, 0);
 }
 
 void testGlobal(int pass_in)
 {
-    test(2, pass_in, test_name[1]);
+    test(2, pass_in, 1);
 }
 
 void testGlobalConst(int pass_in)
 {
-    test(3, pass_in, test_name[2]);
+    test(3, pass_in, 2);
 }
 
 void testExpression(int pass_in)
 {
-    test(4, pass_in, test_name[3]);
+    test(4, pass_in, 3);
 }
 
 void testFunction(int pass_in)
 {
-    test(5, pass_in, test_name[4]);
+    test(5, pass_in, 4);
 }
 
 void testExprFunc(int pass_in)
 {
-    test(6, pass_in, test_name[5]);
+    test(6, pass_in, 5);
 }
 
 void testCondition(int pass_in)
 {
-    test(7, pass_in, test_name[6]);
+    test(7, pass_in, 6);
 }
 
 void testFor(int pass_in)
 {
-    test(8, pass_in, test_name[7]);
+    test(8, pass_in, 7);
 }
 
 void testWhile(int pass_in)
 {
-    test(9, pass_in, test_name[8]);
+    test(9, pass_in, 8);
 }
