@@ -5,10 +5,11 @@ YACC_FLAGS = --defines=parser.h -v
 CFLAGS = -Wall -std=gnu++17 -g
 LDFLAGS =
 INCLUDE = -Iinclude
+LIBS    += -ly
 ifeq ($(shell uname),Darwin)
-LIBS    = -ll
+LIBS    += -ll
 else
-LIBS    = -lfl
+LIBS    += -lfl
 ifeq ($(DEBUG),1)
 LDFLAGS += -fsanitize=leak -fsanitize=address -fsanitize=undefined
 endif
@@ -17,7 +18,6 @@ ifeq ($(TRACE),1)
 CFLAGS 		+= -DTRACE
 YACC_FLAGS 	+= --debug
 endif
-LIBS    += -ly
 
 SCANNER = scanner
 PARSER = parser
@@ -26,7 +26,7 @@ SRCDIR = lib/
 SRC := $(shell find $(SRCDIR) -name '*.cpp')
 
 EXEC = compiler
-OBJS = $(PARSER:=.cpp) \
+SRCS = $(PARSER:=.cpp) \
        $(SCANNER:=.cpp) \
        $(SRC)
 
@@ -34,7 +34,7 @@ OBJDIR := ./obj
 $(shell [ -d $(OBJDIR) ] || mkdir -p $(OBJDIR))
 
 # Substitution reference
-OBJS := $(addprefix $(OBJDIR)/, $(patsubst %.cpp, %.o, $(OBJS)))
+OBJS := $(addprefix $(OBJDIR)/, $(patsubst %.cpp, %.o, $(SRCS)))
 DEPS := $(OBJS:%.o=%.d)
 
 all: $(EXEC)
@@ -57,3 +57,5 @@ clean:
 	$(RM) $(DEPS) $(SCANNER:=.cpp) $(PARSER:=.cpp) $(PARSER:=.h) $(OBJS) $(EXEC)
 
 -include $(DEPS)
+
+.PHONY: all clean
