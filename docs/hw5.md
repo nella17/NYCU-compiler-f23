@@ -1036,11 +1036,13 @@ Just treat the `true` and `false` as `1` and `0`.
 
 For simplicity, you can pass the array variables by value.
 
+If you prefer to pass them by address like what C does, remember that you'll need to access them with two memory loads. Additionally, note that a local array has a different meaning from a parameter array: for the former, the entire array is held on the stack, while for the latter, only the address of the first element is stored.
+
 #### String Type
 
-There is no string concatenation in test cases, so you don't need to allocate dynamic memory for a string variable.
+There is no string concatenation in test cases, so you don't need to allocate dynamic memory for a string variable. A unique string literal will be allocated only once throughout the program, and different variables refer to it through its address (or symbol).
 
-- Defining a local string variable 'st' will be translated into the following `RISC-V` instructions.
+- Defining a local string variable with symbol 'st' (the symbol does not have to be the same as the variable name) will be translated into the following `RISC-V` instructions.
 
   ```assembly
       .section	.rodata
@@ -1049,16 +1051,27 @@ There is no string concatenation in test cases, so you don't need to allocate dy
       .string	"hello"
   ```
 
-- Referencing a local string variable 'st' will be translated into the following `RISC-V` instructions.
+- Referencing a local string variable with symbol 'st' will be translated into the following `RISC-V` instructions.
 
   ```assembly
-  lui t0, %hi(st)
-  addi a0, t0, %lo(st)
+  la a0, st
   ```
+
+> [!note]
+> Alternatively, you can use the following instructions to load 'st':
+>
+> ```assembly
+>   lui t0, %hi(st)
+>   addi a0, t0, %lo(st)
+> ```
+>
+> However, the pseudo-instruction `la` is more readable, and it handles _pic_/_nopic_ for you [^1].
+
+[^1]: [RISC-V Assembly Programmer's Manual - Load Address](https://github.com/riscv-non-isa/riscv-asm-manual/blob/master/riscv-asm.md#load-address)
 
 #### Real Type
 
-You should use floating-point registers and floating-point instructions for real type code generation. Check Single-Precision Instructions in [RISC-V ISA Specification](https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view?pli=1).
+You should use floating-point registers and floating-point instructions for real type code generation. In RV32, float-point numbers are single precision. Check them out in [RISC-V ISA Specification, p.93](https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou5/view?pli=1).
 
 - Defining a local real type variable 'rv' will be translated into the following `RISC-V` instructions.
 
@@ -1075,6 +1088,8 @@ You should use floating-point registers and floating-point instructions for real
       flw ft0, %lo(rv)(t0)
       fsw ft0, -24(s0)
   ```
+
+Floating-point constants cannot be loaded directly into a register as an immediate; they are treated similarly as the strings by first allocated in the `rodata` section.
 
 - Adding two real type variables will be translated into the following `RISC-V` instructions.
 
