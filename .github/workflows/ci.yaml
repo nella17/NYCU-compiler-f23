@@ -1,4 +1,4 @@
-name: CI
+name: CI HW2
 
 on:
   push:
@@ -13,4 +13,4 @@ jobs:
         uses: actions/checkout@v4
       - name: Run Test
         # Not to use "make autograde" because it's for grading purpose and the recipe ignores errors.
-        run: ARGS="make test" make activate
+        run: ARGS='bash -c "make -j project && cd tests/hw2 && python3 test.py --parser ~/hw/src/parser"' make activate
